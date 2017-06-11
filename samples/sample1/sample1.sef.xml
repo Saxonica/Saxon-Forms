@@ -1,0 +1,2523 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://ns.saxonica.com/xslt/export" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:vv="http://saxon.sf.net/generated-variable" xmlns:java-type="http://saxon.sf.net/java-type" dmk="TGljZW5zb3I9U2F4b25pY2EKTGljZW5zZWU9TydOZWlsIERlbHByYXR0CkNvbXBhbnk9U2F4b25pY2EKRW1haWw9b25laWxAc2F4b25pY2EuY29tCkVkaXRpb249REUKU0FUPXllcwpTQVE9eWVzClNBVj15ZXMKSXNzdWVkPTIwMTYtMTEtMjMKU2VyaWVzPUQKU2VyaWFsPUQwMDUxNzgKVXNlcj1QMDAwMQpFdmFsdWF0aW9uPW5vCkV4cGlyYXRpb249MjAxNy0xMS0yMwpVcGdyYWRlRGF5cz0zNjYKTWFpbnRlbmFuY2VEYXlzPTM2NgpTaWduYXR1cmU9MzAyQzAyMTQyQkMxQzBDNTFCQUIxRkU4NTlBMzA1QjcwNzJFNkQ3ODVCNTIxNkIxMDIxNDIzRTM4MUUyMzYzM0QzMEVCMjEzQjNGRjIwMEQ3REQ5OTg0RkY0QzQK" version="30" packageVersion="1" saxonVersion="9.7.0.18" timeStamp="2017-06-11T12:16:30.792+01:00" target="JS">
+ <co id="0" binds="0 1 0 1">
+  <mode name="Q{}form-check" onNo="TC" flags="W" patternSlots="0">
+   <templateRule prec="0" prio="-0.5" seq="0" rank="0" minImp="0" slots="6" flags="os" line="546" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element()" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1;"/>
+    <sequence role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="547">
+     <param name="curPath" slot="0">
+      <str role="select" val=""/>
+      <supplied role="conversion" slot="0"/>
+     </param>
+     <param line="548" name="position" slot="1">
+      <int role="select" val="0"/>
+      <supplied role="conversion" slot="1"/>
+     </param>
+     <let line="550" var="updatedPath" as="xs:string" slot="2" eval="7">
+      <choose>
+       <gc op="&gt;" card="N:1" comp="GAC|http://www.w3.org/2005/xpath-functions/collation/codepoint">
+        <data>
+         <varRef name="position" slot="1"/>
+        </data>
+        <int val="0"/>
+       </gc>
+       <fn name="concat">
+        <atomSing card="?" diag="0|0||concat">
+         <varRef name="curPath" slot="0"/>
+        </atomSing>
+        <fn name="local-name">
+         <dot type="element()"/>
+        </fn>
+        <str val="["/>
+        <atomSing card="?" diag="0|3||concat">
+         <varRef name="position" slot="1"/>
+        </atomSing>
+        <str val="]"/>
+       </fn>
+       <true/>
+       <fn name="concat">
+        <atomSing card="?" diag="0|0||concat">
+         <varRef name="curPath" slot="0"/>
+        </atomSing>
+        <fn name="local-name">
+         <dot type="element()"/>
+        </fn>
+       </fn>
+      </choose>
+      <forEachGroup line="552" algorithm="by">
+       <axis role="select" name="child" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+       <fn role="key" name="local-name">
+        <dot type="element()"/>
+       </fn>
+       <str role="collation" val="http://www.w3.org/2005/xpath-functions/collation/codepoint"/>
+       <choose role="content" line="555">
+        <fn name="exists">
+         <tail start="2">
+          <currentGroup/>
+         </tail>
+        </fn>
+        <let line="558" var="vv:loc1928881406" as="xs:string" slot="3" eval="8">
+         <fn line="563" name="concat">
+          <varRef name="updatedPath" slot="2"/>
+          <str val="/"/>
+         </fn>
+         <forEach>
+          <currentGroup/>
+          <copy line="561" flags="cin">
+           <sequence role="content">
+            <att name="ref" flags="l">
+             <fn name="concat">
+              <varRef name="updatedPath" slot="2"/>
+              <str val="/"/>
+              <fn name="local-name">
+               <treat as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="0|0||local-name">
+                <dot/>
+               </treat>
+              </fn>
+              <str val="["/>
+              <fn name="position"/>
+              <str val="]"/>
+             </fn>
+            </att>
+            <applyT line="562" mode="Q{}form-check" bSlot="0">
+             <dot role="select" type="element()"/>
+             <withParam name="curPath" as="xs:string">
+              <varRef line="558" name="vv:loc1928881406" slot="3"/>
+             </withParam>
+             <withParam name="position" as="xs:integer">
+              <fn line="564" name="position"/>
+             </withParam>
+            </applyT>
+           </sequence>
+          </copy>
+         </forEach>
+        </let>
+        <true/>
+        <forEach line="576">
+         <currentGroup/>
+         <let line="577" var="ref" as="xs:string" slot="4" eval="8">
+          <fn name="concat">
+           <varRef name="updatedPath" slot="2"/>
+           <str val="/"/>
+           <fn name="local-name">
+            <treat as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="0|0||local-name">
+             <dot/>
+            </treat>
+           </fn>
+          </fn>
+          <choose line="579">
+           <fn name="not">
+            <slash simple="1">
+             <treat as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="14|3|XPTY0020|">
+              <dot/>
+             </treat>
+             <axis name="child" nodeTest="( element() | text() | comment() | processing-instruction() )" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==1 || item.nodeType==3 || item.nodeType==7 || item.nodeType==8);"/>
+            </slash>
+           </fn>
+           <let line="581" var="fieldBox" as="document-node()" slot="5" eval="7">
+            <doc line="582" base="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" validation="preserve">
+             <applyT mode="Q{}get-field" bSlot="1">
+              <slash role="select">
+               <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" name="ixsl:page" type="document-node()?"/>
+               <fn name="key">
+                <str val="Q{http://saxon.sf.net/}kk102"/>
+                <varRef name="ref" slot="4"/>
+                <dot type="document-node()"/>
+               </fn>
+              </slash>
+             </applyT>
+            </doc>
+            <choose line="587">
+             <fn name="exists">
+              <varRef name="fieldBox" slot="5"/>
+             </fn>
+             <copy flags="cin">
+              <valueOf role="content" flags="l">
+               <convert from="xs:untypedAtomic" to="xs:string">
+                <data>
+                 <varRef name="fieldBox" slot="5"/>
+                </data>
+               </convert>
+              </valueOf>
+             </copy>
+             <true/>
+             <copyOf line="588" flags="vsc">
+              <dot/>
+             </copyOf>
+            </choose>
+           </let>
+           <true/>
+           <copy line="595" flags="cin">
+            <applyT role="content" mode="Q{}form-check" bSlot="2">
+             <union role="select" op="|">
+              <docOrder intra="1">
+               <dot type="element()"/>
+              </docOrder>
+              <axis name="child" nodeTest="( element() | text() | comment() | processing-instruction() )" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==1 || item.nodeType==3 || item.nodeType==7 || item.nodeType==8);"/>
+             </union>
+             <withParam name="curPath" as="xs:string">
+              <fn line="596" name="concat">
+               <varRef name="updatedPath" slot="2"/>
+               <str val="/"/>
+              </fn>
+             </withParam>
+            </applyT>
+           </copy>
+          </choose>
+         </let>
+        </forEach>
+       </choose>
+      </forEachGroup>
+     </let>
+    </sequence>
+   </templateRule>
+   <templateRule prec="0" prio="-0.5" seq="1" rank="0" minImp="0" slots="3" flags="os" line="616" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="text()" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==3;"/>
+    <sequence role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="617">
+     <param name="curPath" slot="0">
+      <str role="select" val=""/>
+      <supplied role="conversion" slot="0"/>
+     </param>
+     <let line="618" var="updatedPath" as="xs:string" slot="1" eval="8">
+      <fn name="concat">
+       <atomSing card="?" diag="0|0||concat">
+        <varRef name="curPath" slot="0"/>
+       </atomSing>
+       <fn name="local-name">
+        <check card="?" diag="0|0||local-name">
+         <axis name="parent" nodeTest="(element()|document-node())" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==9||item.nodeType==11||item.nodeType==1);"/>
+        </check>
+       </fn>
+      </fn>
+      <let line="620" var="fieldBox" as="document-node()" slot="2" eval="7">
+       <doc line="621" base="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" validation="preserve">
+        <applyT mode="Q{}get-field" bSlot="3">
+         <slash role="select">
+          <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" name="ixsl:page" type="document-node()?"/>
+          <fn name="key">
+           <str val="Q{http://saxon.sf.net/}kk102"/>
+           <varRef name="updatedPath" slot="1"/>
+           <dot type="document-node()"/>
+          </fn>
+         </slash>
+        </applyT>
+       </doc>
+       <choose line="625">
+        <vc op="eq" onEmpty="0" comp="GAC|http://www.w3.org/2005/xpath-functions/collation/codepoint">
+         <cast as="xs:string" emptiable="0">
+          <data>
+           <varRef name="fieldBox" slot="2"/>
+          </data>
+         </cast>
+         <cast as="xs:string" emptiable="0">
+          <data>
+           <dot type="text()"/>
+          </data>
+         </cast>
+        </vc>
+        <copyOf flags="vsc">
+         <dot type="text()"/>
+        </copyOf>
+        <true/>
+        <copyOf line="626" flags="vsc">
+         <varRef name="fieldBox" slot="2"/>
+        </copyOf>
+       </choose>
+      </let>
+     </let>
+    </sequence>
+   </templateRule>
+  </mode>
+ </co>
+ <co id="2" binds="">
+  <globalVariable name="Q{http://saxon.sf.net/generated-variable}gg780857040" type="item()" line="151" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" visibility="PRIVATE" jsAcceptor="return val;" jsCardCheck="function c(n) {return n==1;};">
+   <check vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="151" card="1" diag="0|0||ixsl:call">
+    <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" name="ixsl:window" type="item()?"/>
+   </check>
+  </globalVariable>
+ </co>
+ <co id="3" binds="4">
+  <mode name="Q{}item" onNo="TC" flags="W" patternSlots="0">
+   <templateRule prec="0" prio="0.0" seq="0" rank="0" minImp="0" slots="2" flags="os" line="339" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element(Q{http://www.w3.org/2002/xforms}item)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='item';"/>
+    <sequence role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="340">
+     <param name="instance1" slot="0" as="node()?">
+      <empty role="select"/>
+      <treat role="conversion" as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="8|0|XTTE0590|instance1">
+       <check card="?" diag="8|0|XTTE0590|instance1">
+        <supplied slot="0"/>
+       </check>
+      </treat>
+     </param>
+     <let line="341" var="selectedVar" as="document-node()" slot="1" eval="7">
+      <doc line="342" base="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" validation="preserve">
+       <evaluate>
+        <check role="xpath" card="1" diag="4|0||xsl:evaluate/xpath">
+         <cvUntyped to="xs:string">
+          <data>
+           <slash>
+            <axis name="parent" nodeTest="(element()|document-node())" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==9||item.nodeType==11||item.nodeType==1);"/>
+            <axis name="attribute" nodeTest="attribute(Q{}ref)" jsTest="return item.name=='ref'"/>
+           </slash>
+          </data>
+         </cvUntyped>
+        </check>
+        <check role="cxt" card="?" diag="4|0|XTTE3210|xsl:evaluate/context-item">
+         <slash simple="1">
+          <varRef name="instance1" slot="0"/>
+          <axis name="child" nodeTest="*:document" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1&amp;&amp;q.local == 'document'"/>
+         </slash>
+        </check>
+        <str role="sa" val="no"/>
+        <gVarRef role="wp" name="Q{http://saxon.sf.net/generated-variable}gg71688744" bSlot="0"/>
+       </evaluate>
+      </doc>
+      <elem line="345" name="option" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+       <sequence>
+        <att name="value" flags="l">
+         <fn name="string-join">
+          <convert from="xs:untypedAtomic" to="xs:string">
+           <data>
+            <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}value)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='value';"/>
+           </data>
+          </convert>
+          <str val=" "/>
+         </fn>
+        </att>
+        <choose line="346">
+         <and op="and">
+          <fn name="exists">
+           <varRef name="instance1" slot="0"/>
+          </fn>
+          <gcEE op="=" card="N:1" comp="CCC">
+           <data>
+            <slash>
+             <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}value)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='value';"/>
+             <axis name="child" nodeTest="text()" jsTest="return item.nodeType==3;"/>
+            </slash>
+           </data>
+           <data>
+            <varRef name="selectedVar" slot="1"/>
+           </data>
+          </gcEE>
+         </and>
+         <att line="347" name="selected" flags="l">
+          <convert from="xs:untypedAtomic" to="xs:string">
+           <data>
+            <varRef name="selectedVar" slot="1"/>
+           </data>
+          </convert>
+         </att>
+        </choose>
+        <valueOf line="350" flags="l">
+         <fn name="string-join">
+          <convert from="xs:untypedAtomic" to="xs:string">
+           <data>
+            <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}label)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='label';"/>
+           </data>
+          </convert>
+          <str val=" "/>
+         </fn>
+        </valueOf>
+       </sequence>
+      </elem>
+     </let>
+    </sequence>
+   </templateRule>
+  </mode>
+ </co>
+ <co id="5" binds="">
+  <globalVariable name="Q{http://saxon.sf.net/generated-variable}gg31447144" type="map(*)" line="212" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" visibility="PRIVATE" jsAcceptor="if (typeof val == 'object') {return val;} else {throw SaxonJS.XError('Cannot convert supplied JS value to a map or array');}" jsCardCheck="function c(n) {return n==1;};">
+   <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="212" name="map:_new" type="map(*)">
+    <empty/>
+   </ifCall>
+  </globalVariable>
+ </co>
+ <co id="6" binds="7">
+  <globalVariable name="Q{http://saxon.sf.net/generated-variable}gg296655530" type="document-node()" line="83" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/sample1.xsl" visibility="PRIVATE" jsAcceptor="function test(item) {return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==9||item.nodeType==11);};if (test(val)) {return val;} else {throw SaxonJS.XError('Conversion failed', 'XTTE0590');}" jsCardCheck="function c(n) {return n==1;};">
+   <fn vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/sample1.xsl" ns="f=http://www.saxonica.com/local/functions xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms js=http://saxonica.com/ns/globalJS saxon=http://saxon.sf.net/ map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="83" name="doc">
+    <gVarRef name="Q{}bookingForm" bSlot="0"/>
+   </fn>
+  </globalVariable>
+ </co>
+ <co id="1" binds="">
+  <mode name="Q{}get-field" onNo="TC" flags="W" patternSlots="0">
+   <templateRule prec="0" prio="-0.25" seq="2" rank="0" minImp="0" slots="0" flags="os" line="645" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="*:textarea" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1&amp;&amp;q.local == 'textarea'"/>
+    <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="648" name="ixsl:get" type="item()*">
+     <dot type="*:textarea"/>
+     <str val="value"/>
+    </ifCall>
+   </templateRule>
+   <templateRule prec="0" prio="-0.25" seq="1" rank="0" minImp="0" slots="0" flags="os" line="640" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="*:select" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1&amp;&amp;q.local == 'select'"/>
+    <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="642" name="ixsl:get" type="item()*">
+     <check card="?" diag="0|0||ixsl:get">
+      <filter flags="b">
+       <axis name="child" nodeTest="element(Q{}option)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri==''&amp;&amp;q.local=='option';"/>
+       <gcEE op="=" card="N:1" comp="GAC|http://www.w3.org/2005/xpath-functions/collation/codepoint">
+        <data>
+         <ifCall name="ixsl:get" type="item()*">
+          <dot type="element(Q{}option)"/>
+          <str val="selected"/>
+         </ifCall>
+        </data>
+        <true/>
+       </gcEE>
+      </filter>
+     </check>
+     <str val="value"/>
+    </ifCall>
+   </templateRule>
+   <templateRule prec="0" prio="-0.25" seq="0" rank="0" minImp="0" slots="0" flags="os" line="634" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="*:input" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1&amp;&amp;q.local == 'input'"/>
+    <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="637" name="ixsl:get" type="item()*">
+     <dot type="*:input"/>
+     <str val="value"/>
+    </ifCall>
+   </templateRule>
+  </mode>
+ </co>
+ <co id="8" binds="">
+  <globalVariable name="Q{http://saxon.sf.net/generated-variable}gg1598191060" type="map(*)" line="267" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" visibility="PRIVATE" jsAcceptor="if (typeof val == 'object') {return val;} else {throw SaxonJS.XError('Cannot convert supplied JS value to a map or array');}" jsCardCheck="function c(n) {return n==1;};">
+   <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="267" name="map:_new" type="map(*)">
+    <empty/>
+   </ifCall>
+  </globalVariable>
+ </co>
+ <co id="9" binds="">
+  <globalVariable name="Q{http://saxon.sf.net/generated-variable}gg224301783" type="item()" line="140" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" visibility="PRIVATE" jsAcceptor="return val;" jsCardCheck="function c(n) {return n==1;};">
+   <check vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="140" card="1" diag="0|0||ixsl:call">
+    <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" name="ixsl:window" type="item()?"/>
+   </check>
+  </globalVariable>
+ </co>
+ <co id="10" binds="">
+  <globalVariable name="Q{http://saxon.sf.net/generated-variable}gg1762056890" type="map(*)" line="363" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" visibility="PRIVATE" jsAcceptor="if (typeof val == 'object') {return val;} else {throw SaxonJS.XError('Cannot convert supplied JS value to a map or array');}" jsCardCheck="function c(n) {return n==1;};">
+   <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="363" name="map:_new" type="map(*)">
+    <empty/>
+   </ifCall>
+  </globalVariable>
+ </co>
+ <co id="11" binds="7 12">
+  <template name="Q{}main" flags="os" line="73" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/sample1.xsl" slots="0">
+   <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" role="body" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/sample1.xsl" ns="f=http://www.saxonica.com/local/functions xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms js=http://saxonica.com/ns/globalJS saxon=http://saxon.sf.net/ map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="76" name="ixsl:schedule-action" type="item()*">
+    <int val="0"/>
+    <gVarRef name="Q{}bookingForm" bSlot="0"/>
+    <callT line="77" name="main2" bSlot="1"/>
+   </ifCall>
+  </template>
+ </co>
+ <co id="13" binds="13 13 5 14 13 13 3 10 13 13 13 8 13 13 13 13">
+  <mode onNo="TC" flags="dW" patternSlots="0">
+   <templateRule prec="0" prio="-0.5" seq="1" rank="0" minImp="0" slots="0" flags="os" line="161" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="document-node()" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==9||item.nodeType==11);"/>
+    <applyT role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="162" flags="t" bSlot="0">
+     <axis role="select" name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}xform)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='xform';"/>
+    </applyT>
+   </templateRule>
+   <templateRule prec="0" prio="0.0" seq="4" rank="1" minImp="0" slots="4" flags="os" line="207" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element(Q{http://www.w3.org/2002/xforms}input)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='input';"/>
+    <sequence role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="208">
+     <param name="instance1" slot="0" as="node()?">
+      <empty role="select"/>
+      <treat role="conversion" as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="8|0|XTTE0590|instance1">
+       <check card="?" diag="8|0|XTTE0590|instance1">
+        <supplied slot="0"/>
+       </check>
+      </treat>
+     </param>
+     <param line="209" name="bindings" slot="1" as="map(xs:string, node())">
+      <treat role="select" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|bindings">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|bindings">
+       <check card="1" diag="8|0|XTTE0590|bindings">
+        <supplied slot="1"/>
+       </check>
+      </treat>
+     </param>
+     <message line="210">
+      <sequence role="select">
+       <valueOf flags="S">
+        <str val="xforms:input="/>
+       </valueOf>
+       <valueOf>
+        <fn name="serialize">
+         <varRef name="instance1" slot="0"/>
+        </fn>
+       </valueOf>
+      </sequence>
+      <str role="terminate" val="no"/>
+      <str role="error" val="Q{http://www.w3.org/2005/xqt-errors}XTMM9000"/>
+     </message>
+     <applyT line="215" bSlot="1">
+      <axis role="select" name="child" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+     </applyT>
+     <let line="217" var="hints" as="text()*" slot="2" eval="3">
+      <slash>
+       <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}hint)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='hint';"/>
+       <axis name="child" nodeTest="text()" jsTest="return item.nodeType==3;"/>
+      </slash>
+      <let line="218" var="bindingi" as="node()?" slot="3" eval="7">
+       <choose>
+        <fn name="empty">
+         <varRef name="bindings" slot="1"/>
+        </fn>
+        <empty/>
+        <true/>
+        <treat as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="3|0|XTTE0570|bindingi">
+         <check card="?" diag="3|0|XTTE0570|bindingi">
+          <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:get" type="item()*">
+           <varRef name="bindings" slot="1"/>
+           <fn name="generate-id">
+            <treat line="212" as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="3|0|XTTE0570|in-node">
+             <check card="?" diag="3|0|XTTE0570|in-node">
+              <evaluate>
+               <check role="xpath" card="1" diag="4|0||xsl:evaluate/xpath">
+                <cvUntyped to="xs:string">
+                 <data>
+                  <axis name="attribute" nodeTest="attribute(Q{}ref)" jsTest="return item.name=='ref'"/>
+                 </data>
+                </cvUntyped>
+               </check>
+               <check role="cxt" card="?" diag="4|0|XTTE3210|xsl:evaluate/context-item">
+                <slash simple="1">
+                 <varRef name="instance1" slot="0"/>
+                 <axis name="child" nodeTest="*:document" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1&amp;&amp;q.local == 'document'"/>
+                </slash>
+               </check>
+               <str role="sa" val="no"/>
+               <gVarRef role="wp" name="Q{http://saxon.sf.net/generated-variable}gg31447144" bSlot="2"/>
+              </evaluate>
+             </check>
+            </treat>
+           </fn>
+          </ifCall>
+         </check>
+        </treat>
+       </choose>
+       <elem line="220" name="input" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+        <sequence>
+         <choose>
+          <and op="and">
+           <fn name="exists">
+            <varRef name="bindingi" slot="3"/>
+           </fn>
+           <fn name="exists">
+            <slash simple="1">
+             <varRef name="bindingi" slot="3"/>
+             <axis name="attribute" nodeTest="attribute(Q{}required)" jsTest="return item.name=='required'"/>
+            </slash>
+           </fn>
+          </and>
+          <att line="221" name="data-required" flags="l">
+           <convert from="xs:untypedAtomic" to="xs:string">
+            <data>
+             <slash simple="1">
+              <varRef name="bindingi" slot="3"/>
+              <axis name="attribute" nodeTest="attribute(Q{}required)" jsTest="return item.name=='required'"/>
+             </slash>
+            </data>
+           </convert>
+          </att>
+         </choose>
+         <choose line="223">
+          <and op="and">
+           <fn name="exists">
+            <varRef name="bindingi" slot="3"/>
+           </fn>
+           <fn name="exists">
+            <slash simple="1">
+             <varRef name="bindingi" slot="3"/>
+             <axis name="attribute" nodeTest="attribute(Q{}relevant)" jsTest="return item.name=='relevant'"/>
+            </slash>
+           </fn>
+          </and>
+          <att line="224" name="data-relevant" flags="l">
+           <convert from="xs:untypedAtomic" to="xs:string">
+            <data>
+             <slash simple="1">
+              <varRef name="bindingi" slot="3"/>
+              <axis name="attribute" nodeTest="attribute(Q{}relevant)" jsTest="return item.name=='relevant'"/>
+             </slash>
+            </data>
+           </convert>
+          </att>
+         </choose>
+         <choose line="228">
+          <choose>
+           <fn name="exists">
+            <varRef name="bindingi" slot="3"/>
+           </fn>
+           <vc op="eq" comp="EQC">
+            <cast as="xs:QName" emptiable="1">
+             <data>
+              <slash simple="1">
+               <varRef name="bindingi" slot="3"/>
+               <axis name="attribute" nodeTest="attribute(Q{}type)" jsTest="return item.name=='type'"/>
+              </slash>
+             </data>
+            </cast>
+            <qName pre="xs" uri="http://www.w3.org/2001/XMLSchema" loc="date"/>
+           </vc>
+           <true/>
+           <false/>
+          </choose>
+          <att line="229" name="type" flags="l">
+           <str val="date"/>
+          </att>
+          <choose line="231">
+           <fn name="exists">
+            <varRef name="bindingi" slot="3"/>
+           </fn>
+           <vc op="eq" comp="EQC">
+            <cast as="xs:QName" emptiable="1">
+             <data>
+              <slash simple="1">
+               <varRef name="bindingi" slot="3"/>
+               <axis name="attribute" nodeTest="attribute(Q{}type)" jsTest="return item.name=='type'"/>
+              </slash>
+             </data>
+            </cast>
+            <qName pre="xs" uri="http://www.w3.org/2001/XMLSchema" loc="time"/>
+           </vc>
+           <true/>
+           <false/>
+          </choose>
+          <att line="232" name="type" flags="l">
+           <str val="time"/>
+          </att>
+          <true/>
+          <att line="235" name="type" flags="l">
+           <str val="text"/>
+          </att>
+         </choose>
+         <choose line="238">
+          <fn name="exists">
+           <varRef name="hints" slot="2"/>
+          </fn>
+          <att line="239" name="placeholder" flags="l">
+           <fn name="string-join">
+            <convert from="xs:untypedAtomic" to="xs:string">
+             <data>
+              <mergeAdj>
+               <varRef name="hints" slot="2"/>
+              </mergeAdj>
+             </data>
+            </convert>
+            <str val=" "/>
+           </fn>
+          </att>
+         </choose>
+         <choose line="241">
+          <fn name="exists">
+           <axis name="attribute" nodeTest="attribute(Q{}size)" jsTest="return item.name=='size'"/>
+          </fn>
+          <att line="242" name="size" flags="l">
+           <convert from="xs:untypedAtomic" to="xs:string">
+            <data>
+             <axis name="attribute" nodeTest="attribute(Q{}size)" jsTest="return item.name=='size'"/>
+            </data>
+           </convert>
+          </att>
+         </choose>
+         <att line="244" name="id" flags="l">
+          <convert from="xs:untypedAtomic" to="xs:string">
+           <data>
+            <axis name="attribute" nodeTest="attribute(Q{}ref)" jsTest="return item.name=='ref'"/>
+           </data>
+          </convert>
+         </att>
+         <att line="246" name="value" flags="l">
+          <fn name="string-join">
+           <convert from="xs:anyAtomicType" to="xs:string">
+            <choose>
+             <and op="and">
+              <fn name="exists">
+               <varRef name="instance1" slot="0"/>
+              </fn>
+              <fn name="exists">
+               <axis name="attribute" nodeTest="attribute(Q{}ref)" jsTest="return item.name=='ref'"/>
+              </fn>
+             </and>
+             <data line="247">
+              <mergeAdj>
+               <evaluate>
+                <fn role="xpath" name="concat">
+                 <data>
+                  <axis name="attribute" nodeTest="attribute(Q{}ref)" jsTest="return item.name=='ref'"/>
+                 </data>
+                 <str val="/text()"/>
+                </fn>
+                <check role="cxt" card="?" diag="4|0|XTTE3210|xsl:evaluate/context-item">
+                 <slash simple="1">
+                  <varRef name="instance1" slot="0"/>
+                  <axis name="child" nodeTest="*:document" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1&amp;&amp;q.local == 'document'"/>
+                 </slash>
+                </check>
+                <str role="sa" val="no"/>
+                <gVarRef role="wp" name="Q{http://saxon.sf.net/generated-variable}gg251172046" bSlot="3"/>
+               </evaluate>
+              </mergeAdj>
+             </data>
+            </choose>
+           </convert>
+           <str val=""/>
+          </fn>
+         </att>
+        </sequence>
+       </elem>
+      </let>
+     </let>
+    </sequence>
+   </templateRule>
+   <templateRule prec="0" prio="0.0" seq="12" rank="1" minImp="0" slots="4" flags="os" line="387" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element(Q{http://www.w3.org/2002/xforms}trigger)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='trigger';"/>
+    <sequence role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="388">
+     <param name="instance1" slot="0" as="node()?">
+      <empty role="select"/>
+      <treat role="conversion" as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="8|0|XTTE0590|instance1">
+       <check card="?" diag="8|0|XTTE0590|instance1">
+        <supplied slot="0"/>
+       </check>
+      </treat>
+     </param>
+     <param line="389" name="bindings" slot="1" as="map(xs:string, node())">
+      <treat role="select" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|bindings">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|bindings">
+       <check card="1" diag="8|0|XTTE0590|bindings">
+        <supplied slot="1"/>
+       </check>
+      </treat>
+     </param>
+     <param line="390" name="submissions" slot="2" as="map(xs:string, xs:string)">
+      <treat role="select" as="map(xs:string, xs:string)" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|submissions">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, xs:string)" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|submissions">
+       <check card="1" diag="8|0|XTTE0590|submissions">
+        <supplied slot="2"/>
+       </check>
+      </treat>
+     </param>
+     <let line="391" var="innerbody" as="document-node()" slot="3" eval="7">
+      <doc line="393" base="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" validation="preserve">
+       <choose>
+        <fn name="exists">
+         <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}label)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='label';"/>
+        </fn>
+        <applyT line="394" bSlot="4">
+         <axis role="select" name="child" nodeTest="( element() | text() | comment() | processing-instruction() )" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==1 || item.nodeType==3 || item.nodeType==7 || item.nodeType==8);"/>
+         <withParam name="instance1" as="node()?">
+          <varRef line="395" name="instance1" slot="0"/>
+         </withParam>
+         <withParam name="bindings" as="map(xs:string, node())">
+          <varRef line="396" name="bindings" slot="1"/>
+         </withParam>
+        </applyT>
+        <true/>
+        <valueOf line="400" flags="l">
+         <str val=" "/>
+        </valueOf>
+       </choose>
+      </doc>
+      <choose line="406">
+       <gc op="=" card="1:1" comp="CCC">
+        <data>
+         <axis name="attribute" nodeTest="attribute(Q{}appearance)" jsTest="return item.name=='appearance'"/>
+        </data>
+        <str val="minimal"/>
+       </gc>
+       <elem line="408" name="a" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+        <copyOf flags="vsc">
+         <varRef name="innerbody" slot="3"/>
+        </copyOf>
+       </elem>
+       <true/>
+       <elem line="412" name="button" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+        <sequence>
+         <att name="type" flags="l">
+          <str val="button"/>
+         </att>
+         <copyOf line="413" flags="vsc">
+          <filter flags="b">
+           <axis name="attribute" nodeTest="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+           <vc op="ne" comp="CCC">
+            <fn name="local-name">
+             <dot type="attribute()"/>
+            </fn>
+            <str val="ref"/>
+           </vc>
+          </filter>
+         </copyOf>
+         <choose line="414">
+          <and op="and">
+           <fn name="exists">
+            <axis name="attribute" nodeTest="attribute(Q{}id)" jsTest="return item.name=='id'"/>
+           </fn>
+           <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:contains" type="xs:boolean">
+            <varRef name="submissions" slot="2"/>
+            <atomSing diag="0|1||map:contains">
+             <axis name="attribute" nodeTest="attribute(Q{}id)" jsTest="return item.name=='id'"/>
+            </atomSing>
+           </ifCall>
+          </and>
+          <att line="415" name="data-action" flags="l">
+           <fn name="string-join">
+            <convert from="xs:anyAtomicType" to="xs:string">
+             <data>
+              <mergeAdj>
+               <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:get" type="item()*">
+                <varRef name="submissions" slot="2"/>
+                <atomSing diag="0|1||map:get">
+                 <axis name="attribute" nodeTest="attribute(Q{}id)" jsTest="return item.name=='id'"/>
+                </atomSing>
+               </ifCall>
+              </mergeAdj>
+             </data>
+            </convert>
+            <str val=" "/>
+           </fn>
+          </att>
+         </choose>
+         <copyOf line="417" flags="vsc">
+          <varRef name="innerbody" slot="3"/>
+         </copyOf>
+        </sequence>
+       </elem>
+      </choose>
+     </let>
+    </sequence>
+   </templateRule>
+   <templateRule prec="0" prio="0.0" seq="7" rank="1" minImp="0" slots="2" flags="os" line="283" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element(Q{http://www.w3.org/2002/xforms}select1)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='select1';"/>
+    <sequence role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="284">
+     <param name="instance1" slot="0" as="node()?">
+      <empty role="select"/>
+      <treat role="conversion" as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="8|0|XTTE0590|instance1">
+       <check card="?" diag="8|0|XTTE0590|instance1">
+        <supplied slot="0"/>
+       </check>
+      </treat>
+     </param>
+     <param line="285" name="bindings" slot="1" as="map(xs:string, node())">
+      <treat role="select" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|bindings">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|bindings">
+       <check card="1" diag="8|0|XTTE0590|bindings">
+        <supplied slot="1"/>
+       </check>
+      </treat>
+     </param>
+     <applyT line="287" bSlot="5">
+      <axis role="select" name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}label)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='label';"/>
+     </applyT>
+     <elem line="289" name="select" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+      <sequence>
+       <copyOf flags="vsc">
+        <filter flags="b">
+         <axis name="attribute" nodeTest="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+         <vc op="ne" comp="CCC">
+          <fn name="local-name">
+           <dot type="attribute()"/>
+          </fn>
+          <str val="ref"/>
+         </vc>
+        </filter>
+       </copyOf>
+       <choose line="291">
+        <vc op="eq" onEmpty="0" comp="CCC">
+         <fn name="local-name">
+          <dot type="element()"/>
+         </fn>
+         <str val="select"/>
+        </vc>
+        <sequence line="294">
+         <att name="multiple" flags="l">
+          <str val="true"/>
+         </att>
+         <att name="size" flags="l">
+          <convert from="xs:integer" to="xs:string">
+           <fn name="count">
+            <axis name="descendant" nodeTest="element(Q{http://www.w3.org/2002/xforms}item)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='item';"/>
+           </fn>
+          </convert>
+         </att>
+        </sequence>
+       </choose>
+       <applyT line="297" mode="Q{}item" bSlot="6">
+        <axis role="select" name="child" nodeTest="( element() | text() | comment() | processing-instruction() )" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==1 || item.nodeType==3 || item.nodeType==7 || item.nodeType==8);"/>
+        <withParam name="instance1" as="node()?">
+         <varRef line="298" name="instance1" slot="0"/>
+        </withParam>
+       </applyT>
+      </sequence>
+     </elem>
+    </sequence>
+   </templateRule>
+   <templateRule prec="0" prio="0.0" seq="11" rank="1" minImp="0" slots="6" flags="os" line="355" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element(Q{http://www.w3.org/2002/xforms}repeat)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='repeat';"/>
+    <sequence role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="356">
+     <param name="instance1" slot="0" as="node()?">
+      <empty role="select"/>
+      <treat role="conversion" as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="8|0|XTTE0590|instance1">
+       <check card="?" diag="8|0|XTTE0590|instance1">
+        <supplied slot="0"/>
+       </check>
+      </treat>
+     </param>
+     <param line="357" name="bindings" slot="1" as="map(xs:string, node())">
+      <treat role="select" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|bindings">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|bindings">
+       <check card="1" diag="8|0|XTTE0590|bindings">
+        <supplied slot="1"/>
+       </check>
+      </treat>
+     </param>
+     <param line="358" name="submissions" slot="2" as="map(xs:string, xs:string)">
+      <treat role="select" as="map(xs:string, xs:string)" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|submissions">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, xs:string)" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|submissions">
+       <check card="1" diag="8|0|XTTE0590|submissions">
+        <supplied slot="2"/>
+       </check>
+      </treat>
+     </param>
+     <let line="359" var="context" as="element(Q{http://www.w3.org/2002/xforms}repeat)" slot="3" eval="7">
+      <dot type="element(Q{http://www.w3.org/2002/xforms}repeat)"/>
+      <choose line="361">
+       <fn name="exists">
+        <varRef name="instance1" slot="0"/>
+       </fn>
+       <let line="362" var="selectedVar" as="document-node()" slot="4" eval="7">
+        <doc line="363" base="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" validation="preserve">
+         <evaluate>
+          <check role="xpath" card="1" diag="4|0||xsl:evaluate/xpath">
+           <cvUntyped to="xs:string">
+            <data>
+             <axis name="attribute" nodeTest="attribute(Q{}nodeset)" jsTest="return item.name=='nodeset'"/>
+            </data>
+           </cvUntyped>
+          </check>
+          <check role="cxt" card="?" diag="4|0|XTTE3210|xsl:evaluate/context-item">
+           <slash simple="1">
+            <varRef name="instance1" slot="0"/>
+            <axis name="child" nodeTest="*:document" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1&amp;&amp;q.local == 'document'"/>
+           </slash>
+          </check>
+          <str role="sa" val="no"/>
+          <gVarRef role="wp" name="Q{http://saxon.sf.net/generated-variable}gg1762056890" bSlot="7"/>
+         </evaluate>
+        </doc>
+        <choose line="365">
+         <fn name="exists">
+          <varRef name="selectedVar" slot="4"/>
+         </fn>
+         <let line="368" var="vv:loc134394441" as="element()*" slot="5" eval="3">
+          <slash line="370" simple="1">
+           <varRef name="context" slot="3"/>
+           <axis name="child" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+          </slash>
+          <forEach>
+           <slash simple="1">
+            <varRef name="selectedVar" slot="4"/>
+            <axis name="child" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+           </slash>
+           <applyT line="370" bSlot="8">
+            <varRef role="select" line="368" name="vv:loc134394441" slot="5"/>
+            <withParam name="instance1" as="document-node()">
+             <doc line="373" base="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" validation="preserve">
+              <elem name="document" flags="l" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+               <copyOf flags="vsc">
+                <filter flags="p">
+                 <dot type="element()"/>
+                 <fn name="position"/>
+                </filter>
+               </copyOf>
+              </elem>
+             </doc>
+            </withParam>
+            <withParam name="bindings" as="map(xs:string, node())">
+             <varRef line="376" name="bindings" slot="1"/>
+            </withParam>
+            <withParam name="submissions" as="map(xs:string, xs:string)">
+             <varRef line="377" name="submissions" slot="2"/>
+            </withParam>
+           </applyT>
+          </forEach>
+         </let>
+        </choose>
+       </let>
+      </choose>
+     </let>
+    </sequence>
+   </templateRule>
+   <templateRule prec="0" prio="0.0" seq="0" rank="1" minImp="0" slots="0" flags="os" line="159" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element(Q{http://www.w3.org/2002/xforms}model)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='model';"/>
+    <empty role="action"/>
+   </templateRule>
+   <templateRule prec="0" prio="0.0" seq="10" rank="1" minImp="0" slots="1" flags="os" line="329" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element(Q{http://www.w3.org/2002/xforms}label)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='label';"/>
+    <sequence role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="330">
+     <param name="instance1" slot="0" as="node()?">
+      <empty role="select"/>
+      <treat role="conversion" as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="8|0|XTTE0590|instance1">
+       <check card="?" diag="8|0|XTTE0590|instance1">
+        <supplied slot="0"/>
+       </check>
+      </treat>
+     </param>
+     <elem line="332" name="label" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+      <choose>
+       <fn name="exists">
+        <axis name="child" nodeTest="( element() | text() | comment() | processing-instruction() )" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==1 || item.nodeType==3 || item.nodeType==7 || item.nodeType==8);"/>
+       </fn>
+       <applyT line="333" bSlot="9">
+        <axis role="select" name="child" nodeTest="( element() | text() | comment() | processing-instruction() )" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==1 || item.nodeType==3 || item.nodeType==7 || item.nodeType==8);"/>
+       </applyT>
+       <true/>
+       <sequence line="335">
+        <valueOf flags="l">
+         <str val=" "/>
+        </valueOf>
+        <valueOf flags="Sl">
+         <str val=""/>
+        </valueOf>
+       </sequence>
+      </choose>
+     </elem>
+    </sequence>
+   </templateRule>
+   <templateRule prec="0" prio="0.0" seq="6" rank="1" minImp="0" slots="0" flags="os" line="279" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element(Q{http://www.w3.org/2002/xforms}hint)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='hint';"/>
+    <empty role="action"/>
+   </templateRule>
+   <templateRule prec="0" prio="0.0" seq="12" rank="1" minImp="0" slots="4" flags="os" line="387" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element(Q{http://www.w3.org/2002/xforms}submit)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='submit';"/>
+    <sequence role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="388">
+     <param name="instance1" slot="0" as="node()?">
+      <empty role="select"/>
+      <treat role="conversion" as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="8|0|XTTE0590|instance1">
+       <check card="?" diag="8|0|XTTE0590|instance1">
+        <supplied slot="0"/>
+       </check>
+      </treat>
+     </param>
+     <param line="389" name="bindings" slot="1" as="map(xs:string, node())">
+      <treat role="select" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|bindings">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|bindings">
+       <check card="1" diag="8|0|XTTE0590|bindings">
+        <supplied slot="1"/>
+       </check>
+      </treat>
+     </param>
+     <param line="390" name="submissions" slot="2" as="map(xs:string, xs:string)">
+      <treat role="select" as="map(xs:string, xs:string)" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|submissions">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, xs:string)" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|submissions">
+       <check card="1" diag="8|0|XTTE0590|submissions">
+        <supplied slot="2"/>
+       </check>
+      </treat>
+     </param>
+     <let line="391" var="innerbody" as="document-node()" slot="3" eval="7">
+      <doc line="393" base="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" validation="preserve">
+       <choose>
+        <fn name="exists">
+         <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}label)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='label';"/>
+        </fn>
+        <applyT line="394" bSlot="4">
+         <axis role="select" name="child" nodeTest="( element() | text() | comment() | processing-instruction() )" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==1 || item.nodeType==3 || item.nodeType==7 || item.nodeType==8);"/>
+         <withParam name="instance1" as="node()?">
+          <varRef line="395" name="instance1" slot="0"/>
+         </withParam>
+         <withParam name="bindings" as="map(xs:string, node())">
+          <varRef line="396" name="bindings" slot="1"/>
+         </withParam>
+        </applyT>
+        <true/>
+        <valueOf line="400" flags="l">
+         <str val=" "/>
+        </valueOf>
+       </choose>
+      </doc>
+      <choose line="406">
+       <gc op="=" card="1:1" comp="CCC">
+        <data>
+         <axis name="attribute" nodeTest="attribute(Q{}appearance)" jsTest="return item.name=='appearance'"/>
+        </data>
+        <str val="minimal"/>
+       </gc>
+       <elem line="408" name="a" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+        <copyOf flags="vsc">
+         <varRef name="innerbody" slot="3"/>
+        </copyOf>
+       </elem>
+       <true/>
+       <elem line="412" name="button" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+        <sequence>
+         <att name="type" flags="l">
+          <str val="button"/>
+         </att>
+         <copyOf line="413" flags="vsc">
+          <filter flags="b">
+           <axis name="attribute" nodeTest="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+           <vc op="ne" comp="CCC">
+            <fn name="local-name">
+             <dot type="attribute()"/>
+            </fn>
+            <str val="ref"/>
+           </vc>
+          </filter>
+         </copyOf>
+         <choose line="414">
+          <and op="and">
+           <fn name="exists">
+            <axis name="attribute" nodeTest="attribute(Q{}id)" jsTest="return item.name=='id'"/>
+           </fn>
+           <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:contains" type="xs:boolean">
+            <varRef name="submissions" slot="2"/>
+            <atomSing diag="0|1||map:contains">
+             <axis name="attribute" nodeTest="attribute(Q{}id)" jsTest="return item.name=='id'"/>
+            </atomSing>
+           </ifCall>
+          </and>
+          <att line="415" name="data-action" flags="l">
+           <fn name="string-join">
+            <convert from="xs:anyAtomicType" to="xs:string">
+             <data>
+              <mergeAdj>
+               <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:get" type="item()*">
+                <varRef name="submissions" slot="2"/>
+                <atomSing diag="0|1||map:get">
+                 <axis name="attribute" nodeTest="attribute(Q{}id)" jsTest="return item.name=='id'"/>
+                </atomSing>
+               </ifCall>
+              </mergeAdj>
+             </data>
+            </convert>
+            <str val=" "/>
+           </fn>
+          </att>
+         </choose>
+         <copyOf line="417" flags="vsc">
+          <varRef name="innerbody" slot="3"/>
+         </copyOf>
+        </sequence>
+       </elem>
+      </choose>
+     </let>
+    </sequence>
+   </templateRule>
+   <templateRule prec="0" prio="2.0" seq="5" rank="3" minImp="0" slots="3" flags="os" line="254" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element(Q{http://www.w3.org/2002/xforms}textarea)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='textarea';"/>
+    <sequence role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="255">
+     <param name="instance1" slot="0" as="node()?">
+      <empty role="select"/>
+      <treat role="conversion" as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="8|0|XTTE0590|instance1">
+       <check card="?" diag="8|0|XTTE0590|instance1">
+        <supplied slot="0"/>
+       </check>
+      </treat>
+     </param>
+     <param line="256" name="bindings" slot="1" as="map(xs:string, node())">
+      <treat role="select" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|bindings">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|bindings">
+       <check card="1" diag="8|0|XTTE0590|bindings">
+        <supplied slot="1"/>
+       </check>
+      </treat>
+     </param>
+     <applyT line="258" bSlot="10">
+      <axis role="select" name="child" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+     </applyT>
+     <let line="260" var="hints" as="text()*" slot="2" eval="3">
+      <slash>
+       <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}hint)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='hint';"/>
+       <axis name="child" nodeTest="text()" jsTest="return item.nodeType==3;"/>
+      </slash>
+      <elem line="262" name="textarea" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+       <sequence>
+        <copyOf flags="vsc">
+         <filter flags="b">
+          <axis name="attribute" nodeTest="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+          <vc op="ne" comp="CCC">
+           <fn name="local-name">
+            <dot type="attribute()"/>
+           </fn>
+           <str val="ref"/>
+          </vc>
+         </filter>
+        </copyOf>
+        <choose line="264">
+         <and op="and">
+          <fn name="exists">
+           <varRef name="instance1" slot="0"/>
+          </fn>
+          <fn name="exists">
+           <axis name="attribute" nodeTest="attribute(Q{}ref)" jsTest="return item.name=='ref'"/>
+          </fn>
+         </and>
+         <evaluate line="267">
+          <fn role="xpath" name="concat">
+           <data>
+            <axis name="attribute" nodeTest="attribute(Q{}ref)" jsTest="return item.name=='ref'"/>
+           </data>
+           <str val="/text()"/>
+          </fn>
+          <check role="cxt" card="?" diag="4|0|XTTE3210|xsl:evaluate/context-item">
+           <slash simple="1">
+            <varRef name="instance1" slot="0"/>
+            <axis name="child" nodeTest="*:document" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1&amp;&amp;q.local == 'document'"/>
+           </slash>
+          </check>
+          <str role="sa" val="no"/>
+          <gVarRef role="wp" name="Q{http://saxon.sf.net/generated-variable}gg1598191060" bSlot="11"/>
+         </evaluate>
+         <true/>
+         <sequence line="269">
+          <valueOf flags="Sl">
+           <str val=""/>
+          </valueOf>
+          <valueOf flags="l">
+           <str val=" &#xA;                "/>
+          </valueOf>
+         </sequence>
+        </choose>
+        <choose line="273">
+         <fn name="exists">
+          <varRef name="hints" slot="2"/>
+         </fn>
+         <att line="274" name="placeholder" flags="l">
+          <fn name="string-join">
+           <convert from="xs:untypedAtomic" to="xs:string">
+            <data>
+             <mergeAdj>
+              <varRef name="hints" slot="2"/>
+             </mergeAdj>
+            </data>
+           </convert>
+           <str val=" "/>
+          </fn>
+         </att>
+        </choose>
+       </sequence>
+      </elem>
+     </let>
+    </sequence>
+   </templateRule>
+   <templateRule prec="0" prio="0.0" seq="3" rank="1" minImp="0" slots="0" flags="os" line="184" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element(Q{}html)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri==''&amp;&amp;q.local=='html';"/>
+    <elem role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="186" name="html" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+     <sequence>
+      <copyOf flags="vsc">
+       <axis name="attribute" nodeTest="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+      </copyOf>
+      <elem line="188" name="head" flags="l" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+       <sequence>
+        <copyOf flags="vsc">
+         <union op="|">
+          <slash>
+           <axis name="child" nodeTest="element(Q{http://www.w3.org/1999/xhtml}head)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/1999/xhtml'&amp;&amp;q.local=='head';"/>
+           <axis name="attribute" nodeTest="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+          </slash>
+          <slash>
+           <axis name="child" nodeTest="element(Q{}head)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri==''&amp;&amp;q.local=='head';"/>
+           <axis name="attribute" nodeTest="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+          </slash>
+         </union>
+        </copyOf>
+        <elem line="189" name="meta" flags="l">
+         <sequence>
+          <att name="http-equiv" flags="l">
+           <str val="Content-Type"/>
+          </att>
+          <att name="content" flags="l">
+           <str val="text/html;charset=utf-8"/>
+          </att>
+         </sequence>
+        </elem>
+        <forEach line="190">
+         <union op="|">
+          <filter flags="b">
+           <slash>
+            <axis name="child" nodeTest="element(Q{http://www.w3.org/1999/xhtml}head)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/1999/xhtml'&amp;&amp;q.local=='head';"/>
+            <axis name="child" nodeTest="element(Q{http://www.w3.org/1999/xhtml}meta)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/1999/xhtml'&amp;&amp;q.local=='meta';"/>
+           </slash>
+           <vc op="ne" comp="CCC">
+            <fn name="string">
+             <axis name="attribute" nodeTest="attribute(Q{}http-equiv)" jsTest="return item.name=='http-equiv'"/>
+            </fn>
+            <str val="Content-Type"/>
+           </vc>
+          </filter>
+          <filter flags="b">
+           <slash>
+            <axis name="child" nodeTest="element(Q{}head)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri==''&amp;&amp;q.local=='head';"/>
+            <axis name="child" nodeTest="element(Q{}meta)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri==''&amp;&amp;q.local=='meta';"/>
+           </slash>
+           <vc op="ne" comp="CCC">
+            <fn name="string">
+             <axis name="attribute" nodeTest="attribute(Q{}http-equiv)" jsTest="return item.name=='http-equiv'"/>
+            </fn>
+            <str val="Content-Type"/>
+           </vc>
+          </filter>
+         </union>
+         <elem line="192" name="meta" flags="l" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+          <copyOf flags="vsc">
+           <axis name="attribute" nodeTest="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+          </copyOf>
+         </elem>
+        </forEach>
+        <copyOf line="197" flags="vsc">
+         <axis name="child" nodeTest="element(Q{}script)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri==''&amp;&amp;q.local=='script';"/>
+        </copyOf>
+       </sequence>
+      </elem>
+      <elem line="200" name="body" flags="l" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+       <applyT bSlot="12">
+        <slash role="select">
+         <axis name="child" nodeTest="element(Q{}body)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri==''&amp;&amp;q.local=='body';"/>
+         <axis name="child" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+        </slash>
+       </applyT>
+      </elem>
+     </sequence>
+    </elem>
+   </templateRule>
+   <templateRule prec="0" prio="0.0" seq="2" rank="1" minImp="0" slots="3" flags="os" line="172" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element(Q{http://www.w3.org/2002/xforms}xform)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='xform';"/>
+    <sequence role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="173">
+     <param name="instance1" slot="0">
+      <str role="select" val=""/>
+      <supplied role="conversion" slot="0"/>
+     </param>
+     <param line="174" name="bindings" slot="1" as="map(xs:string, node())">
+      <treat role="select" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|bindings">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|bindings">
+       <check card="1" diag="8|0|XTTE0590|bindings">
+        <supplied slot="1"/>
+       </check>
+      </treat>
+     </param>
+     <param line="175" name="submissions" slot="2" as="map(xs:string, xs:string)">
+      <treat role="select" as="map(xs:string, xs:string)" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|submissions">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, xs:string)" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|submissions">
+       <check card="1" diag="8|0|XTTE0590|submissions">
+        <supplied slot="2"/>
+       </check>
+      </treat>
+     </param>
+     <applyT line="177" flags="t" bSlot="13">
+      <axis role="select" name="child" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+      <withParam name="instance1" as="item()*">
+       <varRef line="178" name="instance1" slot="0"/>
+      </withParam>
+      <withParam name="bindings" as="map(xs:string, node())">
+       <varRef line="179" name="bindings" slot="1"/>
+      </withParam>
+      <withParam name="submissions" as="map(xs:string, xs:string)">
+       <varRef line="180" name="submissions" slot="2"/>
+      </withParam>
+     </applyT>
+    </sequence>
+   </templateRule>
+   <templateRule prec="0" prio="0.0" seq="3" rank="1" minImp="0" slots="0" flags="os" line="184" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element(Q{http://www.w3.org/1999/xhtml}html)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/1999/xhtml'&amp;&amp;q.local=='html';"/>
+    <elem role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="186" name="html" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+     <sequence>
+      <copyOf flags="vsc">
+       <axis name="attribute" nodeTest="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+      </copyOf>
+      <elem line="188" name="head" flags="l" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+       <sequence>
+        <copyOf flags="vsc">
+         <union op="|">
+          <slash>
+           <axis name="child" nodeTest="element(Q{http://www.w3.org/1999/xhtml}head)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/1999/xhtml'&amp;&amp;q.local=='head';"/>
+           <axis name="attribute" nodeTest="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+          </slash>
+          <slash>
+           <axis name="child" nodeTest="element(Q{}head)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri==''&amp;&amp;q.local=='head';"/>
+           <axis name="attribute" nodeTest="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+          </slash>
+         </union>
+        </copyOf>
+        <elem line="189" name="meta" flags="l">
+         <sequence>
+          <att name="http-equiv" flags="l">
+           <str val="Content-Type"/>
+          </att>
+          <att name="content" flags="l">
+           <str val="text/html;charset=utf-8"/>
+          </att>
+         </sequence>
+        </elem>
+        <forEach line="190">
+         <union op="|">
+          <filter flags="b">
+           <slash>
+            <axis name="child" nodeTest="element(Q{http://www.w3.org/1999/xhtml}head)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/1999/xhtml'&amp;&amp;q.local=='head';"/>
+            <axis name="child" nodeTest="element(Q{http://www.w3.org/1999/xhtml}meta)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/1999/xhtml'&amp;&amp;q.local=='meta';"/>
+           </slash>
+           <vc op="ne" comp="CCC">
+            <fn name="string">
+             <axis name="attribute" nodeTest="attribute(Q{}http-equiv)" jsTest="return item.name=='http-equiv'"/>
+            </fn>
+            <str val="Content-Type"/>
+           </vc>
+          </filter>
+          <filter flags="b">
+           <slash>
+            <axis name="child" nodeTest="element(Q{}head)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri==''&amp;&amp;q.local=='head';"/>
+            <axis name="child" nodeTest="element(Q{}meta)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri==''&amp;&amp;q.local=='meta';"/>
+           </slash>
+           <vc op="ne" comp="CCC">
+            <fn name="string">
+             <axis name="attribute" nodeTest="attribute(Q{}http-equiv)" jsTest="return item.name=='http-equiv'"/>
+            </fn>
+            <str val="Content-Type"/>
+           </vc>
+          </filter>
+         </union>
+         <elem line="192" name="meta" flags="l" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+          <copyOf flags="vsc">
+           <axis name="attribute" nodeTest="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+          </copyOf>
+         </elem>
+        </forEach>
+        <copyOf line="197" flags="vsc">
+         <axis name="child" nodeTest="element(Q{}script)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri==''&amp;&amp;q.local=='script';"/>
+        </copyOf>
+       </sequence>
+      </elem>
+      <elem line="200" name="body" flags="l" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+       <applyT bSlot="12">
+        <slash role="select">
+         <axis name="child" nodeTest="element(Q{}body)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri==''&amp;&amp;q.local=='body';"/>
+         <axis name="child" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+        </slash>
+       </applyT>
+      </elem>
+     </sequence>
+    </elem>
+   </templateRule>
+   <templateRule prec="0" prio="0.0" seq="7" rank="1" minImp="0" slots="2" flags="os" line="283" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element(Q{http://www.w3.org/2002/xforms}select)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='select';"/>
+    <sequence role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="284">
+     <param name="instance1" slot="0" as="node()?">
+      <empty role="select"/>
+      <treat role="conversion" as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="8|0|XTTE0590|instance1">
+       <check card="?" diag="8|0|XTTE0590|instance1">
+        <supplied slot="0"/>
+       </check>
+      </treat>
+     </param>
+     <param line="285" name="bindings" slot="1" as="map(xs:string, node())">
+      <treat role="select" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|bindings">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|bindings">
+       <check card="1" diag="8|0|XTTE0590|bindings">
+        <supplied slot="1"/>
+       </check>
+      </treat>
+     </param>
+     <applyT line="287" bSlot="5">
+      <axis role="select" name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}label)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='label';"/>
+     </applyT>
+     <elem line="289" name="select" namespaces="rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions map=http://www.w3.org/2005/xpath-functions/map array=http://www.w3.org/2005/xpath-functions/array">
+      <sequence>
+       <copyOf flags="vsc">
+        <filter flags="b">
+         <axis name="attribute" nodeTest="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+         <vc op="ne" comp="CCC">
+          <fn name="local-name">
+           <dot type="attribute()"/>
+          </fn>
+          <str val="ref"/>
+         </vc>
+        </filter>
+       </copyOf>
+       <choose line="291">
+        <vc op="eq" onEmpty="0" comp="CCC">
+         <fn name="local-name">
+          <dot type="element()"/>
+         </fn>
+         <str val="select"/>
+        </vc>
+        <sequence line="294">
+         <att name="multiple" flags="l">
+          <str val="true"/>
+         </att>
+         <att name="size" flags="l">
+          <convert from="xs:integer" to="xs:string">
+           <fn name="count">
+            <axis name="descendant" nodeTest="element(Q{http://www.w3.org/2002/xforms}item)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='item';"/>
+           </fn>
+          </convert>
+         </att>
+        </sequence>
+       </choose>
+       <applyT line="297" mode="Q{}item" bSlot="6">
+        <axis role="select" name="child" nodeTest="( element() | text() | comment() | processing-instruction() )" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==1 || item.nodeType==3 || item.nodeType==7 || item.nodeType==8);"/>
+        <withParam name="instance1" as="node()?">
+         <varRef line="298" name="instance1" slot="0"/>
+        </withParam>
+       </applyT>
+      </sequence>
+     </elem>
+    </sequence>
+   </templateRule>
+   <templateRule prec="0" prio="-0.5" seq="8" rank="0" minImp="0" slots="3" flags="os" line="308" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+    <sequence role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="309">
+     <param name="instance1" slot="0" as="node()?">
+      <empty role="select"/>
+      <treat role="conversion" as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="8|0|XTTE0590|instance1">
+       <check card="?" diag="8|0|XTTE0590|instance1">
+        <supplied slot="0"/>
+       </check>
+      </treat>
+     </param>
+     <param line="310" name="bindings" slot="1" as="map(xs:string, node())">
+      <treat role="select" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|bindings">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|bindings">
+       <check card="1" diag="8|0|XTTE0590|bindings">
+        <supplied slot="1"/>
+       </check>
+      </treat>
+     </param>
+     <param line="311" name="submissions" slot="2" as="map(xs:string, xs:string)">
+      <treat role="select" as="map(xs:string, xs:string)" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|submissions">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, xs:string)" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|submissions">
+       <check card="1" diag="8|0|XTTE0590|submissions">
+        <supplied slot="2"/>
+       </check>
+      </treat>
+     </param>
+     <copy line="313" flags="cin">
+      <sequence role="content">
+       <applyT bSlot="14">
+        <axis role="select" name="attribute" nodeTest="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+       </applyT>
+       <applyT line="314" bSlot="15">
+        <axis role="select" name="child" nodeTest="( element() | text() | comment() | processing-instruction() )" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==1 || item.nodeType==3 || item.nodeType==7 || item.nodeType==8);"/>
+        <withParam name="instance1" as="node()?">
+         <varRef line="315" name="instance1" slot="0"/>
+        </withParam>
+        <withParam name="bindings" as="map(xs:string, node())">
+         <varRef line="316" name="bindings" slot="1"/>
+        </withParam>
+        <withParam name="submissions" as="map(xs:string, xs:string)">
+         <varRef line="317" name="submissions" slot="2"/>
+        </withParam>
+       </applyT>
+      </sequence>
+     </copy>
+    </sequence>
+   </templateRule>
+   <templateRule prec="0" prio="0.5" seq="9" rank="2" minImp="0" slots="0" flags="os" line="325" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.withPredicate role="match">
+     <p.nodeTest test="text()" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==3;"/>
+     <axis vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="325" name="ancestor" nodeTest="element(Q{http://www.w3.org/2002/xforms}model)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='model';"/>
+    </p.withPredicate>
+    <empty role="action"/>
+   </templateRule>
+   <templateRule prec="0" prio="-0.5" seq="8" rank="0" minImp="0" slots="3" flags="os" line="308" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="( element() | text() | comment() | processing-instruction() )" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==1 || item.nodeType==3 || item.nodeType==7 || item.nodeType==8);"/>
+    <sequence role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="309">
+     <param name="instance1" slot="0" as="node()?">
+      <empty role="select"/>
+      <treat role="conversion" as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="8|0|XTTE0590|instance1">
+       <check card="?" diag="8|0|XTTE0590|instance1">
+        <supplied slot="0"/>
+       </check>
+      </treat>
+     </param>
+     <param line="310" name="bindings" slot="1" as="map(xs:string, node())">
+      <treat role="select" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|bindings">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|bindings">
+       <check card="1" diag="8|0|XTTE0590|bindings">
+        <supplied slot="1"/>
+       </check>
+      </treat>
+     </param>
+     <param line="311" name="submissions" slot="2" as="map(xs:string, xs:string)">
+      <treat role="select" as="map(xs:string, xs:string)" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0600|submissions">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:_new" type="map(*)">
+        <empty/>
+       </ifCall>
+      </treat>
+      <treat role="conversion" as="map(xs:string, xs:string)" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="8|0|XTTE0590|submissions">
+       <check card="1" diag="8|0|XTTE0590|submissions">
+        <supplied slot="2"/>
+       </check>
+      </treat>
+     </param>
+     <copy line="313" flags="cin">
+      <sequence role="content">
+       <applyT bSlot="14">
+        <axis role="select" name="attribute" nodeTest="attribute()" jsTest="return SaxonJS.U.isAttr(item)"/>
+       </applyT>
+       <applyT line="314" bSlot="15">
+        <axis role="select" name="child" nodeTest="( element() | text() | comment() | processing-instruction() )" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==1 || item.nodeType==3 || item.nodeType==7 || item.nodeType==8);"/>
+        <withParam name="instance1" as="node()?">
+         <varRef line="315" name="instance1" slot="0"/>
+        </withParam>
+        <withParam name="bindings" as="map(xs:string, node())">
+         <varRef line="316" name="bindings" slot="1"/>
+        </withParam>
+        <withParam name="submissions" as="map(xs:string, xs:string)">
+         <varRef line="317" name="submissions" slot="2"/>
+        </withParam>
+       </applyT>
+      </sequence>
+     </copy>
+    </sequence>
+   </templateRule>
+  </mode>
+ </co>
+ <co id="15" binds="16">
+  <function name="Q{http://www.w3.org/2002/xforms}convert-xml-to-jxml" line="424" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" eval="7" flags="pU" as="node()" slots="2">
+   <arg name="xinstance" as="node()"/>
+   <let role="body" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="426" var="rep-xml" as="document-node()" slot="1" eval="7">
+    <doc line="428" base="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" validation="preserve">
+     <elem name="map" nsuri="http://www.w3.org/2005/xpath-functions" flags="dl">
+      <applyT mode="Q{}json-xml" bSlot="0">
+       <varRef role="select" name="xinstance" slot="0"/>
+      </applyT>
+     </elem>
+    </doc>
+    <varRef line="431" name="rep-xml" slot="1"/>
+   </let>
+  </function>
+ </co>
+ <co id="17" binds="18 19 20 9 2">
+  <mode name="Q{http://saxonica.com/ns/interactiveXSLT}onclick" onNo="TC" flags="W" patternSlots="0">
+   <templateRule prec="0" prio="0.5" seq="0" rank="0" minImp="0" slots="3" flags="os" line="116" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.withPredicate role="match">
+     <p.nodeTest test="element(Q{}button)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri==''&amp;&amp;q.local=='button';"/>
+     <fn vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="116" name="exists">
+      <axis name="attribute" nodeTest="attribute(Q{}data-action)" jsTest="return item.name=='data-action'"/>
+     </fn>
+    </p.withPredicate>
+    <let role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="120" var="updatedInstanceXML" as="document-node()" slot="0" eval="7">
+     <doc line="122" base="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" validation="preserve">
+      <applyT mode="Q{}form-check-initial" bSlot="0">
+       <ufCall role="select" line="118" name="Q{http://www.w3.org/2002/xforms}convert-json-to-xml" tailCall="false" bSlot="1" eval="4">
+        <check card="1" diag="0|0||xforms:convert-json-to-xml">
+         <cvUntyped to="xs:string">
+          <data>
+           <docOrder intra="1">
+            <slash>
+             <slash>
+              <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" name="ixsl:page" type="document-node()?"/>
+              <fn name="key">
+               <str val="Q{http://saxon.sf.net/}kk101"/>
+               <str val="xforms-jinstance"/>
+               <dot type="document-node()"/>
+              </fn>
+             </slash>
+             <axis name="child" nodeTest="text()" jsTest="return item.nodeType==3;"/>
+            </slash>
+           </docOrder>
+          </data>
+         </cvUntyped>
+        </check>
+       </ufCall>
+      </applyT>
+     </doc>
+     <let line="126" var="required-fieldsi" as="element()*" slot="1" eval="3">
+      <filter flags="b">
+       <slash simple="1">
+        <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" name="ixsl:page" type="document-node()?"/>
+        <axis name="descendant" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+       </slash>
+       <fn name="exists">
+        <axis name="attribute" nodeTest="attribute(Q{}data-required)" jsTest="return item.name=='data-required'"/>
+       </fn>
+      </filter>
+      <let line="128" var="required-fields-check" as="item()*" slot="2" eval="3">
+       <ufCall name="Q{http://www.w3.org/2002/xforms}check-required-fields" tailCall="false" bSlot="2" eval="6">
+        <varRef name="updatedInstanceXML" slot="0"/>
+       </ufCall>
+       <choose line="138">
+        <fn name="empty">
+         <varRef name="required-fields-check" slot="2"/>
+        </fn>
+        <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" line="140" name="ixsl:call" type="item()*">
+         <gVarRef name="Q{http://saxon.sf.net/generated-variable}gg224301783" bSlot="3"/>
+         <str val="submitXMLorderWithUrl"/>
+         <arrayBlock>
+          <fn name="serialize">
+           <doc line="133" base="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" flags="t" validation="preserve">
+            <valueOf flags="l">
+             <convert from="xs:untypedAtomic" to="xs:string">
+              <data>
+               <axis name="attribute" nodeTest="attribute(Q{}data-action)" jsTest="return item.name=='data-action'"/>
+              </data>
+             </convert>
+            </valueOf>
+           </doc>
+          </fn>
+          <fn name="serialize">
+           <varRef name="updatedInstanceXML" slot="0"/>
+          </fn>
+          <str val="orderResponse"/>
+         </arrayBlock>
+        </ifCall>
+        <true/>
+        <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" line="151" name="ixsl:call" type="item()*">
+         <gVarRef name="Q{http://saxon.sf.net/generated-variable}gg780857040" bSlot="4"/>
+         <str val="alert"/>
+         <arrayBlock>
+          <fn name="serialize">
+           <doc line="144" base="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" flags="t" validation="preserve">
+            <forEach>
+             <varRef name="required-fields-check" slot="2"/>
+             <valueOf line="147" flags="l">
+              <fn name="concat">
+               <str val="Value error see: "/>
+               <fn name="serialize">
+                <slash simple="1">
+                 <treat as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="1|0|XPTY0019|/">
+                  <dot line="145"/>
+                 </treat>
+                 <axis name="attribute" nodeTest="attribute(Q{}id)" jsTest="return item.name=='id'"/>
+                </slash>
+               </fn>
+               <str val="&#xA;"/>
+              </fn>
+             </valueOf>
+            </forEach>
+           </doc>
+          </fn>
+         </arrayBlock>
+        </ifCall>
+       </choose>
+      </let>
+     </let>
+    </let>
+   </templateRule>
+  </mode>
+ </co>
+ <co id="21" binds="">
+  <mode name="Q{http://saxonica.com/ns/interactiveXSLT}onchange" onNo="TC" flags="W" patternSlots="0">
+   <templateRule prec="0" prio="0.0" seq="0" rank="0" minImp="0" slots="0" flags="os" line="91" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element(Q{}input)" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1 &amp;&amp; q.uri==''&amp;&amp;q.local=='input';"/>
+    <message role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="92">
+     <sequence role="select">
+      <valueOf>
+       <str val="Input box changed1 "/>
+      </valueOf>
+      <valueOf>
+       <convert from="xs:untypedAtomic" to="xs:string">
+        <data>
+         <axis name="attribute" nodeTest="attribute(Q{}value)" jsTest="return item.name=='value'"/>
+        </data>
+       </convert>
+      </valueOf>
+     </sequence>
+     <str role="terminate" val="no"/>
+     <str role="error" val="Q{http://www.w3.org/2005/xqt-errors}XTMM9000"/>
+    </message>
+   </templateRule>
+  </mode>
+ </co>
+ <co id="22" binds="">
+  <globalVariable name="Q{http://saxon.sf.net/generated-variable}gg701343131" type="map(*)" line="105" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" visibility="PRIVATE" jsAcceptor="if (typeof val == 'object') {return val;} else {throw SaxonJS.XError('Cannot convert supplied JS value to a map or array');}" jsCardCheck="function c(n) {return n==1;};">
+   <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="105" name="map:_new" type="map(*)">
+    <empty/>
+   </ifCall>
+  </globalVariable>
+ </co>
+ <co id="23" binds="">
+  <globalVariable name="Q{}productsDoc" type="xs:string" line="19" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/sample1.xsl" visibility="PRIVATE" jsAcceptor="return SaxonJS.U.Atomic.string.cast(val);" jsCardCheck="function c(n) {return n==1;};">
+   <check vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/sample1.xsl" ns="f=http://www.saxonica.com/local/functions xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms js=http://saxonica.com/ns/globalJS saxon=http://saxon.sf.net/ map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="19" card="1" diag="3|0|XTTE0570|productsDoc">
+    <fn name="resolve-uri">
+     <str val="products.xml"/>
+     <treat as="xs:string" jsTest="return SaxonJS.U.Atomic.string.matches(item);" diag="0|1||resolve-uri">
+      <check card="1" diag="0|1||resolve-uri">
+       <cvUntyped to="xs:string">
+        <data>
+         <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" name="ixsl:location" type="item()?"/>
+        </data>
+       </cvUntyped>
+      </check>
+     </treat>
+    </fn>
+   </check>
+  </globalVariable>
+ </co>
+ <co id="19" binds="24">
+  <function name="Q{http://www.w3.org/2002/xforms}convert-json-to-xml" line="488" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" eval="7" flags="pU" as="node()" slots="2">
+   <arg name="jinstance" as="xs:string"/>
+   <let role="body" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="494" var="result" as="document-node()" slot="1" eval="7">
+    <doc line="496" base="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" validation="preserve">
+     <applyT mode="Q{}jxml-xml" bSlot="0">
+      <doc role="select" line="491" base="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" validation="preserve">
+       <fn name="json-to-xml">
+        <varRef name="jinstance" slot="0"/>
+       </fn>
+      </doc>
+     </applyT>
+    </doc>
+    <varRef line="499" name="result" slot="1"/>
+   </let>
+  </function>
+ </co>
+ <co id="12" binds="25 6">
+  <template name="Q{}main2" flags="os" line="81" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/sample1.xsl" slots="0">
+   <callT role="body" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/sample1.xsl" ns="f=http://www.saxonica.com/local/functions xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms js=http://saxonica.com/ns/globalJS saxon=http://saxon.sf.net/ map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="82" name="xformsjs-main" bSlot="0">
+    <withParam name="xforms-doc" flags="c" as="document-node()">
+     <gVarRef name="Q{http://saxon.sf.net/generated-variable}gg296655530" bSlot="1"/>
+    </withParam>
+    <withParam name="xFormsId" flags="c" as="xs:string">
+     <str val="#xForm"/>
+    </withParam>
+   </callT>
+  </template>
+ </co>
+ <co id="26" binds="">
+  <globalVariable name="Q{}orderPartProps" type="map(*)" line="71" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/sample1.xsl" visibility="PRIVATE" jsAcceptor="if (typeof val == 'object') {return val;} else {throw SaxonJS.XError('Cannot convert supplied JS value to a map or array');}" jsCardCheck="function c(n) {return n==1;};">
+   <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/sample1.xsl" ns="f=http://www.saxonica.com/local/functions xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms js=http://saxonica.com/ns/globalJS saxon=http://saxon.sf.net/ map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="71" name="map:_new" type="map(*)">
+    <sequence>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="item_name"/>
+      <str val="productName"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="item_SKU"/>
+      <str val="productCode"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="item_options"/>
+      <str val="options"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="item_quantity"/>
+      <str val="quantity"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="item_price"/>
+      <str val="price"/>
+     </ifCall>
+    </sequence>
+   </ifCall>
+  </globalVariable>
+ </co>
+ <co id="27" binds="">
+  <globalVariable name="Q{}orderProps" type="map(*)" line="57" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/sample1.xsl" visibility="PRIVATE" jsAcceptor="if (typeof val == 'object') {return val;} else {throw SaxonJS.XError('Cannot convert supplied JS value to a map or array');}" jsCardCheck="function c(n) {return n==1;};">
+   <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/sample1.xsl" ns="f=http://www.saxonica.com/local/functions xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms js=http://saxonica.com/ns/globalJS saxon=http://saxon.sf.net/ map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="57" name="map:_new" type="map(*)">
+    <sequence>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="First Name"/>
+      <str val="first"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="Last Name"/>
+      <str val="last"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="Company"/>
+      <str val="company"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="Country"/>
+      <str val="country"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="Email Address"/>
+      <str val="email"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="Phone"/>
+      <str val="phone"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="Agree to Terms"/>
+      <str val="agreeTerms"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="Email"/>
+      <str val="email"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="company"/>
+      <str val="company"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="billing_name"/>
+      <str val="billing_name"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="billing_street"/>
+      <str val="addressLine1"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="billing_city"/>
+      <str val="town"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="billing_state"/>
+      <str val="county"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="billing_postalCode"/>
+      <str val="postcode"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="billing_countryName"/>
+      <str val="country"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="biling_phone"/>
+      <str val="phone"/>
+     </ifCall>
+     <ifCall name="map:entry" type="map(*)">
+      <str val="Tax"/>
+      <str val="vat"/>
+     </ifCall>
+    </sequence>
+   </ifCall>
+  </globalVariable>
+ </co>
+ <co id="24" binds="24 24 24">
+  <mode name="Q{}jxml-xml" onNo="TC" flags="W" patternSlots="0">
+   <templateRule prec="0" prio="-0.25" seq="2" rank="0" minImp="0" slots="2" flags="os" line="524" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="*:array" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1&amp;&amp;q.local == 'array'"/>
+    <let role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="525" var="kayVar" as="attribute(Q{}key)?" slot="0" eval="8">
+     <axis name="attribute" nodeTest="attribute(Q{}key)" jsTest="return item.name=='key'"/>
+     <let line="527" var="vv:loc962885593" as="xs:string" slot="1" eval="8">
+      <fn line="528" name="string">
+       <convert from="xs:untypedAtomic" to="xs:string">
+        <data>
+         <varRef name="kayVar" slot="0"/>
+        </data>
+       </convert>
+      </fn>
+      <forEach>
+       <axis name="child" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+       <compElem line="528">
+        <varRef role="name" line="527" name="vv:loc962885593" slot="1"/>
+        <applyT role="content" line="529" mode="Q{}jxml-xml" bSlot="0">
+         <dot role="select" type="element()"/>
+        </applyT>
+       </compElem>
+      </forEach>
+     </let>
+    </let>
+   </templateRule>
+   <templateRule prec="0" prio="-0.25" seq="1" rank="0" minImp="0" slots="0" flags="os" line="518" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="*:number" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1&amp;&amp;q.local == 'number'"/>
+    <compElem role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="519">
+     <fn role="name" name="string">
+      <convert from="xs:untypedAtomic" to="xs:string">
+       <data>
+        <axis name="attribute" nodeTest="attribute(Q{}key)" jsTest="return item.name=='key'"/>
+       </data>
+      </convert>
+     </fn>
+     <valueOf role="content" line="520" flags="l">
+      <fn name="string-join">
+       <convert from="xs:untypedAtomic" to="xs:string">
+        <data>
+         <mergeAdj>
+          <axis name="child" nodeTest="text()" jsTest="return item.nodeType==3;"/>
+         </mergeAdj>
+        </data>
+       </convert>
+       <str val=" "/>
+      </fn>
+     </valueOf>
+    </compElem>
+   </templateRule>
+   <templateRule prec="0" prio="-0.25" seq="1" rank="0" minImp="0" slots="0" flags="os" line="518" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="*:string" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1&amp;&amp;q.local == 'string'"/>
+    <compElem role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="519">
+     <fn role="name" name="string">
+      <convert from="xs:untypedAtomic" to="xs:string">
+       <data>
+        <axis name="attribute" nodeTest="attribute(Q{}key)" jsTest="return item.name=='key'"/>
+       </data>
+      </convert>
+     </fn>
+     <valueOf role="content" line="520" flags="l">
+      <fn name="string-join">
+       <convert from="xs:untypedAtomic" to="xs:string">
+        <data>
+         <mergeAdj>
+          <axis name="child" nodeTest="text()" jsTest="return item.nodeType==3;"/>
+         </mergeAdj>
+        </data>
+       </convert>
+       <str val=" "/>
+      </fn>
+     </valueOf>
+    </compElem>
+   </templateRule>
+   <templateRule prec="0" prio="-0.25" seq="0" rank="0" minImp="0" slots="0" flags="os" line="502" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="*:map" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1&amp;&amp;q.local == 'map'"/>
+    <choose role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="504">
+     <fn name="empty">
+      <axis name="attribute" nodeTest="attribute(Q{}key)" jsTest="return item.name=='key'"/>
+     </fn>
+     <applyT line="506" mode="Q{}jxml-xml" flags="t" bSlot="1">
+      <axis role="select" name="child" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+     </applyT>
+     <true/>
+     <compElem line="510">
+      <fn role="name" name="string">
+       <convert from="xs:untypedAtomic" to="xs:string">
+        <data>
+         <axis name="attribute" nodeTest="attribute(Q{}key)" jsTest="return item.name=='key'"/>
+        </data>
+       </convert>
+      </fn>
+      <applyT role="content" line="511" mode="Q{}jxml-xml" bSlot="2">
+       <axis role="select" name="child" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+      </applyT>
+     </compElem>
+    </choose>
+   </templateRule>
+  </mode>
+ </co>
+ <co id="18" binds="0">
+  <mode name="Q{}form-check-initial" onNo="TC" flags="W" patternSlots="0">
+   <templateRule prec="0" prio="-0.5" seq="0" rank="0" minImp="0" slots="0" flags="os" line="540" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element()" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1;"/>
+    <copy role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="542" flags="cin">
+     <applyT role="content" mode="Q{}form-check" bSlot="0">
+      <dot role="select" type="element()"/>
+     </applyT>
+    </copy>
+   </templateRule>
+  </mode>
+ </co>
+ <co id="16" binds="16 16 16">
+  <mode name="Q{}json-xml" onNo="TC" flags="W" patternSlots="0">
+   <templateRule prec="0" prio="-0.5" seq="0" rank="0" minImp="0" slots="0" flags="os" line="435" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl">
+    <p.nodeTest role="match" test="element()" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1;"/>
+    <choose role="action" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="438">
+     <fn name="exists">
+      <axis name="child" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+     </fn>
+     <forEachGroup line="439" algorithm="by">
+      <axis role="select" name="child" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+      <fn role="key" name="local-name">
+       <dot type="element()"/>
+      </fn>
+      <str role="collation" val="http://www.w3.org/2005/xpath-functions/collation/codepoint"/>
+      <choose role="content" line="442">
+       <fn name="exists">
+        <tail start="2">
+         <currentGroup/>
+        </tail>
+       </fn>
+       <elem line="444" name="array" nsuri="http://www.w3.org/2005/xpath-functions" flags="d">
+        <sequence>
+         <att name="key" flags="l">
+          <fn name="string-join">
+           <convert from="xs:anyAtomicType" to="xs:string">
+            <currentGroupingKey/>
+           </convert>
+           <str val=" "/>
+          </fn>
+         </att>
+         <forEach line="445">
+          <currentGroup/>
+          <elem line="447" name="map" nsuri="http://www.w3.org/2005/xpath-functions" flags="dl">
+           <applyT mode="Q{}json-xml" bSlot="0">
+            <dot role="select" type="element()"/>
+           </applyT>
+          </elem>
+         </forEach>
+        </sequence>
+       </elem>
+       <fn line="454" name="exists">
+        <slash>
+         <treat as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="1|0|XPTY0019|/">
+          <currentGroup/>
+         </treat>
+         <axis name="child" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+        </slash>
+       </fn>
+       <elem line="456" name="map" nsuri="http://www.w3.org/2005/xpath-functions" flags="d">
+        <sequence>
+         <att name="key" flags="l">
+          <fn name="string-join">
+           <convert from="xs:anyAtomicType" to="xs:string">
+            <currentGroupingKey/>
+           </convert>
+           <str val=" "/>
+          </fn>
+         </att>
+         <applyT line="457" mode="Q{}json-xml" bSlot="1">
+          <currentGroup role="select"/>
+         </applyT>
+        </sequence>
+       </elem>
+       <true/>
+       <applyT line="462" mode="Q{}json-xml" bSlot="2">
+        <currentGroup role="select"/>
+       </applyT>
+      </choose>
+     </forEachGroup>
+     <castable line="470" as="xs:int" emptiable="0">
+      <dot type="element()"/>
+     </castable>
+     <elem line="472" name="number" nsuri="http://www.w3.org/2005/xpath-functions" flags="d">
+      <sequence>
+       <att name="key" flags="l">
+        <fn name="local-name">
+         <dot type="element()"/>
+        </fn>
+       </att>
+       <valueOf line="473" flags="l">
+        <fn name="string-join">
+         <convert from="xs:untypedAtomic" to="xs:string">
+          <data>
+           <mergeAdj>
+            <axis name="child" nodeTest="text()" jsTest="return item.nodeType==3;"/>
+           </mergeAdj>
+          </data>
+         </convert>
+         <str val=" "/>
+        </fn>
+       </valueOf>
+      </sequence>
+     </elem>
+     <castable line="476" as="xs:string" emptiable="0">
+      <dot type="element()"/>
+     </castable>
+     <elem line="478" name="string" nsuri="http://www.w3.org/2005/xpath-functions" flags="d">
+      <sequence>
+       <att name="key" flags="l">
+        <fn name="local-name">
+         <dot type="element()"/>
+        </fn>
+       </att>
+       <valueOf line="479" flags="l">
+        <fn name="string-join">
+         <convert from="xs:untypedAtomic" to="xs:string">
+          <data>
+           <mergeAdj>
+            <axis name="child" nodeTest="text()" jsTest="return item.nodeType==3;"/>
+           </mergeAdj>
+          </data>
+         </convert>
+         <str val=" "/>
+        </fn>
+       </valueOf>
+      </sequence>
+     </elem>
+    </choose>
+   </templateRule>
+  </mode>
+ </co>
+ <co id="7" binds="">
+  <globalVariable name="Q{}bookingForm" type="xs:string" line="23" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/sample1.xsl" visibility="PRIVATE" jsAcceptor="return SaxonJS.U.Atomic.string.cast(val);" jsCardCheck="function c(n) {return n==1;};">
+   <check vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/sample1.xsl" ns="f=http://www.saxonica.com/local/functions xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms js=http://saxonica.com/ns/globalJS saxon=http://saxon.sf.net/ map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="23" card="1" diag="3|0|XTTE0570|bookingForm">
+    <fn name="resolve-uri">
+     <str val="sampleBookingForm.xml"/>
+     <treat as="xs:string" jsTest="return SaxonJS.U.Atomic.string.matches(item);" diag="0|1||resolve-uri">
+      <check card="1" diag="0|1||resolve-uri">
+       <cvUntyped to="xs:string">
+        <data>
+         <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" name="ixsl:location" type="item()?"/>
+        </data>
+       </cvUntyped>
+      </check>
+     </treat>
+    </fn>
+   </check>
+  </globalVariable>
+ </co>
+ <co id="20" binds="22">
+  <function name="Q{http://www.w3.org/2002/xforms}check-required-fields" line="95" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" eval="8" flags="pU" as="item()*" slots="2">
+   <arg name="updatedInstanceXML" as="item()*"/>
+   <let role="body" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="102" var="vv:loc1579948023" as="item()?" slot="1" eval="7">
+    <check line="105" card="?" diag="4|0|XTTE3210|xsl:evaluate/context-item">
+     <varRef name="updatedInstanceXML" slot="0"/>
+    </check>
+    <forEach>
+     <filter line="98" flags="b">
+      <slash simple="1">
+       <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" name="ixsl:page" type="document-node()?"/>
+       <axis name="descendant" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+      </slash>
+      <fn name="exists">
+       <axis name="attribute" nodeTest="attribute(Q{}data-required)" jsTest="return item.name=='data-required'"/>
+      </fn>
+     </filter>
+     <choose line="107">
+      <vc op="eq" onEmpty="0" comp="CCC">
+       <cast as="xs:string" emptiable="0">
+        <data>
+         <doc line="105" base="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" validation="preserve">
+          <evaluate>
+           <fn role="xpath" name="concat">
+            <str val="boolean(normalize-space("/>
+            <data>
+             <axis name="attribute" nodeTest="attribute(Q{}id)" jsTest="return item.name=='id'"/>
+            </data>
+            <str val="))"/>
+            <str val="="/>
+            <data>
+             <axis name="attribute" nodeTest="attribute(Q{}id)" jsTest="return item.name=='id'"/>
+            </data>
+            <str val="/"/>
+            <data>
+             <axis name="attribute" nodeTest="attribute(Q{}data-required)" jsTest="return item.name=='data-required'"/>
+            </data>
+           </fn>
+           <varRef role="cxt" line="102" name="vv:loc1579948023" slot="1"/>
+           <str role="sa" val="no"/>
+           <gVarRef role="wp" line="102" name="Q{http://saxon.sf.net/generated-variable}gg701343131" bSlot="0"/>
+          </evaluate>
+         </doc>
+        </data>
+       </cast>
+       <str val="false"/>
+      </vc>
+      <dot type="element()"/>
+     </choose>
+    </forEach>
+   </let>
+  </function>
+ </co>
+ <co id="4" binds="">
+  <globalVariable name="Q{http://saxon.sf.net/generated-variable}gg71688744" type="map(*)" line="342" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" visibility="PRIVATE" jsAcceptor="if (typeof val == 'object') {return val;} else {throw SaxonJS.XError('Cannot convert supplied JS value to a map or array');}" jsCardCheck="function c(n) {return n==1;};">
+   <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="342" name="map:_new" type="map(*)">
+    <empty/>
+   </ifCall>
+  </globalVariable>
+ </co>
+ <co id="14" binds="">
+  <globalVariable name="Q{http://saxon.sf.net/generated-variable}gg251172046" type="map(*)" line="247" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" visibility="PRIVATE" jsAcceptor="if (typeof val == 'object') {return val;} else {throw SaxonJS.XError('Cannot convert supplied JS value to a map or array');}" jsCardCheck="function c(n) {return n==1;};">
+   <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="247" name="map:_new" type="map(*)">
+    <empty/>
+   </ifCall>
+  </globalVariable>
+ </co>
+ <co id="25" binds="15 19 13">
+  <template name="Q{}xformsjs-main" flags="os" line="22" module="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" slots="9">
+   <sequence role="body" vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="23">
+    <param name="xforms-doc" slot="0" as="document-node()?">
+     <empty role="select"/>
+     <treat role="conversion" as="document-node()" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==9||item.nodeType==11);" diag="8|0|XTTE0590|xforms-doc">
+      <check card="?" diag="8|0|XTTE0590|xforms-doc">
+       <supplied slot="0"/>
+      </check>
+     </treat>
+    </param>
+    <param line="24" name="instance-xml" slot="1" as="document-node()?">
+     <empty role="select"/>
+     <treat role="conversion" as="document-node()" jsTest="return SaxonJS.U.isNode(item) &amp;&amp; (item.nodeType==9||item.nodeType==11);" diag="8|0|XTTE0590|instance-xml">
+      <check card="?" diag="8|0|XTTE0590|instance-xml">
+       <supplied slot="1"/>
+      </check>
+     </treat>
+    </param>
+    <param line="25" name="xFormsId" slot="2" as="xs:string">
+     <str role="select" val="#xForm"/>
+     <treat role="conversion" as="xs:string" jsTest="return SaxonJS.U.Atomic.string.matches(item);" diag="8|0|XTTE0590|xFormsId">
+      <check card="1" diag="8|0|XTTE0590|xFormsId">
+       <cvUntyped to="xs:string">
+        <data>
+         <supplied slot="2"/>
+        </data>
+       </cvUntyped>
+      </check>
+     </treat>
+    </param>
+    <param line="26" name="xforms-instance-id" slot="3">
+     <str role="select" val="#xforms-jinstance"/>
+     <supplied role="conversion" slot="3"/>
+    </param>
+    <let line="28" var="instance-doc" as="document-node()" slot="4" eval="7">
+     <doc line="30" base="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" validation="preserve">
+      <choose>
+       <fn name="not">
+        <varRef name="instance-xml" slot="1"/>
+       </fn>
+       <copyOf line="31" flags="vsc">
+        <slash>
+         <slash>
+          <slash>
+           <slash simple="1">
+            <varRef name="xforms-doc" slot="0"/>
+            <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}xform)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='xform';"/>
+           </slash>
+           <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}model)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='model';"/>
+          </slash>
+          <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}instance)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='instance';"/>
+         </slash>
+         <axis name="child" nodeTest="*:document" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1&amp;&amp;q.local == 'document'"/>
+        </slash>
+       </copyOf>
+       <true/>
+       <copyOf line="34" flags="vsc">
+        <slash simple="1">
+         <varRef name="instance-xml" slot="1"/>
+         <axis name="child" nodeTest="*:document" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1&amp;&amp;q.local == 'document'"/>
+        </slash>
+       </copyOf>
+      </choose>
+     </doc>
+     <let line="53" var="submissions" as="map(xs:string, xs:string)" slot="5" eval="7">
+      <treat line="55" as="map(xs:string, xs:string)" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="3|0|XTTE0570|submissions">
+       <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:create" type="map(*)">
+        <forEach>
+         <slash>
+          <slash>
+           <slash simple="1">
+            <varRef name="xforms-doc" slot="0"/>
+            <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}xform)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='xform';"/>
+           </slash>
+           <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}model)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='model';"/>
+          </slash>
+          <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}submission)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='submission';"/>
+         </slash>
+         <ifCall line="56" name="map:entry" type="map(*)">
+          <check card="1" diag="0|0||map:entry">
+           <cast as="xs:string" emptiable="1">
+            <data>
+             <axis name="attribute" nodeTest="attribute(Q{}ref)" jsTest="return item.name=='ref'"/>
+            </data>
+           </cast>
+          </check>
+          <cast as="xs:string" emptiable="1">
+           <data>
+            <axis name="attribute" nodeTest="attribute(Q{}action)" jsTest="return item.name=='action'"/>
+           </data>
+          </cast>
+         </ifCall>
+        </forEach>
+       </ifCall>
+      </treat>
+      <sequence line="69">
+       <choose>
+        <fn name="exists">
+         <varRef name="instance-doc" slot="4"/>
+        </fn>
+        <resultDoc line="70" global="#&#xA;#Sun Jun 11 12:16:30 BST 2017&#xA;indent=no&#xA;doctype-system=http\://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&#xA;encoding=utf-8&#xA;omit-xml-declaration=no&#xA;doctype-public=-//W3C//DTD XHTML 1.0 Transitional//EN&#xA;method=html&#xA;" local="#&#xA;#Sun Jun 11 12:16:30 BST 2017&#xA;method={http\://saxonica.com/ns/interactiveXSLT}replace-content&#xA;">
+         <fn role="href" name="string-join">
+          <convert from="xs:anyAtomicType" to="xs:string">
+           <data>
+            <mergeAdj>
+             <varRef name="xforms-instance-id" slot="3"/>
+            </mergeAdj>
+           </data>
+          </convert>
+          <str val=" "/>
+         </fn>
+         <valueOf role="content" line="71">
+          <fn name="string-join">
+           <convert from="xs:anyAtomicType" to="xs:string">
+            <data>
+             <fn name="xml-to-json">
+              <ufCall name="Q{http://www.w3.org/2002/xforms}convert-xml-to-jxml" tailCall="false" bSlot="0" eval="6">
+               <varRef name="instance-doc" slot="4"/>
+              </ufCall>
+             </fn>
+            </data>
+           </convert>
+           <str val=" "/>
+          </fn>
+         </valueOf>
+        </resultDoc>
+       </choose>
+       <message line="75">
+        <sequence role="select">
+         <valueOf>
+          <str val="&#xA;            &#xA;            &#xA;            instance-jxml="/>
+         </valueOf>
+         <valueOf line="78">
+          <fn name="serialize">
+           <ufCall name="Q{http://www.w3.org/2002/xforms}convert-json-to-xml" tailCall="false" bSlot="1" eval="4">
+            <check card="1" diag="0|0||xforms:convert-json-to-xml">
+             <cvUntyped to="xs:string">
+              <data>
+               <docOrder intra="1">
+                <slash>
+                 <slash>
+                  <ifCall xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT" name="ixsl:page" type="document-node()?"/>
+                  <fn name="key">
+                   <str val="Q{http://saxon.sf.net/}kk101"/>
+                   <str val="xforms-jinstance"/>
+                   <dot type="document-node()"/>
+                  </fn>
+                 </slash>
+                 <axis name="child" nodeTest="text()" jsTest="return item.nodeType==3;"/>
+                </slash>
+               </docOrder>
+              </data>
+             </cvUntyped>
+            </check>
+           </ufCall>
+          </fn>
+         </valueOf>
+        </sequence>
+        <str role="terminate" val="no"/>
+        <str role="error" val="Q{http://www.w3.org/2005/xqt-errors}XTMM9000"/>
+       </message>
+       <resultDoc line="81" global="#&#xA;#Sun Jun 11 12:16:30 BST 2017&#xA;indent=no&#xA;doctype-system=http\://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&#xA;encoding=utf-8&#xA;omit-xml-declaration=no&#xA;doctype-public=-//W3C//DTD XHTML 1.0 Transitional//EN&#xA;method=html&#xA;" local="#&#xA;#Sun Jun 11 12:16:30 BST 2017&#xA;method={http\://saxonica.com/ns/interactiveXSLT}replace-content&#xA;">
+        <varRef role="href" name="xFormsId" slot="2"/>
+        <applyT role="content" line="82" bSlot="2">
+         <slash role="select" simple="1">
+          <varRef name="xforms-doc" slot="0"/>
+          <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}xform)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='xform';"/>
+         </slash>
+         <withParam name="instance1" as="document-node()">
+          <varRef line="83" name="instance-doc" slot="4"/>
+         </withParam>
+         <withParam name="bindings" as="map(xs:string, node())">
+          <treat line="41" as="map(xs:string, node())" jsTest="function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.isNode(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);" diag="3|0|XTTE0570|bindings">
+           <ifCall xmlns:map="http://www.w3.org/2005/xpath-functions/map" name="map:create" type="map(*)">
+            <let var="vv:loc2131869628" as="map(*)" slot="6" eval="8">
+             <ifCall line="43" name="map:_new" type="map(*)">
+              <empty/>
+             </ifCall>
+             <let var="vv:loc1850665647" as="*:document?" slot="7" eval="7">
+              <check line="43" card="?" diag="4|0|XTTE3210|xsl:evaluate/context-item">
+               <slash simple="1">
+                <varRef name="instance-doc" slot="4"/>
+                <axis name="child" nodeTest="*:document" jsTest="var q=SaxonJS.U.nameOfNode(item); return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType==1&amp;&amp;q.local == 'document'"/>
+               </slash>
+              </check>
+              <forEach>
+               <slash>
+                <slash>
+                 <slash simple="1">
+                  <varRef name="xforms-doc" slot="0"/>
+                  <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}xform)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='xform';"/>
+                 </slash>
+                 <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}model)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='model';"/>
+                </slash>
+                <axis name="child" nodeTest="element(Q{http://www.w3.org/2002/xforms}bind)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri=='http://www.w3.org/2002/xforms'&amp;&amp;q.local=='bind';"/>
+               </slash>
+               <let line="42" var="xnodeset" as="node()?" slot="8" eval="7">
+                <treat line="43" as="node()" jsTest="return SaxonJS.U.isNode(item);" diag="3|0|XTTE0570|xnodeset">
+                 <check card="?" diag="3|0|XTTE0570|xnodeset">
+                  <evaluate>
+                   <check role="xpath" card="1" diag="4|0||xsl:evaluate/xpath">
+                    <cvUntyped to="xs:string">
+                     <data>
+                      <axis name="attribute" nodeTest="attribute(Q{}nodeset)" jsTest="return item.name=='nodeset'"/>
+                     </data>
+                    </cvUntyped>
+                   </check>
+                   <varRef role="cxt" line="41" name="vv:loc1850665647" slot="7"/>
+                   <str role="sa" val="no"/>
+                   <varRef role="wp" line="41" name="vv:loc2131869628" slot="6"/>
+                  </evaluate>
+                 </check>
+                </treat>
+                <ifCall line="47" name="map:entry" type="map(*)">
+                 <fn name="generate-id">
+                  <varRef name="xnodeset" slot="8"/>
+                 </fn>
+                 <dot type="element(Q{http://www.w3.org/2002/xforms}bind)"/>
+                </ifCall>
+               </let>
+              </forEach>
+             </let>
+            </let>
+           </ifCall>
+          </treat>
+         </withParam>
+         <withParam name="submissions" as="map(xs:string, xs:string)">
+          <varRef line="85" name="submissions" slot="5"/>
+         </withParam>
+        </applyT>
+       </resultDoc>
+      </sequence>
+     </let>
+    </let>
+   </sequence>
+  </template>
+ </co>
+ <overridden/>
+ <key name="Q{http://saxon.sf.net/}kk101" line="0" binds="">
+  <p.nodeSet>
+   <axis vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="78" name="descendant" nodeTest="element(Q{}script)" jsTest="var q=SaxonJS.U.nameOfNode(item); return item.nodeType==1 &amp;&amp; q.uri==''&amp;&amp;q.local=='script';"/>
+  </p.nodeSet>
+  <data vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="78">
+   <axis name="attribute" nodeTest="attribute(Q{}id)" jsTest="return item.name=='id'"/>
+  </data>
+ </key>
+ <key name="Q{http://saxon.sf.net/}kk102" line="0" binds="">
+  <p.nodeSet>
+   <axis vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="582" name="descendant" nodeTest="element()" jsTest="return item.nodeType==1;"/>
+  </p.nodeSet>
+  <data vn="31" baseUri="file:/Users/ond1/work/development/git/XForms-js/XForms-JS/samples/sample1/xforms-js.xsl" ns="math=http://www.w3.org/2005/xpath-functions/math xsl=http://www.w3.org/1999/XSL/Transform xforms=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml js=http://saxonica.com/ns/globalJS map=http://www.w3.org/2005/xpath-functions/map xs=http://www.w3.org/2001/XMLSchema rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# in=http://www.w3.org/2002/xforms-instance fn=http://www.w3.org/2005/xpath-functions ixsl=http://saxonica.com/ns/interactiveXSLT array=http://www.w3.org/2005/xpath-functions/array" line="582">
+   <axis name="attribute" nodeTest="attribute(Q{}id)" jsTest="return item.name=='id'"/>
+  </data>
+ </key>
+ <output>
+  <property name="indent" value="no"/>
+  <property name="doctype-system" value="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
+  <property name="encoding" value="utf-8"/>
+  <property name="omit-xml-declaration" value="no"/>
+  <property name="doctype-public" value="-//W3C//DTD XHTML 1.0 Transitional//EN"/>
+  <property name="{http://saxon.sf.net/}stylesheet-version" value="30"/>
+  <property name="method" value="html"/>
+ </output>
+ <decimalFormat decimal-separator="46" grouping-separator="44" digit="35" minus-sign="45" percent="37" per-mille="8240" zero-digit="48" exponent-separator="101" pattern-separator="59" infinity="Infinity" NaN="NaN"/>
+</package>
+<?Σ e20d1f3b?>
