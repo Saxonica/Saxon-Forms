@@ -2,15 +2,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
    <head>
-      <title>EAGA Booking Form</title>
+      <title>Booking Form</title>
       <link rel="stylesheet" href="style.css" type="text/css" />
-      <script src="SaxonJS.js"></script>
+      <script src="Saxon-JS-1.0.0/SaxonJS.js"></script>
 
       <script>
       window.onload = function() {
         SaxonJS.transform({
-           "stylesheetLocation":"sample1.sef.xml",
-           "initialTemplate":"main"
+           "stylesheetLocation":"xforms-js.sef.xml",
+           "sourceLocation":"sampleBookingForm.xml",
+           "stylesheetParams": {"xforms-file":"sampleBookingForm.xml"}
            })
       }     
       </script>
