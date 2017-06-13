@@ -18,17 +18,21 @@
     <xsl:output method="html" encoding="utf-8" omit-xml-declaration="no" indent="no" 
         doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN" doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
     
+    <!-- Contains the instance xml node if it exists -->
     <xsl:param name="instance-xml" as="document-node()?" select="()" />
+    
+    <!-- Contains the value of the XForms ID where the form will be represented -->
     <xsl:param name="xFormsID" select="'#xForm'" as="xs:string"/>
+    
+    <!-- Contains the value of the XForms instance ID where the instance will be inserted -->
     <xsl:param name="xforms-instanceID" select="'#xforms-jinstance'" />
-    <xsl:param name="xforms-file" as="xs:string" select="''" />
     
     
     <xsl:template match="/" >
         
         <xsl:call-template name="xformsjs-main">
-            <xsl:with-param name="instance-xmli" select="$instance-xml" />
-            <xsl:with-param name="xFormsIDi" select="$xFormsID"/>
+            <xsl:with-param name="instance-xml-main" select="$instance-xml" />
+            <xsl:with-param name="xFormsID-main" select="$xFormsID"/>
             <xsl:with-param name="xforms-instanceIDi" select="$xforms-instanceID"></xsl:with-param>
             <xsl:with-param name="xforms-doc" select="." />
         </xsl:call-template>
@@ -38,20 +42,17 @@
     
     <xsl:template name="xformsjs-main" >
         <xsl:param name="xforms-doc" as="document-node()?" select="()" />
-        <xsl:param name="instance-xmli" as="document-node()?" />
-        <xsl:param name="xFormsIDi" select="'#xForm'" as="xs:string"/>
-        <xsl:param name="xforms-instanceIDi" select="'#xforms-jinstance'" />
-        
-        
-        <xsl:message>xforms-doci, file=<xsl:value-of select="$xforms-file"/>,  <xsl:value-of select="serialize($xforms-doc)"/></xsl:message>
+        <xsl:param name="instance-xml-main" as="document-node()?" />
+        <xsl:param name="xFormsID-main" select="'#xForm'" as="xs:string"/>
+        <xsl:param name="xforms-instanceIDi" select="'#xforms-jinstance'" />              
         
         <xsl:variable name="instance-doc">
             <xsl:choose>
-                <xsl:when test="not($instance-xmli)">
+                <xsl:when test="not($instance-xml-main)">
                     <xsl:copy-of select="$xforms-doc/xforms:xform/xforms:model/xforms:instance/*:document"/>
                 </xsl:when>
                 <xsl:otherwise>                   
-                     <xsl:copy-of select="$instance-xmli/*:document"/>                       
+                     <xsl:copy-of select="$instance-xml-main/*:document"/>                       
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
@@ -78,7 +79,7 @@
             </xsl:map>
         </xsl:variable>
        <!-- <xsl:message>
-            instance-xmli=<xsl:value-of select="serialize($instance-doc)"/>
+            instance-xml-main=<xsl:value-of select="serialize($instance-doc)"/>
             
         </xsl:message>
         <xsl:message>
@@ -98,7 +99,7 @@
             instance-jxml=<xsl:value-of select="serialize(xforms:convert-json-to-xml(ixsl:page()//script[@id='xforms-jinstance']/text()))"/>
         </xsl:message>
         
-        <xsl:result-document href="{$xFormsIDi}" method="ixsl:replace-content">
+        <xsl:result-document href="{$xFormsID-main}" method="ixsl:replace-content">
             <xsl:apply-templates select="$xforms-doc/xforms:xform" >
                 <xsl:with-param name="instance1" select="$instance-doc"/>
                 <xsl:with-param name="bindings" select="$bindings" as="map(xs:string, node())"/>
