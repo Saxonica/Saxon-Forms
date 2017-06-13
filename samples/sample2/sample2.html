@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+   <head>
+      <title>Booking Form</title>
+      <link rel="stylesheet" href="style.css" type="text/css" />
+      <script src="SaxonJS.js"></script>
+
+      <script>
+      window.onload = function() {
+        SaxonJS.transform({
+           "stylesheetLocation":"sample2.sef.xml",
+           "initialTemplate":"main"
+           })
+      }     
+      </script>
+      <script src="saxonRequests.js"></script>
+      <script type="application/json" id="xforms-jinstance"></script>
+   </head>
+
+   <body>
+      <h1 id="title">Booking Form</h1>
+      
+      <div id="xForm"></div>
+    
+
+   </body>
+</html>
