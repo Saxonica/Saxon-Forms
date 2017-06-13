@@ -24,7 +24,7 @@ Saxon-Forms currently supports Saxon-JS 1.0.0. To run Saxon-Forms you will need 
 
 
 
-#Technical Details
+## Technical Details
 
 The XML instance data structure is maintained as JSON object on the page. However we have had to disable this feature temporarily due to a bug in Saxon-JS, which has now bee resolved and will be available in the next release.
 
