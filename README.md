@@ -2,7 +2,7 @@ Saxon-Forms
 =========
 
 The Saxon-Forms implementation is a XForms prototype written using Interactive XSLT 3.0. 
-Saxon-JS is an XSLT 3.0 run-time, which supports interactive XSLT and is written in pure JavaScript for use in the brower or a platform that supports JavaScript.
+Interactive XSLT 3.0 is a feature of Saxon-JS, which is an XSLT 3.0 run-time written in pure JavaScript for use in the brower or a platform that supports JavaScript.
 
 Presented at XMLLondon conference 2017. See paper: 
 [Distributing XSLT Processing
