@@ -15,7 +15,7 @@ The latest builds of Saxon-Forms is placed in the build directory (i.e. xforms-j
 
 
 ## Setup
-Saxon-Forms currently supports Saxon-JS 1.0.0. To run Saxon-Forms you will need the latest Saxon-JS which can be downloaded at 
+Saxon-Forms currently supports Saxon-JS 1.0.2. To run Saxon-Forms you will need the latest Saxon-JS which can be downloaded at 
 [Saxon-JS](http://www.saxonica.com/saxon-js/index.xml). Please see sample1 and sample2 which shows two ways alternative ways to use Saxon-Forms.
 
 - Saxon-Forms can be loaded directly with the source document being the XForms application. See
@@ -27,5 +27,4 @@ Saxon-Forms currently supports Saxon-JS 1.0.0. To run Saxon-Forms you will need 
 
 ## Technical Details
 
-The XML instance data structure is maintained as JSON object on the page. However we have had to disable this feature temporarily due to a bug in Saxon-JS, which has now bee resolved and will be available in the next release.
 
