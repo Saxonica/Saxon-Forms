@@ -13,7 +13,7 @@
     version="3.0"
     >
     
-    <xsl:import href="xforms-js.xsl"/>
+    <xsl:import href="saxon-xforms.xsl"/>
 
     
     <!-- The $bookingForm document contains the main form, in XForms format -->
