@@ -6,12 +6,13 @@
     xmlns:xforms="http://www.w3.org/2002/xforms" xmlns:xhtml="http://www.w3.org/1999/xhtml"
     xmlns:xf="http://www.w3.org/2002/xforms"
     xmlns:js="http://saxonica.com/ns/globalJS" xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT"
+    xmlns:sfl="http://saxonica.com/ns/forms-local"
     xmlns:in="http://www.w3.org/2002/xforms-instance"
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns:map="http://www.w3.org/2005/xpath-functions/map"
     xmlns:array="http://www.w3.org/2005/xpath-functions/array"
     xmlns:saxon="http://saxon.sf.net/"
-    xmlns:ev="http://www.w3.org/2001/xml-events" exclude-result-prefixes="xs math xforms"
+    xmlns:ev="http://www.w3.org/2001/xml-events" exclude-result-prefixes="xs math xforms sfl"
     extension-element-prefixes="ixsl saxon" version="3.0">
     
     <xsl:include href="xforms-function-library.xsl"/>
@@ -21,7 +22,7 @@
         doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
 
     <xsl:param name="xforms-instance-id" select="'xforms-jinstance'"/>
-    <xsl:param name="xforms-doc-id" select="'xforms-doc'"/>
+    <xsl:param name="xforms-cache-id" select="'xforms-cache'"/>
     
     <xsl:variable static="yes" name="debugMode" select="false()"/>
     <xsl:variable static="yes" name="debugTiming" select="false()"/>
@@ -116,7 +117,7 @@
 
         <!-- copying xform-doc to page -->
         <xsl:choose>
-            <xsl:when test="ixsl:page()//script/@id = $xforms-doc-id">
+            <xsl:when test="ixsl:page()//script/@id = $xforms-cache-id">
                 <xsl:sequence select="js:setXFormsDoc($xforms-doc)"/>
                 <xsl:sequence select="js:setXFormsID($xFormsId)"/>
                 <xsl:sequence select="js:setRelevantMap($RelevantBindings)" />
@@ -125,7 +126,7 @@
 
                 <xsl:for-each select="ixsl:page()//head">
                     <xsl:result-document href="?.">
-                        <script type="text/javascript" id="{$xforms-doc-id}">                
+                        <script type="text/javascript" id="{$xforms-cache-id}">                
                             var XFormsDoc = null;
                             var defaultInstanceDoc = null;
                             var instanceDoc = null;
@@ -337,11 +338,7 @@
             </xsl:variable>
             <xsl:choose>
                 <xsl:when test="$relevantCheck">
-                    <xsl:message use-when="$debugMode">
-                        data-relevant = <xsl:value-of select="@data-relevant"/>
-                        field: <xsl:value-of select="serialize(.)"/>
-                        data-type = <xsl:value-of select="@data-type"/>
-                    </xsl:message>
+                    
                     <!--<ixsl:set-property name="type" select="if(exists(@data-type)) then string(@data-type) else 'text'" object="."/>-->
                     <ixsl:set-property name="style.display" select="'inline'" object="$context/.."/>
                 </xsl:when>
@@ -842,16 +839,17 @@
 
     <xsl:template match="button[exists(@data-submit)]" mode="ixsl:onclick">
         <!-- XML Map rep of JSON map -->
-        <!--<xsl:variable name="instanceXML"
-            select="xforms:convert-json-to-xml(ixsl:page()//script[@id = 'xforms-jinstance']/text())"/> -->
-        <xsl:variable name="updatedInstanceXML">
-            <xsl:variable name="instanceXML" select="js:getInstance()"/>
-            <xsl:apply-templates select="$instanceXML" mode="form-check-initial"/>
-        </xsl:variable>
-        <!--<xsl:variable name="updatedInstanceXML">
+        <xsl:variable name="instanceXML" select="js:getInstance()" as="document-node(element(Document))"/>
 
-            <xsl:apply-templates select="$instanceXML" mode="form-check-initial"/>
-        </xsl:variable> -->
+                <!--<xsl:message use-when="$debug">instanceXML </xsl:message>
+                <xsl:message use-when="$debug"><xsl:value-of select="serialize($instanceXML)"/></xsl:message>-->
+
+        <xsl:variable name="updatedInstanceXML" as="document-node(element(Document))?">
+            <xsl:document>
+                <xsl:apply-templates select="$instanceXML" mode="form-check-initial" />
+            </xsl:document>
+        </xsl:variable>
+
 
 
         <xsl:variable name="required-fieldsi" select="ixsl:page()//*[@data-required]" as="item()*"/>
@@ -863,16 +861,36 @@
 
 
         <xsl:variable name="action">
-            <xsl:value-of select="@data-submit"/>
+            <xsl:value-of select="serialize(@data-submit)"/>
         </xsl:variable>
 
+        <xsl:variable name="requestBody" as="document-node(element(submit))">
+                  <xsl:document>
+                      <submit>
+                          <xsl:sequence select="$updatedInstanceXML/Document"/>
 
+                      </submit>
+                  </xsl:document>
+              </xsl:variable>
 
         <xsl:choose>
             <xsl:when test="count($required-fields-check) = 0">
-                <xsl:sequence
+                <!-- <xsl:sequence
                     select="js:submitXMLorderWithUrl(serialize($action), serialize($updatedInstanceXML), 'orderResponse')"
-                />
+                /> -->
+                <xsl:variable name="HTTPrequest" as="map(*)"
+                          select="map{'body':$requestBody,
+                         'method':'POST',
+                         'href':$action,
+                         'media-type':'application/xml'}"/>
+
+                <ixsl:schedule-action http-request="$HTTPrequest">
+                         <!-- The value of @http-request is an XPath expression, which evaluates to an 'HTTP request
+                            map' - i.e. our representation of an HTTP request as an XDM map -->
+                         <xsl:call-template name="HTTPsubmit"/>
+                      </ixsl:schedule-action>
+
+
             </xsl:when>
             <xsl:otherwise>
                 <xsl:variable name="error-message">
@@ -893,10 +911,42 @@
 
     </xsl:template>
 
+    <xsl:template name="HTTPsubmit">
+         <!-- The context item should be an 'HTTP response map' - i.e. our representation of an HTTP
+            response as an XDM map.
+           ?body is an XML document. -->
+         <xsl:context-item as="map(*)" use="required"/>
+          <xsl:variable name="responseXML" select="?body"/>
+
+
+
+          <xsl:choose>
+              <xsl:when test="empty($responseXML)">
+                  <xsl:call-template name="serverError">
+                      <xsl:with-param name="responseMap" select="."/>
+                  </xsl:call-template>
+              </xsl:when>
+
+
+              <xsl:otherwise>
+                  <xsl:message>Response: <xsl:value-of select="serialize($responseXML)" /></xsl:message>
+
+              </xsl:otherwise>
+          </xsl:choose>
+      </xsl:template>
+
+    <xsl:template name="serverError">
+        <xsl:param name="responseMap" as="map(*)"/>
+        <xsl:message>Server side error HTTP response - <xsl:value-of select="concat($responseMap?status, ' ', $responseMap?message)"/></xsl:message>
+    </xsl:template>
+
     <xsl:template match="xforms:model"/>
 
     <xsl:template match="/">
-        <xsl:apply-templates select="xforms:xform"/>
+        <xsl:call-template name="xformsjs-main" >
+            <xsl:with-param name="xforms-doc" select="." />
+            <xsl:with-param name="xFormsId" select="'xForm'" />
+        </xsl:call-template>
 
     </xsl:template>
 
@@ -940,6 +990,116 @@
 
         </html>
 
+    </xsl:template>
+    
+    <xsl:template match="xforms:output">
+        <xsl:param name="instance1" as="node()?" select="()"/>
+        <xsl:param name="bindings" as="map(xs:string, node())" select="map{}"/>
+        <!-- nodeset - used when the xforms:input is contained in a xforms:repeat to keep track of the entire instance document -->
+        <xsl:param name="nodeset" as="xs:string" select="''"/>
+        <xsl:param name="position" select="''"/>
+        
+        <xsl:message use-when="$debugMode">xforms:output=<xsl:value-of select="serialize($instance1)"/> ref= <xsl:value-of
+            select="@ref"/>, <xsl:value-of select="serialize(.)"/> nodeset = <xsl:value-of
+                select="$nodeset"/> 
+        </xsl:message> 
+        
+        <xsl:variable name="ref-binding" as="xs:string">
+            <xsl:choose>
+                <xsl:when test="exists(@ref)">
+                    <xsl:value-of select="@ref"/>
+                </xsl:when>
+                <xsl:when test="exists(@bind)">
+                    <xsl:value-of select="@bind"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="''"/>
+                </xsl:otherwise>
+            </xsl:choose>
+            
+        </xsl:variable>
+        
+        <xsl:variable name="bindingi"
+            select="
+            if (empty($ref-binding)) then
+            ()
+            else
+            map:get($bindings, $ref-binding)"
+            as="node()?"/>
+        <xsl:variable name="refi" as="xs:string">
+            <xsl:choose>
+                <xsl:when test="exists(@ref)">
+                    <xsl:value-of
+                        select="
+                        if ($nodeset = '') then
+                        concat($nodeset, @ref)
+                        else
+                        concat($nodeset, '/', @ref)"
+                    />
+                </xsl:when>
+                <xsl:when test="exists($bindingi)">
+                    <xsl:value-of
+                        select="
+                        if (exists($bindingi/@nodeset)) then
+                        $bindingi/@nodeset
+                        else
+                        $bindingi/@ref"
+                    />
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="''"/>
+                </xsl:otherwise>
+            </xsl:choose>
+            
+        </xsl:variable>
+        
+        <xsl:variable name="instanceForBinding" as="node()?">
+            <xsl:choose>
+                <xsl:when test="exists($bindingi) and exists($bindingi/@nodeset)">
+                    <xsl:message use-when="$debugMode">
+                        Instance= <xsl:value-of select="serialize($instance1)"/>
+                        instanceForBinding found binding/@nodeset <xsl:value-of select="$bindingi/@nodeset"/></xsl:message>
+                    <xsl:evaluate xpath="$bindingi/@nodeset" context-item="$instance1" />
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:sequence select="$instance1"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
+        <xsl:variable name="valueExecuted" as="xs:string">
+            <xsl:evaluate xpath="@value" context-item="$instance1" as="xs:string" />
+        </xsl:variable>
+        
+        <xsl:variable name="relevantVar" as="xs:boolean">
+            <xsl:choose>
+                <xsl:when test="exists($bindingi) and exists($bindingi/@relevant) and exists($instanceForBinding)">
+                    <xsl:evaluate xpath="xforms:impose($bindingi/@relevant)" context-item="$instanceForBinding"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:sequence select="true()"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
+        <xsl:apply-templates select="xforms:label | xforms:hint">
+            <xsl:with-param name="instance1" select="$instance1"/>
+            <xsl:with-param name="nodeset" select="$refi"/>
+            <xsl:with-param name="bindings" select="$bindings"/>
+            <xsl:with-param name="position" select="$position"/>
+        </xsl:apply-templates>
+        <span>
+            <xsl:attribute name="style" select="if($relevantVar) then 'display:inline' else 'display:none'" />
+            <xsl:attribute name="data-ref" select="$refi"/>
+            
+            <xsl:if test="exists(@class)">
+                <xsl:attribute name="class" select="@class" />
+            </xsl:if>
+            
+
+            <xsl:sequence select="$valueExecuted" />
+        </span>
+        
     </xsl:template>
 
     <xsl:template match="xforms:input">
@@ -1054,14 +1214,7 @@
             concat(generate-id(), $position)"/>
         <xsl:if test="exists($actions)">
             
-            <!--<xsl:variable name="actions-prep-for-json" as="map(*)">
-                <xsl:map>
-                    <xsl:map-entry key="'actions'">
-                        <xsl:sequence select="array{$actions}"/>
-                    </xsl:map-entry>
-                </xsl:map>
-            </xsl:variable>-->
-            <!--<xsl:message>select map <xsl:sequence select="serialize($actions-prep-for-json)" /></xsl:message>-->
+            
             <xsl:sequence select="js:addAction($myid, $actions)" />
             
         </xsl:if>
@@ -1479,35 +1632,126 @@
         </option>
 
     </xsl:template>
-
-    <xsl:template match="xforms:repeat">
+    
+    <xsl:template match="xforms:group">
         <xsl:param name="instance1" as="node()?" select="()"/>
         <xsl:param name="bindings" as="map(xs:string, node())" select="map{}"/>
         <xsl:param name="submissions" as="map(xs:string, xs:string)" select="map{}"/>
         <xsl:variable name="time-id" select="generate-id($instance1)"/>
         <xsl:sequence use-when="$debugTiming" select="js:startTime(concat('XForms-repeat', $time-id))" />
         <xsl:variable name="context" select="."/>
-        <xsl:variable name="nodeseti" select="@nodeset"/>
+        <xsl:variable name="refi" as="xs:string?">
+            <xsl:choose>
+                <xsl:when test="exists(@nodeset)"><xsl:sequence select="$context/@nodeset" /></xsl:when>
+                <xsl:when test="exists(@ref)"><xsl:sequence select="$context/@ref" /></xsl:when>
+                <xsl:otherwise></xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
+        <div>
+            <xsl:if test="exists($refi)">
+                <xsl:attribute name="data-group-ref" select="$refi" />
+            </xsl:if>
+            <xsl:if test="exists(@id)">
+                <xsl:attribute name="id" select="@id"/>
+            </xsl:if>
+
+                    <xsl:apply-templates select="$context/*">
+                        <xsl:with-param name="instance1" select="$instance1"/>
+                        <xsl:with-param name="position" select="position()"/>
+                        <xsl:with-param name="nodeset" select="if(exists($refi))then $refi else ''"/>
+                        <xsl:with-param name="bindings" select="$bindings"/>
+                        <xsl:with-param name="submissions" select="$submissions"/>
+                    </xsl:apply-templates>
+                
+            
+        </div>
+    </xsl:template>
+
+    <xsl:template match="xforms:repeat">
+        <xsl:param name="instance1" as="node()?" select="()"/>
+        <xsl:param name="bindings" as="map(xs:string, node())" select="map{}"/>
+        <xsl:param name="submissions" as="map(xs:string, xs:string)" select="map{}"/>
+        <xsl:param name="nodeset" as="xs:string" select="''"/>
+        <xsl:variable name="time-id" select="generate-id($instance1)"/>
+        <xsl:sequence use-when="$debugTiming" select="js:startTime(concat('XForms-repeat', $time-id))" />
+        <xsl:variable name="context" select="."/>
+      
+        
+        <xsl:variable name="refi" as="xs:string">
+            <xsl:choose>
+                <xsl:when test="exists(@ref)">
+                    <xsl:value-of
+                        select="
+                        if ($nodeset = '') then
+                        concat($nodeset, @ref)
+                        else
+                        concat($nodeset, '/', @ref)"
+                    />
+                </xsl:when>
+                <xsl:when test="exists(@nodeset)">
+                    <xsl:value-of
+                        select="
+                        if ($nodeset = '') then
+                        concat($nodeset, @nodeset)
+                        else
+                        concat($nodeset, '/', @nodeset)"
+                    />
+                </xsl:when>
+                <!--<xsl:when test="exists($bindingi)">
+                    <xsl:value-of
+                        select="
+                        if (exists($bindingi/@nodeset)) then
+                        $bindingi/@nodeset
+                        else
+                        $bindingi/@ref"
+                    />
+                </xsl:when> -->
+                <xsl:otherwise>
+                    <xsl:value-of select="''"/>
+                </xsl:otherwise>
+            </xsl:choose>
+            
+        </xsl:variable>
 
         <xsl:if test="exists($instance1)">
+            <xsl:message use-when="$debugMode">
+                repeat:
+                nodeset = <xsl:sequence select="serialize($nodeset)"/>
+                refi = <xsl:sequence select="serialize($refi)"/>
+                instance1 = <xsl:sequence select="serialize($instance1)"/> 
+            </xsl:message>
             <xsl:variable name="selectedRepeatVar" as="node()*">
                 <xsl:sequence use-when="$debugTiming" select="js:startTime(concat('XForms-repeat-evaluate', $time-id))" />
-                <xsl:evaluate xpath="@nodeset" context-item="$instance1"/>
+                <xsl:evaluate xpath="$refi" context-item="$instance1"/>
                 <xsl:sequence use-when="$debugTiming" select="js:endTime(concat('XForms-repeat-evaluate', $time-id))" />
             </xsl:variable>
+            
+            <xsl:message use-when="$debugMode">
+                <xsl:choose>
+                    <xsl:when test="exists($selectedRepeatVar)">xforms:repeat ref=<xsl:sequence select="$refi" />, count = <xsl:sequence select="count($selectedRepeatVar)" /></xsl:when>
+                    <xsl:otherwise>No repeatfound for ref <xsl:sequence select="$refi" /> with context <xsl:value-of select="xs:string($context)"/></xsl:otherwise>
+                </xsl:choose>
+                
+                
+                
+            </xsl:message>
            
             <xsl:if test="exists($selectedRepeatVar)">
-                <div data-repeatable-context="{@nodeset}" data-count="{count($selectedRepeatVar)}">
+                <div data-repeatable-context="{$refi}" data-count="{count($selectedRepeatVar)}">
+                    <xsl:if test="exists($refi)">
+                        <xsl:attribute name="data-repeatable-context" select="$refi" />
+                    </xsl:if>
                     <xsl:if test="exists(@id)">
                         <xsl:attribute name="id" select="@id"/>
                     </xsl:if>
                     <xsl:for-each select="$selectedRepeatVar">
-                        <div>
+                        <div data-repeat-item="true">
                             <xsl:apply-templates select="$context/*">
                                 <xsl:with-param name="instance1" select="$instance1"/>
-                                <xsl:with-param name="position" select="position()"/>
+                                <xsl:with-param name="position" select="position()"/>                       
                                 <xsl:with-param name="nodeset"
-                                    select="concat($nodeseti, '[', position(), ']')"/>
+                                    select="concat($refi, '[', position(), ']')"/>
                                 <xsl:with-param name="bindings" select="$bindings"/>
                                 <xsl:with-param name="submissions" select="$submissions"/>
                             </xsl:apply-templates>
@@ -1549,7 +1793,7 @@
                 <button type="button">
                     <xsl:copy-of select="@*[local-name() != 'ref']"/>
                     <xsl:if test="exists(@id) and map:contains($submissions, @id)">
-                        <xsl:attribute name="data-action" select="map:get($submissions, @id)"/>
+                        <xsl:attribute name="data-submit" select="map:get($submissions, @id)"/>
                     </xsl:if>
                     <xsl:copy-of select="$innerbody"/>
                 </button>
@@ -2070,7 +2314,12 @@
             </xsl:map>
         </xsl:variable>
         
-        
+        <xsl:message use-when="$debugMode">xforms:action found !!!! XXX, node
+            <xsl:value-of select="serialize(.)"/>, id= <xsl:value-of select="@id"/>,
+            myid = <xsl:value-of select="$myid"/>, nodeset=<xsl:value-of select="$nodeset"
+            />
+            action xml <xsl:value-of select="serialize($action-map)"/>
+        </xsl:message>
 
         <xsl:if test="exists($action-map) and exists($myid)">
            
@@ -2151,7 +2400,7 @@
                     <xsl:value-of select="serialize(.)"/>, id= <xsl:value-of select="@id"/>,
                     myid = <xsl:value-of select="$myid"/>, nodeset=<xsl:value-of select="$nodeseti"
                     />
-                    action xml <xsl:value-of select="serialize($action-map,  map{'method':'json'})"/>
+                    action xml <xsl:value-of select="serialize($action-map, map{'method':'json'})"/>
                 </xsl:message>
                 
                 <!--<xsl:choose>

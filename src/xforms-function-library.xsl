@@ -10,10 +10,11 @@
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns:map="http://www.w3.org/2005/xpath-functions/map"
     xmlns:array="http://www.w3.org/2005/xpath-functions/array"
+    xmlns:sfl="http://saxonica.com/ns/forms-local"
     xmlns:ev="http://www.w3.org/2001/xml-events" exclude-result-prefixes="xs math xforms"
     extension-element-prefixes="ixsl" version="3.0">
     
-    <xsl:variable name="xform-functions" select="'index', 'avg', 'foo', 'current-date'"/>
+    <xsl:variable name="xform-functions" select="'index', 'avg', 'foo', 'current-date', random"/>
     
     <xsl:function name="xforms:impose" as="xs:string">
         <xsl:param name="input" as="xs:string" />
@@ -45,8 +46,9 @@
         <xsl:sequence select="$num lt 5" />
         
     </xsl:function>
+    
     <xsl:function name="xforms:index" as="xs:integer">
-    <xsl:param name="repeatID" as="xs:string" />
+        <xsl:param name="repeatID" as="xs:string" />
         <xsl:variable name="element" select="js:getElementById($repeatID)"/>
         <xsl:choose>
             <xsl:when test="empty($element)">
@@ -61,17 +63,23 @@
             </xsl:otherwise>
         </xsl:choose>
         
-   
+    </xsl:function>
+    
+    <xsl:function name="xforms:random" as="xs:double">
+        <xsl:variable name="randomNumber" select="js:Math.random()" as="xs:double"/>
+        
+        
+        <xsl:sequence select="$randomNumber"/>
         
     </xsl:function>
     
-    <xsl:function name="xforms:current-date" as="xs:string">
+    <!-- This is almost an implementation of xforms:local-date(), but not quite, since TZ is missing
+        It is actually equivalent to: substring(xforms:local-date(), 1, 10) -->
+    <xsl:function name="sfl:current-date" as="xs:string">
         <xsl:variable name="today" select="js:getCurrentDate()" as="xs:string"/>
         
-       
         <xsl:sequence select="$today"/>
         
-        
-        
     </xsl:function>
+    
 </xsl:stylesheet>
