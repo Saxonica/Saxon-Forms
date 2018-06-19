@@ -2,7 +2,7 @@
 <xf:xform xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xs="http://www.w3.org/2001/XMLSchema">
     <xf:model id="model-1">
         <xf:instance>
-            <document xmlns="">
+            <Document xmlns="">
               <Event>
                   <EventDate></EventDate>
                     <EventTime/>
@@ -27,37 +27,37 @@
                     
               </Event>   
                 
-            </document>
+            </Document>
         </xf:instance>
-        <xf:bind nodeset="Event/EventDate" type="xs:date" required="true()" />
-        <xf:bind nodeset="Event/EventTime"  type="xs:time"/>
-        <xf:bind nodeset="Event/ChoirArrivalTime" type="xs:time"/>
-        <xf:bind nodeset="Event/MusiciansArrivalTime" type="xs:time"/>
-        <xf:bind nodeset="Event/Donation" required="true()"/>
-        <xf:bind nodeset="Event/Title" required="true()"/> 
+        <xf:bind nodeset="Document/Event/EventDate" type="xs:date" required="true()" />
+        <xf:bind nodeset="Document/Event/EventTime"  type="xs:time"/>
+        <xf:bind nodeset="Document/Event/ChoirArrivalTime" type="xs:time"/>
+        <xf:bind nodeset="Document/Event/MusiciansArrivalTime" type="xs:time"/>
+        <xf:bind nodeset="Document/Event/Donation" required="true()"/>
+        <xf:bind nodeset="Document/Event/Title" required="true()"/> 
         
         <!-- <xf:bind nodeset="EventTime" type="xf:time"/>-->
         <xf:submission ref="submit_model_records" 
-            action="http://localhost/bookSubmit.php" />
+            action="bookSubmit.php" />
     </xf:model>
  
     
-    <xf:input ref="Event/Title" incremental="true" size="35">
+    <xf:input ref="Document/Event/Title" incremental="true" size="35">
         <xf:label>Event Title:</xf:label>
         <xf:hint>Title of Event.</xf:hint>
     </xf:input>
     <br/>
-    <xf:input ref="Event/EventDate" incremental="true">
+    <xf:input ref="Document/Event/EventDate" incremental="true">
         <xf:label>Event Date:</xf:label>
         <!--<xf:hint>The Date of the Event.</xf:hint>-->
     </xf:input>
     <br/>
     
-    <xf:input ref="Event/EventTime" incremental="true">
+    <xf:input ref="Document/Event/EventTime" incremental="true">
         <xf:label>Event Time:</xf:label>
         <xf:hint>The time the event will start.</xf:hint>
     </xf:input>
-    <xf:select1 ref="Event/EventMorningAfternoon" incremental="true">
+    <xf:select1 ref="Document/Event/EventMorningAfternoon" incremental="true">
         <xf:label>AM/PM:</xf:label>
         <xf:item>
             <xf:label>AM</xf:label>
@@ -69,7 +69,7 @@
         </xf:item>
     </xf:select1>
     <br/>
-    <xf:input ref="Event/EventDuration" incremental="true">
+    <xf:input ref="Document/Event/EventDuration" incremental="true">
         <xf:label>Duration of Event:</xf:label>
         <xf:hint>HH:MM</xf:hint>
     </xf:input>
@@ -78,7 +78,7 @@
     <br/>
     
     
-    <xf:select1 ref="Event/EventType" appearance="minimal" incremental="true">
+    <xf:select1 ref="Document/Event/EventType" appearance="minimal" incremental="true">
         <xf:label>Event Type:</xf:label>
         <xf:item>
             <xf:label>Birthday Party</xf:label>
@@ -145,62 +145,62 @@
         
     </xf:select1>
     <br/>
-    <xf:input ref="Event/PeopleNumAtEvent">
+    <xf:input ref="Document/Event/PeopleNumAtEvent">
         <xf:label>Number of people/guests at event: </xf:label>
     </xf:input>
     <p>Event Description:</p>
-    <xf:textarea ref="Event/EventDescription" increment="true" style="width:300px;height:10em;">
+    <xf:textarea ref="Document/Event/EventDescription" increment="true" style="width:300px;height:10em;">
         
         <xf:hint>Please enter as much details as possible</xf:hint>
         
         
     </xf:textarea>
     <br/><br/>
-    <xf:input ref="Event/NameOfMainContact" incremental="true">
+    <xf:input ref="Document/Event/NameOfMainContact" incremental="true">
         <xf:label>Name of main contact:</xf:label>
       
     </xf:input>
     <br/>
-    <xf:input ref="Event/MainContactTelephone" incremental="true">
+    <xf:input ref="Document/Event/MainContactTelephone" incremental="true">
         <xf:label>Telephone of main contact:</xf:label>
         
     </xf:input>
     <br/>
-    <xf:input ref="Event/MainContactEmail" incremental="true">
+    <xf:input ref="Document/Event/MainContactEmail" incremental="true">
         <xf:label>Email of main contact:</xf:label>
     </xf:input>
     <br/>
-    <xf:input ref="Event/NameOfTechnical" incremental="true" size="30">
+    <xf:input ref="Document/Event/NameOfTechnical" incremental="true" size="30">
         <xf:label>Name of Technical Contact (If required):</xf:label>
         <xf:hint>If different to main contact.</xf:hint>
     </xf:input>
     <br/>
-    <xf:input ref="Event/TechTelephone" incremental="true">
+    <xf:input ref="Document/Event/TechTelephone" incremental="true">
         <xf:label>Telephone of technical person:</xf:label>
     </xf:input>
     <br/>
-    <xf:input ref="Event/TechEmail" incremental="true" >
+    <xf:input ref="Document/Event/TechEmail" incremental="true" >
         <xf:label>Email of Technical person:</xf:label>
     </xf:input>
     <br/><br/>
-    <xf:input ref="Event/EventAddress1" incremental="true" size="50">
+    <xf:input ref="Document/Event/EventAddress1" incremental="true" size="50">
         <xf:label>Event Address1:</xf:label>
         
     </xf:input>
     <br/>
-    <xf:input ref="Event/EventAddress2" incremental="true" size="50">
+    <xf:input ref="Document/Event/EventAddress2" incremental="true" size="50">
         <xf:label>Event Address2:</xf:label>
     </xf:input>
     <br/>
-    <xf:input ref="Event/EventAddress3" incremental="true" size="50">
+    <xf:input ref="Document/Event/EventAddress3" incremental="true" size="50">
         <xf:label>Event Address3 (If required):</xf:label>
     </xf:input>
     <br/>
-    <xf:input ref="Event/EventTown" incremental="true">
+    <xf:input ref="Document/Event/EventTown" incremental="true">
         <xf:label>Event Town/City:</xf:label>
     </xf:input>
     <br/>
-    <xf:input ref="Event/EventPostCode" incremental="true">
+    <xf:input ref="Document/Event/EventPostCode" incremental="true">
         <xf:label>Event Post Code:</xf:label>
     </xf:input>
     <br/>
