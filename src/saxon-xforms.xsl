@@ -24,7 +24,7 @@
     <xsl:param name="xforms-instance-id" select="'xforms-jinstance'"/>
     <xsl:param name="xforms-cache-id" select="'xforms-cache'"/>
     
-    <xsl:variable static="yes" name="debugMode" select="false()"/>
+    <xsl:variable static="yes" name="debugMode" select="true()"/>
     <xsl:variable static="yes" name="debugTiming" select="false()"/>
 
 
@@ -83,7 +83,23 @@
         <xsl:variable name="submissions" as="map(xs:string, xs:string)">
             <xsl:map>
                 <xsl:for-each select="$xforms-doci/xforms:xform/xforms:model/xforms:submission">
-                    <xsl:map-entry key="xs:string(@ref)" select="xs:string(@action)"/>
+                    <!-- 
+                        @id and @resource preferred in XForms 1.1 
+                        https://www.w3.org/TR/xforms11/#submit
+                        
+                        How best to fall back to an error message if the key/value pair are not present?
+                    -->
+                    <xsl:variable name="map-key" as="xs:string" select="
+                        if (@id) then xs:string(@id)
+                        else if (@ref) then xs:string(@ref)
+                        else 'null'
+                        "/>
+                    <xsl:variable name="map-value" as="xs:string" select="
+                        if (@resource) then xs:string(@resource)
+                        else if (@action) then xs:string(@action)
+                        else 'null'
+                        "/>
+                    <xsl:map-entry key="$map-key" select="$map-value"/>
                 </xsl:for-each>
             </xsl:map>
         </xsl:variable>
@@ -123,9 +139,31 @@
                 <xsl:sequence select="js:setRelevantMap($RelevantBindings)" />
             </xsl:when>
             <xsl:otherwise>
-
+                <!-- 
+                    MD 2018
+                    
+                    for ixsl:page() 
+                    see http://www.saxonica.com/saxon-js/documentation/index.html#!ixsl-extension/functions/page
+                    
+                    "the document node of the HTML DOM document"
+                -->
                 <xsl:for-each select="ixsl:page()//head">
+                    <!-- 
+                        MD 2018
+                        
+                        for href="?." 
+                        see http://www.saxonica.com/saxon-js/documentation/index.html#!development/result-documents
+                        
+                        "the current context item as the target for inserting a generated fragment of HTML"
+                    -->
                     <xsl:result-document href="?.">
+                        <!-- 
+                        MD 2018
+                        
+                        make instanceDoc an array with doc ID as key
+                        
+                        change setInstance and getInstance to use ID
+                        -->
                         <script type="text/javascript" id="{$xforms-cache-id}">                
                             var XFormsDoc = null;
                             var defaultInstanceDoc = null;
@@ -231,6 +269,12 @@
                                 return relevantMap;
                             }
                             
+                            var replaceDocument = function(content){
+                                document.open();
+                                document.write(content);
+                                document.close();
+                            }
+                            
   
                             var startTime = function(name) {
                                 console.time(name);
@@ -257,6 +301,11 @@
         <xsl:variable name="time-id" select="generate-id($instance-doc)"/>
         <xsl:sequence use-when="$debugTiming" select="js:startTime(concat('XForms Main-Build', $time-id))" />
         <xsl:result-document href="#{$xFormsId}" method="ixsl:replace-content">
+            <!-- 
+            MD 2018
+            
+            use tunnel parameters?
+            -->
             <xsl:apply-templates select="$xforms-doci/xforms:xform">
                 <xsl:with-param name="instance1" select="$instance-doc"/>
                 <xsl:with-param name="bindings" select="$bindings" as="map(xs:string, node())"/>
@@ -860,29 +909,32 @@
 
 
 
-        <xsl:variable name="action">
-            <xsl:value-of select="serialize(@data-submit)"/>
+        <xsl:variable name="action" as="xs:string">
+            <!-- MD 2018
+            just use @data-submit value
+            -->
+<!--            <xsl:value-of select="serialize(@data-submit)"/>-->
+            <xsl:value-of select="@data-submit"/>
         </xsl:variable>
 
-        <xsl:variable name="requestBody" as="document-node(element(submit))">
-                  <xsl:document>
-                      <submit>
-                          <xsl:sequence select="$updatedInstanceXML/Document"/>
-
-                      </submit>
-                  </xsl:document>
-              </xsl:variable>
+        <xsl:variable name="requestBody" as="xs:string">
+            <xsl:sequence select="serialize($updatedInstanceXML/Document)"/>
+        </xsl:variable>
 
         <xsl:choose>
             <xsl:when test="count($required-fields-check) = 0">
                 <!-- <xsl:sequence
                     select="js:submitXMLorderWithUrl(serialize($action), serialize($updatedInstanceXML), 'orderResponse')"
                 /> -->
+                <xsl:message>
+                    Sending HTTP request to '<xsl:value-of select="$action"/>'
+                </xsl:message>
+                
                 <xsl:variable name="HTTPrequest" as="map(*)"
                           select="map{'body':$requestBody,
                          'method':'POST',
                          'href':$action,
-                         'media-type':'application/xml'}"/>
+                         'media-type':'text/plain'}"/>
 
                 <ixsl:schedule-action http-request="$HTTPrequest">
                          <!-- The value of @http-request is an XPath expression, which evaluates to an 'HTTP request
@@ -917,8 +969,10 @@
            ?body is an XML document. -->
          <xsl:context-item as="map(*)" use="required"/>
           <xsl:variable name="responseXML" select="?body"/>
-
-
+        
+        <!-- MD 2018: just seeing what a response looks like -->
+        <xsl:variable name="response" select="."/>
+        <xsl:message>Response: <xsl:value-of select="serialize($response)" /></xsl:message>
 
           <xsl:choose>
               <xsl:when test="empty($responseXML)">
@@ -929,10 +983,13 @@
 
 
               <xsl:otherwise>
+                  <xsl:sequence select="js:replaceDocument(serialize($responseXML))" />
                   <xsl:message>Response: <xsl:value-of select="serialize($responseXML)" /></xsl:message>
 
               </xsl:otherwise>
           </xsl:choose>
+        
+        
       </xsl:template>
 
     <xsl:template name="serverError">
@@ -2879,6 +2936,11 @@
         <xsl:param name="position" select="0"/>
         <xsl:param name="pendingUpdates" as="map(xs:string, xs:string)?"/>
         <!-- TODO namespaces?? -->
+        <!-- 
+        MD 2018
+        
+        update path with instance ID, e.g. "instance('search')"
+        -->
         <xsl:variable name="updatedPath"
             select="
                 if ($position > 0) then
