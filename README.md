@@ -15,7 +15,7 @@ The latest builds of Saxon-Forms is placed in the build directory (i.e. xforms-j
 
 
 ## Setup
-Saxon-Forms currently supports Saxon-JS 1.0.2. To run Saxon-Forms you will need the latest Saxon-JS which can be downloaded at 
+Saxon-Forms currently supports Saxon-JS 1.1.0. To run Saxon-Forms you will need the latest Saxon-JS which can be downloaded at 
 [Saxon-JS](http://www.saxonica.com/saxon-js/index.xml). Please see sample1 and sample2 which shows two ways alternative ways to use Saxon-Forms.
 
 - Saxon-Forms can be loaded directly with the source document being the XForms application. See
