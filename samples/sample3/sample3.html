@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+   <head>
+      <title>Sample 3 XForms test</title>
+      <link rel="stylesheet" href="style.css" type="text/css" />
+      <script src="../../Saxon-JS-1.1.0/SaxonJS.js"></script>
+
+      <script>
+      window.onload = function() {
+        SaxonJS.transform({
+           "stylesheetLocation":"sef/sample3.sef.xml",
+           "initialTemplate":"main"
+           })
+      }     
+      </script>
+   </head>
+
+   <body>
+      <h1 id="title">Sample 3 Form</h1>
+      
+      <div id="xForm"></div>
+    
+
+   </body>
+</html>
