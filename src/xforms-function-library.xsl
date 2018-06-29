@@ -82,4 +82,11 @@
         
     </xsl:function>
     
+    <!-- implement XForms instance() function -->
+    <xsl:function name="xforms:instance" as="element()?">
+        <xsl:param name="instance-id" as="xs:string"/>
+        
+        <xsl:sequence select="js:getInstance($instance-id)"/>
+    </xsl:function>
+    
 </xsl:stylesheet>

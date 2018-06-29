@@ -5,7 +5,7 @@
             <Document xmlns="">
                 <Event>
                     <EventDate>2018-06-20</EventDate>
-                    <EventTime/>
+                    <EventTime>11:30:00</EventTime>
                     <EventDuration/>
                     <EventMorningAfternoon>PM</EventMorningAfternoon>
                     <Title>XForms testing</Title>

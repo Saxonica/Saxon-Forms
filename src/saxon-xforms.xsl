@@ -1,4 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:math="http://www.w3.org/2005/xpath-functions/math"
@@ -26,6 +29,7 @@
     
     <xsl:variable static="yes" name="debugMode" select="true()"/>
     <xsl:variable static="yes" name="debugTiming" select="false()"/>
+    <xsl:variable static="yes" name="default-instance-id" select="'saxon-forms-default'" as="xs:string"/>
 
 
     <xsl:template name="xformsjs-main">
@@ -213,7 +217,11 @@
                         <script type="text/javascript" id="{$xforms-cache-id}">                
                             var XFormsDoc = null;
                             var defaultInstanceDoc = null;
-                            var instanceDoc = null;
+                            
+                            // var instanceDoc = null;
+                            // MD 2018: OND's suggestion for multiple instances
+                            var instanceDocs = {};
+                            
                             var pendingUpdatesMap = null;
                             var updatesMap = null;
                             var XFormsID= 'xForm';
@@ -254,13 +262,29 @@
                                 return XFormsID;
                             }
                             
-                            var setInstance = function(doc) {
-                            instanceDoc = doc;
+                            
+                            //var setInstance = function(doc) {
+                            //    instanceDoc = doc;
+                            //}
+                            var setInstance = function(name, value) {
+                                instanceDocs[name] = value;
+                            } 
+                            
+                            //var getInstance = function() {
+                            //    return instanceDoc;
+                            //}
+                            
+                            var getInstance = function(name) {
+                                return instanceDocs[name];
                             }
                             
-                            var getInstance = function() {
-                            return instanceDoc;
+                            
+                            //[OND] Maybe we can just set the key-> value without having to copy the entire instanceDocs object.
+                            var updateInstance = function(instanceDocs, key, value){
+                                instanceDocs[key] = value;
+                                return instanceDocs;
                             }
+                            
                             
                             var setDefaultInstance = function(doc) {
                             defaultInstanceDoc = doc;
@@ -334,9 +358,21 @@
         </xsl:choose>
 
 
-        <xsl:if test="exists($instance-doc)">
+        <!-- MD 2018: replace code with code supporting multiple instances -->
+        <!--<xsl:if test="exists($instance-doc)">
             <xsl:sequence select="js:setInstance($instance-doc)"/>
-        </xsl:if>
+        </xsl:if>-->
+        <xsl:for-each select="$xforms-instances">
+            <xsl:choose>
+                <xsl:when test="./@id">
+                    <xsl:message use-when="$debugMode">Setting instance with ID '<xsl:value-of select="./@id"/>'</xsl:message>
+                    <xsl:sequence select="js:setInstance(xs:string(./@id),.)"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:sequence select="js:setInstance($default-instance-id,.)"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:for-each>
 
         <xsl:variable name="time-id" select="generate-id($instance-doc)"/>
         <xsl:sequence use-when="$debugTiming" select="js:startTime(concat('XForms Main-Build', $time-id))" />
@@ -510,8 +546,7 @@
                     <xsl:variable name="setvalueVar" select="map:find($action-map, 'setvalue')"/>
                     <xsl:if test="exists($setvalueVar)">
                         <xsl:variable name="setValues" as="item()*">
-                            <xsl:sequence
-                                select="array:flatten(map:get($action-map, 'setvalue'))"/>
+                            <xsl:sequence select="array:flatten(map:get($action-map, 'setvalue'))"/>
                             <xsl:sequence select="array:flatten(map:get($action-map, 'setvalue'))"/>
                         </xsl:variable>
                         <!-- <xsl:message use-when="$debugMode">
@@ -958,14 +993,18 @@
             <xsl:value-of select="@data-submit"/>
         </xsl:variable>
 
-        <xsl:variable name="requestBody" as="document-node(element(submit))">
+        <xsl:variable name="requestBody" as="xs:string">
+            <xsl:sequence select="serialize($updatedInstanceXML/Document)"/>
+        </xsl:variable>
+        
+       <!-- <xsl:variable name="requestBody" as="document-node(element(submit))">
                   <xsl:document>
                       <submit>
                           <xsl:sequence select="$updatedInstanceXML/Document"/>
 
                       </submit>
                   </xsl:document>
-              </xsl:variable>
+              </xsl:variable>-->
 
         <xsl:choose>
             <xsl:when test="count($required-fields-check) = 0">
@@ -980,7 +1019,7 @@
                           select="map{'body':$requestBody,
                          'method':'POST',
                          'href':$action,
-                         'media-type':'application/xml'}"/>
+                         'media-type':'text/plain'}"/>
 
                 <ixsl:schedule-action http-request="$HTTPrequest">
                          <!-- The value of @http-request is an XPath expression, which evaluates to an 'HTTP request
@@ -1224,7 +1263,7 @@
             </xsl:call-template>
         </xsl:variable>
         
-        <xsl:message use-when="$debugMode">Input bound to: <xsl:value-of select="serialize($bindingi)"/></xsl:message>
+        <xsl:message use-when="$debugMode">[xforms:input] bindingi: <xsl:value-of select="serialize($bindingi)"/></xsl:message>
 
 
         <!-- MD 2018: move logic to new named template -->
@@ -1235,6 +1274,8 @@
             </xsl:call-template>
         </xsl:variable>
 
+        <xsl:message use-when="$debugMode">[xforms:input] refi: <xsl:value-of select="$refi"/></xsl:message>
+        
 
         <!-- MD 2018: $in-node does nothing -->
         <!--<xsl:variable name="in-node" as="node()?">
@@ -1255,7 +1296,7 @@
         </xsl:variable>
         
         
-<!--        <xsl:message use-when="$debugMode">[xforms:input] instanceForBinding = <xsl:value-of select="serialize($instanceForBinding)"/></xsl:message> -->
+        <xsl:message use-when="$debugMode">[xforms:input] instanceField = <xsl:value-of select="serialize($instanceField)"/></xsl:message> 
 
         <xsl:variable name="relevantVar" as="xs:boolean">
             <xsl:choose>
@@ -1288,11 +1329,11 @@
             <xsl:sequence select="js:addAction($myid, $actions)" />
         </xsl:if>
 
-        <xsl:message use-when="$debugMode"> 
+        <!--<xsl:message use-when="$debugMode"> 
             binding relevant = <xsl:value-of select="$bindingi/@relevant"/>, 
             isRelevantVar = <xsl:value-of select="serialize($relevantVar)"/>, 
             refi = <xsl:value-of select="$refi"/>
-        </xsl:message>
+        </xsl:message>-->
 
         <span>
             <xsl:attribute name="style" select="if($relevantVar) then 'display:inline' else 'display:none'" />
@@ -1327,12 +1368,12 @@
             <xsl:if test="exists($bindingi) and exists($bindingi/@relevant)">
                 <xsl:attribute name="data-relevant" select="$bindingi/@relevant"/>
             </xsl:if>
-            <xsl:if test="exists($bindingi)">
+            <!--<xsl:if test="exists($bindingi)">
                 <xsl:message use-when="$debugMode">
                     binding found! : <xsl:value-of select="serialize($bindingi)"/>, 
                     refi = <xsl:value-of select="$refi"/>
                 </xsl:message>
-            </xsl:if>
+            </xsl:if>-->
             <xsl:choose>
 
                 <xsl:when
@@ -1346,8 +1387,8 @@
                         <xsl:attribute name="type" select="'date'"/>
                     <!--</xsl:if>-->
                     <xsl:attribute name="value">
-                        <xsl:if test="exists($instanceForBinding)">
-                            <xsl:value-of select="$instanceForBinding"/>
+                        <xsl:if test="exists($instanceField)">
+                            <xsl:value-of select="$instanceField"/>
                         </xsl:if>
                     </xsl:attribute>
                 </xsl:when>
@@ -1363,8 +1404,8 @@
                     <!--</xsl:if>-->
 
                     <xsl:attribute name="value">
-                        <xsl:if test="exists($instanceForBinding)">
-                            <xsl:value-of select="$instanceForBinding"/>
+                        <xsl:if test="exists($instanceField)">
+                            <xsl:value-of select="$instanceField"/>
                         </xsl:if>
                     </xsl:attribute>
                 </xsl:when>
@@ -1381,9 +1422,9 @@
 
 
                     <!-- MD 2018: check this works -->
-                    <xsl:if test="exists($instanceForBinding)">
+                    <xsl:if test="exists($instanceField)">
                         <xsl:variable name="checkedi">
-                            <xsl:value-of select="$instanceForBinding"/>
+                            <xsl:value-of select="$instanceField"/>
                         </xsl:variable>
                         <xsl:message use-when="$debugMode"><xsl:value-of select="$bindingi/@nodeset"/>, $checkedi <xsl:value-of select="serialize($checkedi)"/></xsl:message>
                         <xsl:if test="exists($checkedi) and string-length($checkedi)>0 and xs:boolean($checkedi)">
@@ -1398,8 +1439,8 @@
                         <xsl:attribute name="type" select="'text'"/>
                     </xsl:if>
                     <xsl:attribute name="value">
-                        <xsl:if test="exists($instanceForBinding)">
-                            <xsl:value-of select="$instanceForBinding"/>
+                        <xsl:if test="exists($instanceField)">
+                            <xsl:value-of select="$instanceField"/>
                         </xsl:if>
                     </xsl:attribute>
 
@@ -1550,7 +1591,7 @@
             </xsl:call-template>
         </xsl:variable>
         
-        <xsl:message use-when="$debugMode">[xforms:select] instance field = <xsl:value-of select="serialize($instanceField)"/></xsl:message>
+<!--        <xsl:message use-when="$debugMode">[xforms:select] instance field = <xsl:value-of select="serialize($instanceField)"/></xsl:message>-->
         
         <xsl:variable name="selectedValue" as="xs:string">
             <xsl:choose>
@@ -1688,7 +1729,7 @@
 <!--        <xsl:param name="nodeset" as="xs:string" select="''"/>-->
         <xsl:param name="selectedValue" as="xs:string" select="''"/>
         
-        <xsl:message use-when="$debugMode">[xforms:item] comparing value '<xsl:value-of select="xforms:value/text()"/>' against selected value '<xsl:value-of select="$selectedValue"/>'</xsl:message>
+<!--        <xsl:message use-when="$debugMode">[xforms:item] comparing value '<xsl:value-of select="xforms:value/text()"/>' against selected value '<xsl:value-of select="$selectedValue"/>'</xsl:message>-->
 
         <option value="{xforms:value}">
             <xsl:if test="$selectedValue = xs:string(xforms:value/text())">
