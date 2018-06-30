@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+ 
+    <xf:model>
+        <xf:instance id="hello">
+            <data xmlns="">
+                <PersonGivenName>Mark</PersonGivenName>
+            </data>
+        </xf:instance>
+    </xf:model>
+    
+    <xf:input ref="instance('hello')/PersonGivenName" incremental="true">
+        <xf:label>Please enter your first name: </xf:label>
+    </xf:input>
+
+    <xf:output value="concat('Hello ', instance('hello')/PersonGivenName, '. We hope you like XForms!')">
+        <xf:label>Output: </xf:label>
+    </xf:output>
+    
+    <xf:output value="upper-case(instance('hello')/PersonGivenName)">
+        <xf:label>HELLO!! </xf:label>
+    </xf:output>
+    
+</xf:xform>
