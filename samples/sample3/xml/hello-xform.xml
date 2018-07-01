@@ -9,15 +9,16 @@
         </xf:instance>
     </xf:model>
     
-    <xf:input ref="instance('hello')/PersonGivenName" incremental="true">
+    <xf:input ref="instance('hello')/PersonGivenName" incremental="true" class="hello-input">
         <xf:label>Please enter your first name: </xf:label>
+        <xf:hint>Also known as your given name</xf:hint>
     </xf:input>
 
-    <xf:output value="concat('Hello ', instance('hello')/PersonGivenName, '. We hope you like XForms!')">
+    <xf:output value="concat('Hello ', instance('hello')/PersonGivenName, '. We hope you like XForms!')" class="block">
         <xf:label>Output: </xf:label>
     </xf:output>
     
-    <xf:output value="upper-case(instance('hello')/PersonGivenName)">
+    <xf:output value="upper-case(instance('hello')/PersonGivenName)" class="block">
         <xf:label>HELLO!! </xf:label>
     </xf:output>
     
