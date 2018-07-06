@@ -144,7 +144,7 @@
             </xsl:map>
         </xsl:variable>
         
-        <!-- $orig-instance-doc REDUNDANT? [MD 2018] -->
+        <!-- $orig-instance-doc (for an xforms-reset event?) -->
         <xsl:variable name="orig-instance-doc">
             <wrapper>
                 <xsl:sequence select="$xforms-doci/xforms:xform/xforms:model/xforms:instance/*"/>
@@ -440,11 +440,12 @@
             relevant Fields count = <xsl:value-of select="count($relevantFields)"/>
         </xsl:message>
         
-        <xsl:variable name="updatedInstanceXML4" select="js:getInstance()"/>
-        
+         
         <xsl:for-each select="$relevantFields">
             <xsl:variable name="keyi" select="."/>
             <xsl:variable name="context" select="ixsl:page()//*[@data-ref = $keyi]"/>
+            <xsl:variable name="updatedInstanceXML4" select="xforms:getInstance-JS($keyi)"/>
+            
             <xsl:variable name="relevantCheck" as="xs:boolean">
                 <xsl:evaluate xpath="concat(.,'/',map:get($relevantMap, .))" context-item="$updatedInstanceXML4" />
             </xsl:variable>
@@ -467,213 +468,36 @@
     
     
     <xd:doc scope="component">
-        <xd:desc>Handle change to HTML input</xd:desc>
+        <xd:desc>Handle incremental change to HTML input</xd:desc>
     </xd:doc>
-    <xsl:template match="input[exists(@data-action)]" mode="ixsl:onkeyup">
-        <xsl:variable name="refi" select="@data-ref"/>
-        <xsl:variable name="refElement" select="@data-element"/>
+    <xsl:template match="input[exists(@class) and xforms:hasClass(@class,'incremental')]" mode="ixsl:onkeyup">
         
-        <xsl:variable name="instance-id" as="xs:string" select="xforms:getInstanceId($refi)"/>
-        <xsl:variable name="xforms-value-change" select="js:getAction(string(@data-action))"/>
-        
-        <!-- MD 2018-06-29: handle multiple instances -->
-        <xsl:variable name="instanceXML" as="element()" select="xforms:getInstance-JS($refi)"/>
-        <xsl:variable name="updatedInstanceXML">
-<!--            <xsl:variable name="instanceXML" select="js:getInstance()"/>-->
-            <xsl:apply-templates select="$instanceXML" mode="form-check-initial">
-                <xsl:with-param name="instance-id" select="$instance-id"/>
-            </xsl:apply-templates>
-        </xsl:variable>
-<!--        <xsl:sequence select="js:setInstance($updatedInstanceXML)"/>-->
-        <xsl:sequence select="xforms:setInstance-JS($refi,$updatedInstanceXML)"/>
-        
-        
-        
-        <xsl:variable name="pendingInstanceUpdates" as="map(xs:string, xs:string)" select="map{}"/>
-        
-        <xsl:variable name="instanceUpdates" as="map(xs:string, xs:string)" select="map{}"/>
-        
-        <xsl:sequence select="js:setPendingUpdates($pendingInstanceUpdates)"/>
-        <xsl:sequence select="js:setUpdates($instanceUpdates)"/>
-        
-        <xsl:message use-when="$debugMode">
-            [HTML input] input detected onchange event, ref= <xsl:value-of select="$refi"/>, actions = <xsl:value-of select="serialize($xforms-value-change)"/>            
-        </xsl:message>
-        
-        <xsl:message use-when="$debugMode">
-            [HTML input] instance: <xsl:value-of select="serialize($instanceXML)"/>
-        </xsl:message>
-        <xsl:message use-when="$debugMode">
-            [HTML input] updated instance: <xsl:value-of select="serialize($updatedInstanceXML)"/>
-        </xsl:message>
-        
-        
-        <xsl:for-each select="$xforms-value-change">
-            <xsl:variable name="action-map" select="."/>
-            
-            <xsl:variable name="ref" select="map:get($action-map, '@ref')"/>
-            
-            <xsl:message use-when="$debugMode">
-                input-changed evalute ref = <xsl:value-of select="$ref"/>, 
-                position = <xsl:value-of select="position()"/>,
-                action <xsl:value-of select="serialize($action-map)"/>
-            </xsl:message>
-
-            <xsl:variable name="context" as="node()?">
-                <xsl:evaluate xpath="xforms:impose($ref)" context-item="$updatedInstanceXML"/>
-            </xsl:variable>
-            
-            <!-- TODO error testing of incorrect ref given in the xform (i.e. context would be empty in this case) -->
-
-            <xsl:variable name="ifVar" select="xforms:getIfStatement($action-map)"/>
-
-            <xsl:variable name="whileVar" select="xforms:getWhileStatement($action-map)"/>
-
-            <!-- TODO if the action does not contain an if or while it should execute action -->
-
-                <xsl:variable name="ifExecuted" as="xs:boolean">
-                    <xsl:choose>
-                        <xsl:when test="exists($ifVar)">
-                            <xsl:evaluate xpath="$ifVar" context-item="$context"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:sequence select="true()" />
-                        </xsl:otherwise>
-                    </xsl:choose>                    
-                </xsl:variable>
-            
-                <xsl:if test="$ifExecuted">
-                    <!-- MD 2018-06-30 -->
-                    <xsl:call-template name="refreshOutputs-JS"/>
-
-                    <!-- <xsl:message use-when="$debugMode">if statement true <xsl:value-of select="serialize($action-map)"/></xsl:message> -->
-                    <xsl:variable name="setvalueVar" select="map:find($action-map, 'setvalue')"/>
-                    <xsl:if test="exists($setvalueVar)">
-                        <xsl:variable name="setValues" as="item()*">
-                            <xsl:sequence select="array:flatten(map:get($action-map, 'setvalue'))"/>
-                        </xsl:variable>
-                        <!-- <xsl:message use-when="$debugMode">
-                            instance <xsl:value-of select="serialize($updatedInstanceXML)"/>
-                            setValues <xsl:value-of select="serialize(array:flatten($setValues))"/></xsl:message> -->
-
-                        <xsl:for-each select="array:flatten($setValues)">
-                            <xsl:variable name="ifVari" select="xforms:getIfStatement(.)"/>
-                            <xsl:variable name="whileVari" select="xforms:getWhileStatement(.)"/>
-                            <xsl:variable name="refz" select="xforms:resolveXPathStrings($refi,.?ref)"/>
-                            <xsl:variable name="valuez">
-                                <xsl:choose>
-                                    <xsl:when test="map:contains(.,'@value')">
-                                        <xsl:message use-when="$debugMode">
-                                            $refi = <xsl:value-of select="$refi"/>
-                                            @value <xsl:value-of select="xforms:resolveXPathStrings($refi,map:get(.,'@value'))"/>
-                                        </xsl:message>
-                                        <xsl:variable name="contexti" as="node()">
-                                            <xsl:evaluate xpath="$refi" context-item="$updatedInstanceXML" as="node()" />
-                                        </xsl:variable>
-                                        <xsl:sequence>
-                                            <xsl:evaluate xpath="map:get(.,'@value')" context-item="$contexti" />
-                                        </xsl:sequence>
-                                    </xsl:when>
-                                    <xsl:when test="map:contains(.,'value')">
-                                        <xsl:sequence select="xs:string(.?value)"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:sequence select="''"/> 
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                
-                            </xsl:variable>
-                            <xsl:message use-when="$debugMode"> 
-                                refi = <xsl:value-of select="$refi"/>
-                                refz = <xsl:value-of select="$refz"/>
-                            </xsl:message>
-                            <xsl:message use-when="$debugMode"> 
-                                value = <xsl:value-of select="xs:string($valuez)"/> 
-                            </xsl:message> 
-
-                            <!-- use ifVari and WhileVari -->
-                            <xsl:if test="exists($refz)">
-                                <xsl:variable name="associated-form-control"
-                                    select="ixsl:page()//*[@data-ref = $refz]" as="node()?"/>
-                                <xsl:message use-when="$debugMode"> $associated-form-control = <xsl:value-of select="serialize($associated-form-control)"/> </xsl:message>
-                                <xsl:choose>
-                                    <xsl:when test="exists($associated-form-control)">
-                                        <xsl:apply-templates select="$associated-form-control"
-                                            mode="set-field">
-                                            <xsl:with-param name="value" select="xs:string($valuez)" tunnel="yes"/>
-                                        </xsl:apply-templates>
-                                        
-                                        <xsl:sequence select="js:setUpdates(map:put(js:getUpdates(),$refz , xs:string($valuez)))" />
-                                        <xsl:message use-when="$debugMode">
-                                            <xsl:variable name="mapxx" select="js:getUpdates()" />
-                                            Updates map = <xsl:sequence select="serialize($mapxx)" />
-                                        </xsl:message>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        
-                                        
-                                        <xsl:sequence select="js:setPendingUpdates(map:put(js:getPendingUpdates(),$refz , xs:string($valuez)))" />
-                                        
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                
-                            </xsl:if>
-
-
-
-                        </xsl:for-each>
-                        <xsl:if test="count(array:flatten($setValues)) gt 0">
-                            <xsl:variable name="pendingUpdates" select="js:getPendingUpdates()" as="map(xs:string, xs:string)?"/>
-                            
-                            <xsl:variable name="updatedInstanceXML3">                                
-                                <xsl:apply-templates select="$updatedInstanceXML" mode="form-check-initial">
-                                    <xsl:with-param name="pendingUpdates" as="map(xs:string,xs:string)?" select="$pendingUpdates" />
-                                </xsl:apply-templates>
-                            </xsl:variable>
-                            
-                            <!-- MD 2018-06-29: handle multiple instances -->
-                            <!--                            <xsl:sequence select="js:setInstance($updatedInstanceXML3)" />-->
-                            <xsl:sequence select="xforms:setInstance-JS($refi,$updatedInstanceXML3)"/>
-                            
-                        </xsl:if>
-                    </xsl:if>
-                </xsl:if>
-            
-
-        </xsl:for-each>
-        
-        <!-- MD 2018-02-29: handle multiple instances -->
-        <!--<xsl:message use-when="$debugMode">
-            instance before checkRelevantFields= <xsl:value-of select="serialize(js:getInstance())"/>
-        </xsl:message>-->
-        <xsl:message use-when="$debugMode">
-            instance before checkRelevantFields = <xsl:value-of select="serialize(xforms:getInstance-JS($refi))"/>
-        </xsl:message>
-        
-        
-        <xsl:sequence select="xforms:checkRelevantFields($refElement)"/>
-
-        <!--<xsl:variable name="updatedInstanceXML2">
-            <xsl:variable name="instanceXML" select="js:getInstance()"/>
-            <xsl:apply-templates select="$instanceXML" mode="form-check-initial"/>
-        </xsl:variable>
-        
-        <xsl:sequence select="js:setInstance($updatedInstanceXML2)"/> -->
-       
-       <!-- MD 2018-06-29: this was here to refresh the page when an instance was updated
-       
-       But we want to refresh individual pieces as appropriate
-       -->
-        <!--<xsl:call-template name="xformsjs-main">
-            <xsl:with-param name="xforms-doc" select="js:getXFormsDoc()"/>
-            <xsl:with-param name="instance-xml" select="$updatedInstanceXML2"/>
-            <xsl:with-param name="xFormsId" select="js:getXFormsID()"/>
-            <xsl:with-param name="updateMode" tunnel="yes" select="true()"/>
-        </xsl:call-template>-->
+        <xsl:call-template name="xforms-value-changed">
+            <xsl:with-param name="form-control" select="."/>
+        </xsl:call-template>
     </xsl:template>
 
 
-
+    <xd:doc scope="component">
+        <xd:desc>Handle change to HTML input</xd:desc>
+    </xd:doc>
+    <xsl:template match="input" mode="ixsl:onchange">
+        <xsl:call-template name="xforms-value-changed">
+            <xsl:with-param name="form-control" select="."/>
+        </xsl:call-template>
+    </xsl:template>
+    
+  
+    <xd:doc scope="component">
+        <xd:desc>Handle change to HTML select</xd:desc>
+    </xd:doc>
+    <xsl:template match="select" mode="ixsl:onchange">
+        <xsl:call-template name="xforms-value-changed">
+            <xsl:with-param name="form-control" select="."/>
+        </xsl:call-template>
+    </xsl:template>
+    
+    
 
     <xsl:function name="xforms:getIfStatement" as="xs:string?">
         <xsl:param name="map" as="map(*)"/>
@@ -682,7 +506,7 @@
                 <xsl:sequence select="map:get($map, '@if')"/>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:sequence select="map:get($map, '@if')"/>
+<!--                <xsl:sequence select="map:get($map, '@if')"/>-->
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
@@ -752,198 +576,6 @@
 
     </xsl:function>
 
-    <xsl:template match="select[exists(@data-action)]" mode="ixsl:onchange">
-
-        <xsl:variable name="refi" select="@data-ref"/>
-        <xsl:variable name="refElement" select="@data-element"/>
-        
-        <!--<xsl:variable name="xforms-value-change"
-            select="ixsl:page()//head/script[@data-ntype = 'xforms-value-changed' and @data-action-context = $refi]"/>-->
-        <xsl:variable name="xforms-actions"
-            select="js:getAction(string(@data-action))" as="map(*)*"/>
-        
-        <xsl:message use-when="$debugMode">action map = <xsl:sequence select="serialize($xforms-actions)" /></xsl:message>
-        
-        
-        <!-- MD 2018-06-29: handle multiple instances -->
-        <xsl:variable name="instanceXML" as="element()" select="xforms:getInstance-JS($refi)"/>
-        <xsl:variable name="updatedInstanceXML">
-            <!--            <xsl:variable name="instanceXML" select="js:getInstance()"/>-->
-            <xsl:apply-templates select="$instanceXML" mode="form-check-initial"/>
-        </xsl:variable>
-        <!--        <xsl:sequence select="js:setInstance($updatedInstanceXML)"/>-->
-        <xsl:sequence select="xforms:setInstance-JS($refi,$updatedInstanceXML)"/>
-        
-        <!--<xsl:variable name="updatedInstanceXML">
-            <xsl:variable name="instanceXML" select="js:getInstance()"/>
-            <xsl:apply-templates select="$instanceXML" mode="form-check-initial"/>
-        </xsl:variable>-->
-        
-        <xsl:variable name="pendingInstanceUpdates" as="map(xs:string, xs:string)" select="map{}"/>
-        <xsl:variable name="instanceUpdates" as="map(xs:string, xs:string)" select="map{}"/>
-        
-        <xsl:sequence select="js:setPendingUpdates($pendingInstanceUpdates)"/>
-        <xsl:sequence select="js:setUpdates($instanceUpdates)"/>
-        
-        <xsl:message use-when="$debugMode"> select changed refi = <xsl:value-of select="$refi" />
-        xforms-action <xsl:sequence select="serialize($xforms-actions)" />
-        </xsl:message> 
-
-        <xsl:for-each select="$xforms-actions">
-            <xsl:variable name="action-map" select="."/>
-            
-            <!--<xsl:message> xforms action = <xsl:sequence select="serialize(.)" /></xsl:message>-->
-             
-            <xsl:variable name="ref" select="map:get($action-map, '@ref')"/>
-            
-            <xsl:message use-when="$debugMode"> select ref = <xsl:value-of select="$ref"/></xsl:message> 
-
-            <xsl:variable name="context" as="node()?">
-                <xsl:evaluate xpath="$ref" context-item="$updatedInstanceXML"/>
-            </xsl:variable>
-
-            <xsl:variable name="ifVar" select="map:get($action-map, '@if')"/>
-
-            <xsl:variable name="whileVar" select="map:get($action-map, '@while')"/>
-            <xsl:message use-when="$debugMode"> select ref = <xsl:value-of select="$ref"/>
-            @if <xsl:value-of select="$ifVar"/>
-                @while<xsl:value-of select="$whileVar"/>
-            </xsl:message> 
-            <!-- TODO if the action does not contain an if or while it should execute action -->
-
-            
-                
-                <xsl:variable name="ifExecuted" as="xs:boolean">
-                    <xsl:choose>
-                        <xsl:when test="exists($ifVar)"><xsl:evaluate xpath="$ifVar" context-item="$context"/></xsl:when>
-                        <xsl:otherwise>
-                            <xsl:sequence select="true()" />
-                        </xsl:otherwise>
-                    </xsl:choose>
-                    
-                </xsl:variable>
-
-                <xsl:if test="$ifExecuted">
-                    <xsl:message use-when="$debugMode">
-                        @if  executed <xsl:value-of select="$ifVar"/>
-                        
-                    </xsl:message> 
-                    <!-- <xsl:message use-when="$debugMode">if statement true <xsl:value-of select="serialize($action-map)"/></xsl:message> -->
-                    <xsl:variable name="setvalueVar" select="map:find($action-map, 'setvalue')"/>
-                    <xsl:if test="exists($setvalueVar)">
-                        <xsl:variable name="setValues" as="item()*">
-                            <xsl:sequence
-                                select="array:flatten(map:get($action-map, 'setvalue'))"/>
-                        </xsl:variable>
-                         <xsl:message use-when="$debugMode">
-                            setValues <xsl:value-of select="serialize(array:flatten($setValues))"/></xsl:message> 
-
-                        <xsl:for-each select="$setValues">
-                            <xsl:variable name="ifVari" select="map:get(. , '@if')"/>
-                            <xsl:variable name="ifExecutedi" as="xs:boolean">
-                                <xsl:choose>
-                                    <xsl:when test="exists($ifVari)"><xsl:evaluate xpath="$ifVari" context-item="$context"/></xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:sequence select="true()" />
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                
-                            </xsl:variable>
-                            <xsl:variable name="whileVari" select="xforms:getWhileStatement(.)"/>
-                            <xsl:variable name="refz"
-                                select="xforms:resolveXPathStrings($refi,.?ref)"/>
-                            <xsl:variable name="valuez" as="xs:string">
-                                
-                                <xsl:choose>
-                                    <xsl:when test="map:contains(.,'@value')">
-                                        <xsl:message use-when="$debugMode">
-                                            @value <xsl:value-of select="xforms:resolveXPathStrings($refi,map:get(.,'@value'))"/>
-                                        </xsl:message>
-                                        <xsl:variable name="contexti" as="node()">
-                                            <xsl:evaluate xpath="$refi" context-item="$updatedInstanceXML" as="node()" />
-                                        </xsl:variable>
-                                        <xsl:sequence>
-                                            <xsl:evaluate xpath="map:get(.,'@value')" context-item="$contexti" as="xs:string" />
-                                        </xsl:sequence>
-                                    </xsl:when>
-                                    <xsl:when test="map:contains(.,'value')">
-                                        <xsl:sequence select="xs:string(.?value)"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:sequence select="''"/> 
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                
-                            </xsl:variable>
-                            <xsl:message use-when="$debugMode"> ref = <xsl:value-of select="$refz"/></xsl:message>
-                            <xsl:message use-when="$debugMode"> value = <xsl:value-of select="$valuez"/> </xsl:message> 
-
-                            <!-- use ifVari and WhileVari -->
-                            <xsl:if test="exists($refz) and $ifExecutedi">
-                                <xsl:variable name="associated-form-control"
-                                    select="ixsl:page()//*[@data-ref = $refz]" as="node()?"/>
-                                <xsl:message use-when="$debugMode"> $associated-form-control = <xsl:value-of select="serialize($associated-form-control)"/> </xsl:message>
-                                <xsl:choose>
-                                    <xsl:when test="exists($associated-form-control)">
-                                        <xsl:apply-templates select="$associated-form-control"
-                                            mode="set-field">
-                                            <xsl:with-param name="value" select="$valuez" tunnel="yes"/>
-                                        </xsl:apply-templates>
-                                        <xsl:sequence select="js:setUpdates(map:put(js:getUpdates(),$refz , xs:string($valuez)))" />
-                                        <xsl:message use-when="$debugMode">
-                                            <xsl:variable name="mapxx" select="js:getUpdates()" />
-                                            Updates map = <xsl:sequence select="serialize($mapxx)" />
-                                        </xsl:message>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <!-- update the instance -->
-                                        
-                                        <xsl:sequence select="js:setPendingUpdates(map:put(js:getPendingUpdates(),$refz , xs:string($valuez)))" />
-                                        <xsl:message use-when="$debugMode"> update instance only ref = <xsl:value-of select="$refz"/>  </xsl:message>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:if>
-
-
-
-                        </xsl:for-each>
-
-                    </xsl:if>
-                </xsl:if>
-            
-
-        </xsl:for-each>
-        <!--<xsl:variable name="updatedInstanceXML2">
-            <xsl:variable name="instanceXML"
-                select="xforms:convert-json-to-xml(ixsl:page()//script[@id = 'xforms-jinstance']/text())"/>
-            <xsl:apply-templates select="$instanceXML" mode="form-check-initial"/>
-        </xsl:variable>-->
-        
-        
-        <!-- MD 2018-06-29: handle multiple instances -->
-        <!--<xsl:variable name="updatedInstanceXML2">
-            <xsl:variable name="instanceXML" select="js:getInstance()"/>
-            <xsl:apply-templates select="$instanceXML" mode="form-check-initial">
-                <xsl:with-param name="pendingUpdates" as="map(xs:string,xs:string)?" select="js:getPendingUpdates()" />
-            </xsl:apply-templates>
-        </xsl:variable>
-        <xsl:sequence select="js:setInstance($updatedInstanceXML2)"/>-->
-        
-        <xsl:variable name="updatedInstanceXML2">                                
-            <xsl:apply-templates select="$updatedInstanceXML" mode="form-check-initial">
-                <xsl:with-param name="pendingUpdates" as="map(xs:string,xs:string)?" select="js:getPendingUpdates()" />
-            </xsl:apply-templates>
-        </xsl:variable>
-        <xsl:sequence select="xforms:setInstance-JS($refi,$updatedInstanceXML2)"/>
-        
-        
-        
-        <xsl:message use-when="$debugMode">
-            instance after select change <xsl:value-of select="serialize($updatedInstanceXML2)"/>
-        </xsl:message>
-        <xsl:sequence select="xforms:checkRelevantFields($refElement)"/>
-       
-    </xsl:template>
 
 
     <xsl:function name="xforms:check-required-fields" as="item()*">
@@ -1026,7 +658,7 @@
 
 
 
-        <xsl:variable name="action">
+        <xsl:variable name="action" as="xs:string">
             <!-- MD 2018
             just use @data-submit value
             -->
@@ -1119,6 +751,7 @@
 
 
               <xsl:otherwise>
+                  <xsl:sequence select="js:replaceDocument(serialize($responseXML))" />
                   <xsl:message>Response: <xsl:value-of select="serialize($responseXML)" /></xsl:message>
 
               </xsl:otherwise>
@@ -1420,6 +1053,9 @@
             <xsl:variable name="refElement" select="tokenize($refi, '/')[last()]"/>
             
             <input>
+                <xsl:if test="exists(@incremental)">
+                    <xsl:attribute name="class" select="'incremental'"/>
+                </xsl:if>
                 <xsl:attribute name="data-element" select="$refElement" />
                 <xsl:if test="exists($bindingi) and exists($bindingi/@required)">
                     <xsl:attribute name="data-required" select="$bindingi/@required"/>
@@ -2113,8 +1749,7 @@
         
     </xsl:template> 
 
-    <xsl:template match="select[exists(@data-action)]" mode="ixsl:onclick"> </xsl:template>
-
+ 
 
     <xsl:template match="button[exists(@data-action)]" mode="ixsl:onclick">
         <xsl:variable name="contextButton" select="." as="element(button)"/>
@@ -2517,20 +2152,6 @@
     </xsl:template>
     
     
-    <!-- MD 2018-06-29 -->
-    <xsl:template match="@incremental[. = 'true']">
-        <xsl:param name="nodeset" select="''" tunnel="yes"/>
-        <xsl:message use-when="$debugMode">[@incremental] Setting action</xsl:message>
-        <xsl:variable name="action-map" as="map(*)">
-            <xsl:map>
-                <xsl:if test="not(empty($nodeset))">
-                    <xsl:map-entry key="'@ref'" select="xs:string($nodeset)" />
-                </xsl:if>
-            </xsl:map>
-        </xsl:variable>
-        <xsl:sequence select="$action-map"/>
-    </xsl:template>
-
 
     <xsl:template
         match="xforms:setvalue | xforms:insert | xforms:delete | xforms:toggle | xforms:send | xforms:setfocus | xforms:setindex | xforms:load | xforms:message | xforms:dispatch | xforms:rebuild | xforms:reset | xforms:show | xforms:hide | xforms:script | xforms:unload">
@@ -3313,6 +2934,26 @@
     -->
     
     <xd:doc scope="component">
+        <xd:desc>Find string in HTML @class attribute.</xd:desc>
+        <xd:return>True if $string is one of the values of $class</xd:return>
+        <xd:param name="class">HTML @class attribute (e.g. class="block incremental")</xd:param>
+        <xd:param name="string">String to match in class (e.g. "incremental")</xd:param>
+    </xd:doc>
+    <xsl:function name="xforms:hasClass" as="xs:boolean">
+        <xsl:param name="class" as="attribute(class)"/>
+        <xsl:param name="string" as="xs:string"/>
+        <xsl:variable name="classes" as="xs:string*" select="tokenize($class)"/>
+        <xsl:choose>
+            <xsl:when test="$string = $classes">
+                <xsl:value-of select="true()"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="false()"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+    
+    <xd:doc scope="component">
         <xd:desc>
             <xd:p>From an XPath binding expression, return the ID of the referenced instance.</xd:p>
             <xd:p>If the expression starts instance('xxxx') the value is 'xxxx'.</xd:p>
@@ -3475,13 +3116,28 @@
         
         <xsl:choose>
             <xsl:when test="exists($this/@ref)">
-                <xsl:value-of
-                    select="
-                    if ($nodeset = '') then
-                    concat($nodeset, $this/@ref)
-                    else
-                    concat($nodeset, '/', $this/@ref)"
-                />
+                <xsl:variable name="this-ref" as="xs:string" select="normalize-space( xs:string($this/@ref) )"/>
+                <xsl:message use-when="$debugMode">[getDataRef] parsing @ref = <xsl:value-of select="$this-ref"/></xsl:message>
+                <xsl:choose>
+                    <!-- MD 2018-07-05: 
+                        Handle @ref with XPath from root of instance "document".
+                        We're treating an instance as an element (as does XForms instance() function)
+                        so we remove the first component of the path
+                    -->
+                    <xsl:when test="starts-with($this-ref,'/')">
+                        <xsl:message use-when="$debugMode">[getDataRef] @ref starts with '/'</xsl:message>
+                        
+                        <xsl:value-of select="replace($this-ref, '^/[^/]*/', '')"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of
+                            select="
+                            if ($nodeset = '') 
+                            then $this-ref
+                            else concat($nodeset, '/', $this-ref)"
+                        />
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:when>
             <xsl:when test="exists($bindingi)">
                 <!-- 
@@ -3567,14 +3223,22 @@
                 <xsl:evaluate xpath="map:get($instance-map,'xpath')" context-item="$this-instance"/>
                 
             </xsl:when>
-            <xsl:otherwise/>
+            <xsl:otherwise>
+                <!-- choose default instance -->
+                <xsl:variable name="default-instance" as="element()?">
+                    <xsl:call-template name="getInstance">
+                        <xsl:with-param name="instance-id" select="$default-instance-id"/>
+                    </xsl:call-template>
+                </xsl:variable>
+                <xsl:sequence select="$default-instance"/>
+            </xsl:otherwise>
         </xsl:choose>
         
     </xsl:template>
     
  
     <xd:doc scope="component">
-        <xd:desc>Implementation of XForms <a href="https://www.w3.org/TR/xforms11/#evt-refresh">refresh event</a></xd:desc>
+        <xd:desc>Update HTML display elements corresponding to xforms:output elements</xd:desc>
     </xd:doc>
     <xsl:template name="refreshOutputs-JS">
         <xsl:message use-when="$debugMode">[refreshOutputs-JS] START refreshOutputs</xsl:message>
@@ -3647,7 +3311,193 @@
     <xsl:template name="setActions">
         <xsl:param name="this" as="element()"/>
         
-        <xsl:apply-templates select="$this/@incremental | $this/xforms:action | $this/xforms:setvalue | $this/xforms:insert | $this/xforms:delete | $this/xforms:toggle | $this/xforms:send | $this/xforms:setfocus | $this/xforms:setindex | $this/xforms:load | $this/xforms:message | $this/xforms:dispatch | $this/xforms:rebuild | $this/xforms:reset | $this/xforms:show | $this/xforms:hide | $this/xforms:script | $this/xforms:unload"/>
+        <xsl:apply-templates select=" $this/xforms:action | $this/xforms:setvalue | $this/xforms:insert | $this/xforms:delete | $this/xforms:toggle | $this/xforms:send | $this/xforms:setfocus | $this/xforms:setindex | $this/xforms:load | $this/xforms:message | $this/xforms:dispatch | $this/xforms:rebuild | $this/xforms:reset | $this/xforms:show | $this/xforms:hide | $this/xforms:script | $this/xforms:unload"/>
+        
+    </xsl:template>
+    
+    
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Implementation of <a href="https://www.w3.org/TR/xforms11/#evt-valueChanged">xforms-value-changed event</a></xd:p>
+        </xd:desc>
+        <xd:param name="form-control">HTML form control containing new value for updating an instance etc.</xd:param>
+    </xd:doc>
+    <xsl:template name="xforms-value-changed">
+        <xsl:param name="form-control" as="node()"/>
+        
+        <xsl:variable name="refi" select="$form-control/@data-ref"/>
+        <xsl:variable name="refElement" select="$form-control/@data-element"/>
+        
+        <xsl:variable name="instance-id" as="xs:string" select="xforms:getInstanceId($refi)"/>
+        <xsl:variable name="actions" select="js:getAction(string($form-control/@data-action))"/>
+        
+        <!-- MD 2018-06-29: handle multiple instances -->
+        <xsl:variable name="instanceXML" as="element()" select="xforms:getInstance-JS($refi)"/>
+        <xsl:variable name="updatedInstanceXML">
+            <xsl:apply-templates select="$instanceXML" mode="form-check-initial">
+                <xsl:with-param name="instance-id" select="$instance-id"/>
+            </xsl:apply-templates>
+        </xsl:variable>
+ 
+        <xsl:sequence select="xforms:setInstance-JS($refi,$updatedInstanceXML)"/>
+        <xsl:call-template name="refreshOutputs-JS"/>
+        
+        <!-- clear updates -->
+        <xsl:variable name="pendingInstanceUpdates" as="map(xs:string, xs:string)" select="map{}"/>       
+        <xsl:variable name="instanceUpdates" as="map(xs:string, xs:string)" select="map{}"/>
+        
+        <xsl:sequence select="js:setPendingUpdates($pendingInstanceUpdates)"/>
+        <xsl:sequence select="js:setUpdates($instanceUpdates)"/>
+        
+        <xsl:message use-when="$debugMode">
+            [xforms-value-changed] Detected change in form control '<xsl:value-of select="name($form-control)"/>', 
+            ref= <xsl:value-of select="$refi"/>, 
+            actions = <xsl:value-of select="serialize($actions)"/>            
+        </xsl:message>
+        
+        <xsl:message use-when="$debugMode">
+            [xforms-value-changed] instance: <xsl:value-of select="serialize($instanceXML)"/>
+        </xsl:message>
+        <xsl:message use-when="$debugMode">
+            [xforms-value-changed] updated instance: <xsl:value-of select="serialize($updatedInstanceXML)"/>
+        </xsl:message>
+        
+        
+        <xsl:for-each select="$actions">
+            <xsl:variable name="action-map" select="."/>
+            
+            <xsl:variable name="ref" select="map:get($action-map, '@ref')"/>
+            
+            <xsl:message use-when="$debugMode">
+                [xforms-value-changed] evaluating action = <xsl:value-of select="serialize($action-map)"/>
+            </xsl:message>
+            
+            <xsl:variable name="context" as="node()?">
+                <xsl:evaluate xpath="xforms:impose($ref)" context-item="$updatedInstanceXML"/>
+            </xsl:variable>
+            
+            <!-- TODO error testing of incorrect ref given in the xform (i.e. context would be empty in this case) -->
+            
+            <xsl:variable name="ifVar" select="xforms:getIfStatement($action-map)"/>
+            
+            <xsl:variable name="whileVar" select="xforms:getWhileStatement($action-map)"/>
+            
+            <!-- TODO if the action does not contain an if or while it should execute action -->
+            
+            <xsl:variable name="ifExecuted" as="xs:boolean">
+                <xsl:choose>
+                    <xsl:when test="exists($ifVar)">
+                        <xsl:evaluate xpath="$ifVar" context-item="$context"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:sequence select="true()" />
+                    </xsl:otherwise>
+                </xsl:choose>                    
+            </xsl:variable>
+            
+            <xsl:if test="$ifExecuted">
+                <!-- MD 2018-06-30 -->
+                
+                
+                <!-- handle e.g. xforms:input/xforms:action/xforms:setvalue -->
+                <xsl:variable name="setvalueVar" select="map:find($action-map, 'setvalue')" as="array(map(*))"/>
+                <xsl:if test="exists($setvalueVar)">
+                    <xsl:variable name="setValues" as="item()*">
+                        <xsl:sequence select="array:flatten($setvalueVar)"/>
+                    </xsl:variable>
+                    <!-- <xsl:message use-when="$debugMode">
+                            instance <xsl:value-of select="serialize($updatedInstanceXML)"/>
+                            setValues <xsl:value-of select="serialize(array:flatten($setValues))"/></xsl:message> -->
+                    
+                    <xsl:for-each select="array:flatten($setValues)">
+                        <xsl:variable name="ifVari" select="xforms:getIfStatement(.)"/>
+                        <xsl:variable name="whileVari" select="xforms:getWhileStatement(.)"/>
+                        <xsl:variable name="refz" select="xforms:resolveXPathStrings($refi,.?ref)"/>
+                        <xsl:variable name="valuez">
+                            <xsl:choose>
+                                <xsl:when test="map:contains(.,'@value')">
+                                    <xsl:message use-when="$debugMode">
+                                        $refi = <xsl:value-of select="$refi"/>
+                                        @value <xsl:value-of select="xforms:resolveXPathStrings($refi,map:get(.,'@value'))"/>
+                                    </xsl:message>
+                                    <xsl:variable name="contexti" as="node()">
+                                        <xsl:evaluate xpath="$refi" context-item="$updatedInstanceXML" as="node()" />
+                                    </xsl:variable>
+                                    <xsl:sequence>
+                                        <xsl:evaluate xpath="map:get(.,'@value')" context-item="$contexti" />
+                                    </xsl:sequence>
+                                </xsl:when>
+                                <xsl:when test="map:contains(.,'value')">
+                                    <xsl:sequence select="xs:string(.?value)"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:sequence select="''"/> 
+                                </xsl:otherwise>
+                            </xsl:choose>
+                            
+                        </xsl:variable>
+                        <xsl:message use-when="$debugMode"> 
+                            refi = <xsl:value-of select="$refi"/>
+                            refz = <xsl:value-of select="$refz"/>
+                        </xsl:message>
+                        <xsl:message use-when="$debugMode"> 
+                            value = <xsl:value-of select="xs:string($valuez)"/> 
+                        </xsl:message> 
+                        
+                        <!-- use ifVari and WhileVari -->
+                        <xsl:if test="exists($refz)">
+                            <xsl:variable name="associated-form-control"
+                                select="ixsl:page()//*[@data-ref = $refz]" as="node()?"/>
+                            <xsl:message use-when="$debugMode"> $associated-form-control = <xsl:value-of select="serialize($associated-form-control)"/> </xsl:message>
+                            <xsl:choose>
+                                <xsl:when test="exists($associated-form-control)">
+                                    <xsl:apply-templates select="$associated-form-control"
+                                        mode="set-field">
+                                        <xsl:with-param name="value" select="xs:string($valuez)" tunnel="yes"/>
+                                    </xsl:apply-templates>
+                                    
+                                    <xsl:sequence select="js:setUpdates(map:put(js:getUpdates(),$refz , xs:string($valuez)))" />
+                                    <xsl:message use-when="$debugMode">
+                                        <xsl:variable name="mapxx" select="js:getUpdates()" />
+                                        Updates map = <xsl:sequence select="serialize($mapxx)" />
+                                    </xsl:message>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:sequence select="js:setPendingUpdates(map:put(js:getPendingUpdates(),$refz , xs:string($valuez)))" />
+                                </xsl:otherwise>
+                            </xsl:choose>    
+                        </xsl:if>
+                    </xsl:for-each>
+                    <xsl:if test="count(array:flatten($setValues)) gt 0">
+                        <!-- update instance again if there were setvalue actions -->
+                        <xsl:variable name="pendingUpdates" select="js:getPendingUpdates()" as="map(xs:string, xs:string)?"/>
+                        
+                        <xsl:variable name="updatedInstanceXML3">                                
+                            <xsl:apply-templates select="$updatedInstanceXML" mode="form-check-initial">
+                                <xsl:with-param name="pendingUpdates" as="map(xs:string,xs:string)?" select="$pendingUpdates" />
+                            </xsl:apply-templates>
+                        </xsl:variable>
+                        
+                        <!-- MD 2018-06-29: handle multiple instances -->
+                        <xsl:sequence select="xforms:setInstance-JS($refi,$updatedInstanceXML3)"/>
+                        
+                    </xsl:if>
+                </xsl:if>
+            </xsl:if>
+            
+            
+        </xsl:for-each>
+        
+        <!-- MD 2018-02-29: handle multiple instances -->
+        <!--<xsl:message use-when="$debugMode">
+            instance before checkRelevantFields= <xsl:value-of select="serialize(js:getInstance())"/>
+        </xsl:message>-->
+        <xsl:message use-when="$debugMode">
+            instance before checkRelevantFields = <xsl:value-of select="serialize(xforms:getInstance-JS($refi))"/>
+        </xsl:message>
+        
+        
+        <xsl:sequence select="xforms:checkRelevantFields($refElement)"/>
         
     </xsl:template>
     
