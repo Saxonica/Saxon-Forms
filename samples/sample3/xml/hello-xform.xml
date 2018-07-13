@@ -20,6 +20,10 @@
     <xf:select1 ref="instance('hello')/PetType" incremental="true">
         <xf:label>Type of pet:</xf:label>
         <xf:item>
+            <xf:label>[Pet]</xf:label>
+            <xf:value>pet</xf:value> 
+        </xf:item>
+        <xf:item>
             <xf:label>Cat</xf:label>
             <xf:value>cat</xf:value> 
         </xf:item>
@@ -44,6 +48,7 @@
     
 
     <xf:output value="concat('Hello ', instance('hello')/PersonGivenName  , '. Your ', instance('hello')/PetType, ' is called ', instance('hello')/CatName)" class="block"/>
+    
 
     
 </xf:xform>

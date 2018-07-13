@@ -51,7 +51,7 @@
                 Strip out start of XPath from root of instance "document" 
                 Assume no predicate on root element name
             -->
-            <xsl:analyze-string select="$input2" regex="(^\s*|[^\i\c])/\i\c*(/)">
+            <xsl:analyze-string select="$input2" regex="(^\s*|[^\i\c\]])/\i\c*(/)">
                 <xsl:matching-substring>
                     <xsl:sequence select="regex-group(1)"/>
                     <xsl:sequence select="regex-group(2)"/>

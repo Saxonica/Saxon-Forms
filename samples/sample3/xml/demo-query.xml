@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xf:model id="model-1">
+        <xf:instance id="query">
+            <parameters xmlns="">
+                <field>ingredient</field>   
+                <query/>
+            </parameters>
+        </xf:instance>
+
+        <xf:submission id="search" resource="php/test.php" ref="instance('query')" method="GET" serialization="application/x-www-form-urlencoded"/> 
+
+    </xf:model>
+    
+    
+    <xf:input ref="instance('query')/query" incremental="true" size="35" class="block">
+        <xf:label>Query:</xf:label>
+        <xf:hint>Enter search term</xf:hint>
+    </xf:input>
+ 
+    <xf:select1 ref="instance('query')/field" incremental="true">
+        <xf:label>Field:</xf:label>
+        <xf:item>
+            <xf:label>ingredient</xf:label>
+            <xf:value>ingredient</xf:value> 
+        </xf:item>
+        <xf:item>
+            <xf:label>method</xf:label>
+            <xf:value>method</xf:value> 
+        </xf:item>
+    </xf:select1>
+    
+    <xf:submit submission="search">
+        <xf:label>Submit query</xf:label>
+    </xf:submit>
+    
+</xf:xform>
