@@ -135,11 +135,28 @@
                 <xsl:otherwise>
                     <xsl:sequence select="$instance-docs"/>
                 </xsl:otherwise>
-            </xsl:choose>
-            
-           
+            </xsl:choose> 
         </xsl:variable>
         
+        <!-- first instance (use as default if all instances have @id) -->
+        <xsl:variable name="default-instance" as="element()">
+            <xsl:choose>
+                <xsl:when test="empty($instance-docs)">
+                    <xsl:choose>
+                        <xsl:when test="$xforms-doci/xforms:xform/xforms:model/xforms:instance[not(@id)]">
+                            <xsl:sequence select="$xforms-doci/xforms:xform/xforms:model/xforms:instance[not(@id)][1]/*"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:sequence select="$xforms-doci/xforms:xform/xforms:model/xforms:instance[1]/*"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:when>
+                <!-- instance doc already set in first build... -->
+                <xsl:otherwise>
+                    <xsl:sequence select="js:getDefaultInstance()"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
         
         <!-- register all bindings in model as a map -->
         <xsl:variable name="bindings" as="map(xs:string, node())">
@@ -370,7 +387,15 @@
                 </xsl:for-each>
 
                 <xsl:sequence select="js:setXFormsDoc($xforms-doc)"/>
+                <xsl:sequence select="js:setDefaultInstance($default-instance)"/>
                 <xsl:sequence select="js:setRelevantMap($RelevantBindings)" />
+                
+                <xsl:variable name="pendingInstanceUpdates" as="map(xs:string, xs:string)" select="map{}"/>       
+                <xsl:variable name="instanceUpdates" as="map(xs:string, xs:string)" select="map{}"/>
+                
+                <xsl:sequence select="js:setPendingUpdates($pendingInstanceUpdates)"/>
+                <xsl:sequence select="js:setUpdates($instanceUpdates)"/>
+                
             </xsl:otherwise>
         </xsl:choose>
 
@@ -380,7 +405,7 @@
         
         <xsl:for-each select="$instanceKeys">
             <xsl:variable name="instance" select="map:get($xforms-instances, .)" as="element()" />  
-            <xsl:message use-when="$debugMode">Setting instance with ID '<xsl:value-of select="."/>'</xsl:message>
+            <xsl:message use-when="$debugMode">Setting instance with ID '<xsl:value-of select="."/>'; instance = <xsl:value-of select="serialize($instance)"/></xsl:message>
             <xsl:sequence select="js:setInstance(.,$instance)"/>
         </xsl:for-each>
         
@@ -423,6 +448,8 @@
                 <xsl:with-param name="instances" select="$xforms-instances" as="map(xs:string, element())" tunnel="yes"/>
                 <xsl:with-param name="bindings" select="$bindings" as="map(xs:string, node())" tunnel="yes"/>
                 <xsl:with-param name="submissions" select="$submissions" as="map(xs:string, map(*))" tunnel="yes"/>
+                <!-- clear nodeset when (re)building  -->
+                <xsl:with-param name="nodeset" select="''" as="xs:string" tunnel="yes"/>
             </xsl:apply-templates>
         </xsl:result-document>
         
@@ -782,27 +809,9 @@
                   <xsl:choose>
                       <xsl:when test="$replace = 'instance'">
                           <xsl:sequence select="xforms:setInstance-JS($refi,$responseXML/*)"/>
-                          <xsl:variable name="instanceDocs" as="map(*)">
-                              <xsl:variable name="instance-keys" select="js:getInstanceKeys()" as="item()*"/>
-                              <xsl:map>
-                                  <xsl:for-each select="$instance-keys">
-                                      <xsl:variable name="refz" as="xs:string" select="concat('instance(''', ., ''')/')"/>
-                                      <xsl:map-entry key="." select="xforms:getInstance-JS($refz)"/>
-                                  </xsl:for-each>
-                              </xsl:map>
-                              
-                          </xsl:variable>
                           
-                          
-                          
-                          <xsl:message use-when="$debugMode">[HTTPsubmit] instanceDocs = <xsl:value-of select="serialize($instanceDocs)"/></xsl:message>
-<!--                          <xsl:call-template name="refreshOutputs-JS"/>-->
-                          <xsl:call-template name="xformsjs-main">
-                              <xsl:with-param name="xforms-file" select="$xforms-file"/>
-                              <xsl:with-param name="instance-docs" select="$instanceDocs"/>
-                          </xsl:call-template>
-                          
-                          <xsl:message use-when="$debugMode">[HTTPsubmit] response body: <xsl:value-of select="serialize($responseXML)"/></xsl:message>
+                          <xsl:call-template name="xforms-rebuild"/>
+                         <xsl:message use-when="$debugMode">[HTTPsubmit] response body: <xsl:value-of select="serialize($responseXML)"/></xsl:message>
                       </xsl:when>
                       <!-- TO DO: replace node or text within instance; replace entire page -->
                       <xsl:otherwise/>
@@ -1574,74 +1583,47 @@
     </xsl:template>
 
 
+    
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Template for updating instance XML based on node added with xforms:insert control</xd:p>
+        </xd:desc>
+        <xd:param name="insert-node">Node to be cloned</xd:param>
+        <xd:param name="position-relative">"before" or "after"</xd:param>
+    </xd:doc>
     <xsl:template match="*" mode="insert-node">
-        <xsl:param name="insert-node" as="node()"/>
-        <xsl:param name="path" as="xs:string" select="''"/>
-        <xsl:param name="current-path" as="xs:string" select="''"/>
-        <xsl:variable name="updatedPath" select="concat($current-path, '/', local-name())"/>
-
-        <xsl:variable name="name" select="local-name()"/>
-        <xsl:variable name="currentPosition"
-            select="count(preceding-sibling::*[local-name() = local-name(current())]) + 1"/>
-        <xsl:variable name="isLast"
-            select="count(parent::*/*[local-name() = $name]) = $currentPosition"/>
-        <xsl:variable name="updatedPath2">
-            <xsl:value-of select="$updatedPath"/>
-            <xsl:if
-                test="(preceding-sibling::* | following-sibling::*)[local-name() = local-name(current())]">
-                <xsl:value-of select="concat('[', $currentPosition, ']')"/>
-            </xsl:if>
-        </xsl:variable>
-
-        <!-- TODO - have rule for adding attributes -->
-        <xsl:choose>
-            <xsl:when test="$updatedPath = $path and $isLast">
-
-
-                <xsl:copy>
-                    <xsl:apply-templates select="node()" mode="insert-node">
-
-                        <xsl:with-param name="insert-node" select="$insert-node"/>
-                        <xsl:with-param name="path" select="$path"/>
-                        <xsl:with-param name="current-path" select="$updatedPath2"/>
-                    </xsl:apply-templates>
-                </xsl:copy>
-                <xsl:copy-of select="$insert-node"/>
-            </xsl:when>
-            <xsl:otherwise>
-
-                <xsl:copy>
-                    <xsl:apply-templates select="node()" mode="insert-node">
-                        <xsl:with-param name="insert-node" select="$insert-node"/>
-                        <xsl:with-param name="path" select="$path"/>
-                        <xsl:with-param name="current-path" select="$updatedPath2"/>
-                    </xsl:apply-templates>
-                </xsl:copy>
-            </xsl:otherwise>
-        </xsl:choose>
+        <xsl:param name="insert-node" as="node()" tunnel="yes"/>
+        <xsl:param name="position-relative" as="xs:string?" select="'after'" required="no" tunnel="yes"/>
+        
+        
+        <xsl:if test=". is $insert-node and $position-relative = 'before'">
+            <xsl:message>[insert-node mode] Found! <xsl:value-of select="serialize($insert-node)"/></xsl:message>
+            <xsl:copy-of select="$insert-node"/>
+        </xsl:if>
+        <xsl:copy>
+            <xsl:copy-of select="@*"/>
+            <xsl:apply-templates select="node()" mode="insert-node"/>
+        </xsl:copy>
+        <xsl:if test=". is $insert-node and $position-relative = 'after'">
+            <xsl:copy-of select="$insert-node"/>
+        </xsl:if>
+        
     </xsl:template>
 
 
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Template for updating instance XML based on node deleted with xforms:delete control</xd:p>
+        </xd:desc>
+        <xd:param name="delete-node">Node to be deleted</xd:param>
+     </xd:doc>
     <xsl:template match="*" mode="delete-node">
-        <xsl:param name="path" as="xs:string" select="''"/>
-        <xsl:param name="current-path" as="xs:string" select="''"/>
-        <xsl:variable name="updatedPath" select="concat($current-path, '/', local-name())"/>
-
-        <xsl:variable name="name" select="local-name()"/>
-        <xsl:variable name="currentPosition"
-            select="count(preceding-sibling::*[local-name() = local-name(current())]) + 1"/>
-        <xsl:variable name="updatedPath2">
-            <xsl:value-of select="$updatedPath"/>
-            <xsl:if
-                test="(preceding-sibling::* | following-sibling::*)[local-name() = local-name(current())]">
-                <xsl:value-of select="concat('[', $currentPosition, ']')"/>
-            </xsl:if>
-        </xsl:variable>
+        <xsl:param name="delete-node" as="node()" tunnel="yes"/>
         
-
-        <!-- TODO - have rule for adding attributes -->
         <xsl:choose>
-            <xsl:when test="$updatedPath2 = $path"> 
+            <xsl:when test=". is $delete-node">
+                <xsl:message>[delete-node mode] Found! <xsl:value-of select="serialize($delete-node)"/></xsl:message>
+                
             <!-- deleting controls from the xform -->
              <!--   <xsl:for-each
                     select="ixsl:page()//*[@data-ref = $path]/..">
@@ -1652,12 +1634,9 @@
                 </xsl:for-each>-->
             </xsl:when>
             <xsl:otherwise>
-
                 <xsl:copy>
-                    <xsl:apply-templates select="node()" mode="delete-node">
-                        <xsl:with-param name="path" select="$path"/>
-                        <xsl:with-param name="current-path" select="$updatedPath2"/>
-                    </xsl:apply-templates>
+                    <xsl:copy-of select="@*"/>
+                    <xsl:apply-templates select="node()" mode="delete-node"/>
                 </xsl:copy>
             </xsl:otherwise>
         </xsl:choose>
@@ -2233,9 +2212,17 @@
 
     <!-- Form instance check for updates made -->
 
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Template for updating instance XML based on new value in form control (xforms:input, xforms:setvalue)</xd:p>
+            <xd:p>Path of each element is identified and compared to resolved @data-ref value of form control.</xd:p>
+        </xd:desc>
+        <xd:param name="instance-id">@id value of instance (or default). Used to help write path of instance element.</xd:param>
+        <xd:param name="pendingUpdates">Map of XPath binding expression to new value</xd:param>
+    </xd:doc>
     <xsl:template match="*" mode="form-check-initial">
         <xsl:param name="instance-id" as="xs:string" select="$default-instance-id"/>
-        <xsl:param name="pendingUpdates" as="map(xs:string, xs:string)?"/>
+        <xsl:param name="pendingUpdates" as="map(xs:string, xs:string)?" tunnel="yes"/>
         <!--<xsl:message use-when="$debugMode">form-check processing pendingUpdat Map size: <xsl:value-of select="map:size($pendingUpdates)"/>
         map keys <xsl:sequence select="serialize($pendingUpdates)"/>-->
             
@@ -2255,126 +2242,121 @@
         <xsl:copy>
             <xsl:apply-templates select="*" mode="form-check">
                 <xsl:with-param name="curPath" select="$curPath"/>
-                <xsl:with-param name="pendingUpdates" as="map(xs:string,xs:string)?" select="$pendingUpdates" />
             </xsl:apply-templates>
         </xsl:copy>
     </xsl:template>
-
+    
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Template for updating element within instance XML based on new value in form control (xforms:input, xforms:setvalue)</xd:p>
+        </xd:desc>
+        <xd:param name="curPath">XPath statement identifying parent</xd:param>
+        <xd:param name="position">Integer position of element within set of siblings</xd:param>
+        <xd:param name="pendingUpdates">Map of XPath binding expression to new value</xd:param>
+    </xd:doc>
     <xsl:template match="*" mode="form-check">
         <xsl:param name="curPath" select="''"/>
         <xsl:param name="position" select="0"/>
-        <xsl:param name="pendingUpdates" as="map(xs:string, xs:string)?"/>
+        <xsl:param name="pendingUpdates" as="map(xs:string, xs:string)?" tunnel="yes"/>
         <!-- TODO namespaces?? -->
-        <!-- 
-        MD 2018
-        
-        update path with instance ID, e.g. "instance('search')"
-        -->
+       
         <xsl:variable name="updatedPath"
             select="
-                if ($position > 0) then
-                    concat($curPath, local-name(), '[', $position, ']')
-                else
-                    concat($curPath, local-name())"/>
+                if ($position > 0) 
+                then concat($curPath, local-name(), '[', $position, ']')
+                else concat($curPath, local-name())"/>
 
-        <xsl:message use-when="$debugMode">form-check processing node: <xsl:value-of select="local-name()"/></xsl:message>
-        <xsl:message use-when="$debugMode">form-check updatedPath: <xsl:value-of select="$updatedPath"/></xsl:message> 
-        <!--<xsl:message use-when="$debugMode">
-            form-check processing pendingUpdat Map size: <xsl:value-of select="map:size($pendingUpdates)"/>
-            path <xsl:sequence select="$updatedPath"/>
-        </xsl:message>-->
-
-        <!-- *** Process attributes of context node -->
-        <xsl:apply-templates select="attribute()" mode="form-check">
-            <xsl:with-param name="curPath" select="concat($updatedPath, '/')"/>
-            <xsl:with-param name="pendingUpdates" as="map(xs:string,xs:string)?" select="$pendingUpdates" />
-        </xsl:apply-templates>
-
-        <!-- *** Process text content of context node -->
-        <!-- Check for associated/bound form-control with id=$updatedPath  -->
-        <xsl:variable name="associated-form-control"
-            select="ixsl:page()//*[@data-ref = $updatedPath]"/>
+<!--        <xsl:message use-when="$debugMode">form-check processing node: <xsl:value-of select="local-name()"/></xsl:message>-->
+<!--        <xsl:message use-when="$debugMode">form-check updatedPath: <xsl:value-of select="$updatedPath"/></xsl:message> -->
         
-        <xsl:choose>
-            <xsl:when test="exists($associated-form-control)">
-                <xsl:message use-when="$debugMode">Found associated form control with id: <xsl:value-of
+        
+        <xsl:copy>
+            <!-- *** Process attributes of context node -->
+            <xsl:apply-templates select="attribute()" mode="form-check">
+                <xsl:with-param name="curPath" select="concat($updatedPath, '/')"/>
+            </xsl:apply-templates>
+            
+            <!-- *** Process text content of context node -->
+            <!-- Check for associated/bound form-control with id=$updatedPath  -->
+            <xsl:variable name="associated-form-control"
+                select="ixsl:page()//*[@data-ref = $updatedPath]"/>
+            
+            <xsl:choose>
+                <xsl:when test="exists($associated-form-control)">
+                    <xsl:message use-when="$debugMode">Found associated form control with id: <xsl:value-of
                         select="$updatedPath"/></xsl:message> 
-                <xsl:copy>
                     <xsl:value-of>
                         <xsl:apply-templates select="$associated-form-control" mode="get-field"/>
                     </xsl:value-of>
-                </xsl:copy>
-             </xsl:when>
-            <xsl:when test="exists($pendingUpdates) and map:contains($pendingUpdates, $updatedPath)">
-                <!--<xsl:message use-when="$debugMode">Found path in pendingUpdate <xsl:value-of
+                </xsl:when>
+                <xsl:when test="exists($pendingUpdates) and map:contains($pendingUpdates, $updatedPath)">
+                    <!--<xsl:message use-when="$debugMode">Found path in pendingUpdate <xsl:value-of
                     select="$updatedPath"/>
                     map = <xsl:sequence select="serialize($pendingUpdates)" />
                     map:contains(map{'Document/Options/Updated':'true'}, 'Document/Shipment') := <xsl:value-of select="if(map:contains($pendingUpdates, 'Document/Shipment')) then 'true' else 'false'"/>
                    get= <xsl:value-of select="map:get($pendingUpdates, 'Document/Shipment')"/>
                     get= <xsl:value-of select="map:get($pendingUpdates, 'Document/Options/Updated')"/>
                 </xsl:message>-->
-                <xsl:copy>
                     <xsl:value-of select="map:get($pendingUpdates, $updatedPath)"/>                    
-                </xsl:copy>
-                
-            </xsl:when>
-            <!--<xsl:otherwise><xsl:value-of select="."/></xsl:otherwise>-->
-            <!-- Above does not just give text node content of current node -->
-
-            <!-- TODO Is this the right way to handle white space?? -->
-            <xsl:otherwise>
-               <!-- <xsl:message use-when="$debugMode">did not find path in form or pending list path: <xsl:value-of
-                    select="$updatedPath"/></xsl:message>-->
-                <xsl:copy>
-                    <xsl:value-of select="normalize-space(string-join(data(text()), ''))"/>
-                </xsl:copy>
-             </xsl:otherwise>
-        </xsl:choose>
-
-
-
-        <!-- *** Process element children of context node -->
-        <xsl:for-each-group select="element()" group-by="local-name(.)">                  
-            
-            <xsl:variable name="updatedChildPath" select="concat($updatedPath, '/', current-grouping-key())"/>
-            <!--<xsl:variable name="repeatableVar"
-                select="ixsl:page()//*[@data-repeatable-context = $updatedPath2]"/>-->
-          
-            <xsl:variable name="dataRefWithFilter"
-                select="ixsl:page()//*[starts-with(@data-ref, concat($updatedChildPath,'['))]"/>
-            <!--<xsl:message use-when="$debugMode">for-each-group path= <xsl:value-of select="$updatedPath"/>, grouping key=<xsl:value-of select="current-grouping-key()"/>, repeatableVar <xsl:value-of select="$dataRefWithFilter"/></xsl:message>-->
-            <xsl:choose>
-                <xsl:when test="count(current-group()) > 1 or exists($dataRefWithFilter)">   
-
-                    <xsl:for-each select="current-group()">
-                        <xsl:apply-templates select="." mode="form-check">
-                            <xsl:with-param name="curPath" select="concat($updatedPath, '/')"/>
-                            <xsl:with-param name="position" select="position()"/>
-                            <xsl:with-param name="pendingUpdates" as="map(xs:string,xs:string)?" select="$pendingUpdates" />
-                        </xsl:apply-templates>
-                    </xsl:for-each>
-
                 </xsl:when>
-
+                <!--<xsl:otherwise><xsl:value-of select="."/></xsl:otherwise>-->
+                <!-- Above does not just give text node content of current node -->
+                
+                <!-- TODO Is this the right way to handle white space?? -->
                 <xsl:otherwise>
-                    <xsl:for-each select="current-group()">
-                        <xsl:apply-templates select="." mode="form-check">
-                            <xsl:with-param name="curPath" select="concat($updatedPath, '/')"/>
-                            <xsl:with-param name="pendingUpdates" as="map(xs:string,xs:string)?" select="$pendingUpdates" />
-                        </xsl:apply-templates>
-                    </xsl:for-each>
-
+                    <!-- <xsl:message use-when="$debugMode">did not find path in form or pending list path: <xsl:value-of
+                    select="$updatedPath"/></xsl:message>-->
+                    <xsl:value-of select="normalize-space(string-join(data(text()), ''))"/>
                 </xsl:otherwise>
-
             </xsl:choose>
-
-        </xsl:for-each-group>
-
+            
+            <!-- *** Process element children of context node -->
+            <xsl:for-each-group select="element()" group-by="local-name(.)">                  
+                
+                <xsl:variable name="updatedChildPath" select="concat($updatedPath, '/', current-grouping-key())"/>
+                <!--<xsl:variable name="repeatableVar"
+                select="ixsl:page()//*[@data-repeatable-context = $updatedPath2]"/>-->
+                
+                <xsl:variable name="dataRefWithFilter"
+                    select="ixsl:page()//*[starts-with(@data-ref, concat($updatedChildPath,'['))]"/>
+                <!--<xsl:message use-when="$debugMode">for-each-group path= <xsl:value-of select="$updatedPath"/>, grouping key=<xsl:value-of select="current-grouping-key()"/>, repeatableVar <xsl:value-of select="$dataRefWithFilter"/></xsl:message>-->
+                <xsl:choose>
+                    <xsl:when test="count(current-group()) > 1 or exists($dataRefWithFilter)">   
+                        <xsl:for-each select="current-group()">
+                            <xsl:apply-templates select="." mode="form-check">
+                                <xsl:with-param name="curPath" select="concat($updatedPath, '/')"/>
+                                <xsl:with-param name="position" select="position()"/>
+                            </xsl:apply-templates>
+                        </xsl:for-each>                    
+                    </xsl:when>
+                    
+                    <xsl:otherwise>
+                        <xsl:for-each select="current-group()">
+                            <xsl:apply-templates select="." mode="form-check">
+                                <xsl:with-param name="curPath" select="concat($updatedPath, '/')"/>
+                            </xsl:apply-templates>
+                        </xsl:for-each>                        
+                    </xsl:otherwise>
+                    
+                </xsl:choose>
+                
+            </xsl:for-each-group>
+            
+        </xsl:copy>
+        
     </xsl:template>
 
+
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Template for updating attribute within instance XML based on new value in form control (xforms:input, xforms:setvalue)</xd:p>
+        </xd:desc>
+        <xd:param name="curPath">XPath statement identifying parent</xd:param>
+        <xd:param name="pendingUpdates">Map of XPath binding expression to new value</xd:param>
+    </xd:doc>
     <xsl:template match="@*" mode="form-check">
         <xsl:param name="curPath" select="''"/>
-        <xsl:param name="pendingUpdates" as="map(xs:string, xs:string)?"/>
+        <xsl:param name="pendingUpdates" as="map(xs:string, xs:string)?" tunnel="yes"/>
         <xsl:variable name="updatedPath" select="concat($curPath, '@', local-name())"/>
 
         <!-- TODO what about namespaces of attributes?? -->
@@ -2587,6 +2569,7 @@
         <xsl:param name="updatedInstance" as="element()"/>
 <!--        <xsl:param name="updatedInstanceDoc" as="document-node()"/>-->
 <!--        <xsl:variable name="updatedInstance" as="element()" select="$updatedInstanceDoc/*"/>-->
+        
         <xsl:variable name="instance-map" as="map(xs:string,xs:string)" select="xforms:getInstanceMap($ref)"/>
         <xsl:variable name="this-instance-id" as="xs:string" select="map:get($instance-map,'instance-id')"/>
         <xsl:sequence select="js:setInstance($this-instance-id,$updatedInstance)"/>
@@ -2692,6 +2675,7 @@
         <xsl:param name="nodeset" as="xs:string" select="''" tunnel="yes"/>
         <xsl:param name="bindingi" as="node()?"/>
         
+        
         <xsl:variable name="this-ref" as="xs:string?" select="
             if ( exists($this/@nodeset) )
             then  normalize-space( xs:string($this/@nodeset) )
@@ -2719,6 +2703,7 @@
                     <xsl:sequence select="xforms:resolveXPathStrings($nodeset,$this-ref)"/>
                 </xsl:when>
                 <xsl:otherwise>
+                    
                     <xsl:value-of select="$nodeset"/>
                 </xsl:otherwise>
             </xsl:choose>
@@ -2740,7 +2725,7 @@
     <xsl:template name="getReferencedInstanceField">
         <xsl:param name="refi" as="xs:string" required="no" select="''"/>
         
-        <xsl:variable name="field" as="node()+">
+        <xsl:variable name="field" as="node()*">
             <xsl:choose>
                 <xsl:when test="$refi != ''">
                     <xsl:variable name="instance-map" as="map(xs:string,xs:string)" select="xforms:getInstanceMap($refi)"/>
@@ -2786,7 +2771,7 @@
         <xd:desc>Update HTML display elements corresponding to xforms:output elements</xd:desc>
     </xd:doc>
     <xsl:template name="refreshOutputs-JS">
-        <xsl:message use-when="$debugMode">[refreshOutputs-JS] START refreshOutputs</xsl:message>
+<!--        <xsl:message use-when="$debugMode">[refreshOutputs-JS] START refreshOutputs</xsl:message>-->
         
         <!-- get all registered outputs -->
         <!-- MD 2018-06-30 : want to use as="xs:string*" but get a cardinality error!? 
@@ -2827,11 +2812,11 @@
                 </xsl:choose>
             </xsl:variable>
             
-            <xsl:message use-when="$debugMode">[refreshOutputs-JS] instance-map = <xsl:value-of select="serialize($instance-map)"/> </xsl:message>
+<!--            <xsl:message use-when="$debugMode">[refreshOutputs-JS] instance-map = <xsl:value-of select="serialize($instance-map)"/> </xsl:message>-->
             
             <xsl:variable name="this-instance-id" as="xs:string" select="map:get($instance-map,'instance-id')"/>
             
-            <xsl:message use-when="$debugMode">[refreshOutputs-JS] this-instance-id = <xsl:value-of select="$this-instance-id"/> </xsl:message>
+<!--            <xsl:message use-when="$debugMode">[refreshOutputs-JS] this-instance-id = <xsl:value-of select="$this-instance-id"/> </xsl:message>-->
             
             <xsl:variable name="contexti" as="element()?">
                 <xsl:sequence select="xforms:instance($this-instance-id)"/>
@@ -2887,8 +2872,36 @@
         <xsl:param name="instanceXML" required="no" as="element()?" tunnel="yes"/>
         <xsl:param name="nodeset" as="xs:string" select="''" tunnel="yes"/>
         
-        <xsl:variable name="ref" select="map:get($action-map, '@ref')"/>
+        <xsl:variable name="ref" select="map:get($action-map, '@ref')" as="xs:string?"/>
+        <xsl:variable name="at" select="map:get($action-map, '@at')" as="xs:string?"/>
+        <xsl:variable name="position" select="map:get($action-map, '@position')" as="xs:string?"/>
         <!-- TODO: handle @at (with @position) in action map -->
+        
+        
+        <xsl:variable name="ref-qualified" as="xs:string?" select="
+            if (exists($ref))
+            then (
+                if (exists($at))
+                then concat($ref, '[', $at, ']')
+                else $ref
+            )
+            else ()
+            "/>
+        
+        <xsl:variable name="instance-id" as="xs:string" select="xforms:getInstanceId($ref)"/>
+        <!-- override tunnel variable $instanceXML if $refz refers to a different instance -->
+        <xsl:variable name="instanceXML2" as="element()">
+            <xsl:choose>
+                <xsl:when test="$instance-id = $default-instance-id and exists($instanceXML)">
+                    <xsl:sequence select="$instanceXML"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:sequence select="xforms:getInstance-JS($ref-qualified)"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
+        
         
         <xsl:message use-when="$debugMode">
             [applyActions] evaluating action = <xsl:value-of select="serialize($action-map)"/>
@@ -2896,22 +2909,21 @@
         
         <xsl:variable name="context" as="node()?">
             <xsl:choose>
-                <xsl:when test="exists($ref) and not($ref = '')">
-                    <xsl:evaluate xpath="xforms:impose($ref)" context-item="$instanceXML"/>
+                <xsl:when test="exists($ref-qualified) and not($ref-qualified = '') and exists($instanceXML2)">
+                    <xsl:evaluate xpath="xforms:impose($ref-qualified)" context-item="$instanceXML2"/>
                 </xsl:when>
             </xsl:choose>
         </xsl:variable>
         
         <!-- TODO error testing of incorrect ref given in the xform (i.e. context would be empty in this case) -->
-        
+
         <xsl:variable name="ifVar" select="xforms:getIfStatement($action-map)"/>      
         <xsl:variable name="whileVar" select="xforms:getWhileStatement($action-map)"/>
         
         <!-- TODO if the action does not contain an if or while it should execute action -->
-        
         <xsl:variable name="ifExecuted" as="xs:boolean">
             <xsl:choose>
-                <xsl:when test="exists($ifVar)">
+                <xsl:when test="exists($ifVar) and exists($context)">
                     <xsl:evaluate xpath="$ifVar" context-item="$context"/>
                 </xsl:when>
                 <xsl:otherwise>
@@ -2922,10 +2934,24 @@
         
         <xsl:if test="$ifExecuted">
             <xsl:variable name="action-name" as="xs:string" select="map:get($action-map,'name')"/>
+            
             <xsl:choose>
                 <xsl:when test="$action-name = 'setvalue'">
                     <xsl:call-template name="action-setvalue">
                         <xsl:with-param name="nodeset" select="$ref" as="xs:string" tunnel="yes"/>
+                        <xsl:with-param name="instanceXML" select="$instanceXML2" as="element()" tunnel="yes"/>
+                    </xsl:call-template>
+                </xsl:when>
+                <xsl:when test="$action-name = 'insert'">
+                    <xsl:call-template name="action-insert">
+                        <xsl:with-param name="nodeset" select="$ref-qualified" as="xs:string" tunnel="yes"/>
+                        <xsl:with-param name="instanceXML" select="$instanceXML2" as="element()" tunnel="yes"/>
+                    </xsl:call-template>
+                </xsl:when>
+                <xsl:when test="$action-name = 'delete'">
+                    <xsl:call-template name="action-delete">
+                        <xsl:with-param name="nodeset" select="$ref-qualified" as="xs:string" tunnel="yes"/>
+                        <xsl:with-param name="instanceXML" select="$instanceXML2" as="element()" tunnel="yes"/>
                     </xsl:call-template>
                 </xsl:when>
                 <xsl:when test="$action-name = 'message'">
@@ -3005,19 +3031,27 @@
                 </xsl:choose>
             </xsl:map-entry>
             
-            
+            <!-- 
+                for @at and @position,
+                see https://www.w3.org/TR/xforms11/#action-insert
+            -->
             <xsl:if test="exists(@position)">
                 <xsl:map-entry key="'@position'" select="string(@position)" />
             </xsl:if>
             <xsl:if test="exists(@at)">
                 <xsl:map-entry key="'@at'" select="string(@at)" />
             </xsl:if>
+            
+            <!-- https://www.w3.org/TR/xforms11/#action-conditional -->
             <xsl:if test="exists(@if)">
                 <xsl:map-entry key="'@if'" select="string(@if)" />
             </xsl:if>
+            
+            <!-- https://www.w3.org/TR/xforms11/#action-iterated -->
             <xsl:if test="exists(@while)">
                 <xsl:map-entry key="'@while'" select="string(@while)" />
             </xsl:if>
+            
             <xsl:if test="exists(@*:event)">
                 <xsl:map-entry key="'@event'" select="string(@*:event)" />
             </xsl:if>
@@ -3177,7 +3211,32 @@
         
         
     </xsl:template>
+   
     
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Implementation of <a href=" https://www.w3.org/TR/xforms11/#evt-rebuild">xforms-rebuild event</a></xd:p>
+        </xd:desc>
+    </xd:doc>
+    <xsl:template name="xforms-rebuild">
+        <xsl:message use-when="$debugMode">[xforms-rebuild] START</xsl:message>
+        <xsl:variable name="instanceDocs" as="map(*)">
+            <xsl:variable name="instance-keys" select="js:getInstanceKeys()" as="item()*"/>
+            <xsl:map>
+                <xsl:for-each select="$instance-keys">
+                    <xsl:variable name="refz" as="xs:string" select="concat('instance(''', ., ''')/')"/>
+                    <xsl:map-entry key="." select="xforms:getInstance-JS($refz)"/>
+                    <xsl:message use-when="$debugMode">[xforms-rebuild] getting instance = <xsl:value-of select="$refz"/></xsl:message>
+                </xsl:for-each>
+            </xsl:map>            
+        </xsl:variable>
+        
+        <xsl:call-template name="xformsjs-main">
+            <xsl:with-param name="xforms-file" select="$xforms-file"/>
+            <xsl:with-param name="instance-docs" select="$instanceDocs"/>
+        </xsl:call-template>
+                
+    </xsl:template>
     
     
     <xd:doc scope="component">
@@ -3423,7 +3482,7 @@
         
         <xsl:variable name="instanceXML" as="element()?" select="xforms:getInstance-JS($refi)"/>
         
-       <xsl:variable name="updatedInstanceXML" as="element()?">
+        <xsl:variable name="updatedInstanceXML" as="element()?">
            <xsl:if test="exists($instanceXML)">
                <xsl:apply-templates select="$instanceXML" mode="form-check-initial">
                    <xsl:with-param name="instance-id" select="$instance-id"/>
@@ -3436,12 +3495,13 @@
             
             <xsl:message use-when="$debugMode">
                 [DOMActivate] evaluating action = <xsl:value-of select="serialize($action-map)"/>
+                instance XML = <xsl:value-of select="serialize($instanceXML)"/>
             </xsl:message>
             
             <!-- https://www.w3.org/TR/xslt-30/#func-map-contains -->
             <xsl:if test="map:contains($action-map,'@event')">
                 <xsl:if test="map:get($action-map,'@event') = 'DOMActivate'">
-                    <xsl:message use-when="$debugMode">[DOMActivate] DOMActivate action found!</xsl:message>
+<!--                    <xsl:message use-when="$debugMode">[DOMActivate] DOMActivate action found!</xsl:message>-->
                     <xsl:call-template name="applyActions">
                         <xsl:with-param name="action-map" select="$action-map" tunnel="yes"/>
                         <xsl:with-param name="instanceXML" as="element()?" select="$updatedInstanceXML" tunnel="yes"/>
@@ -3455,7 +3515,7 @@
     
     <xd:doc scope="component">
         <xd:desc>
-            <xd:p>Template for applying setvalue action</xd:p>
+            <xd:p>Template for applying setvalue action. See <a href="https://www.w3.org/TR/xforms11/#action-setvalue">10.2 The setvalue Element</a></xd:p>
         </xd:desc>
         <xd:param name="action-map">Action map</xd:param>
         <xd:param name="instanceXML">Instance relevant to actions (e.g. setvalue)</xd:param>
@@ -3463,12 +3523,26 @@
     </xd:doc>
     <xsl:template name="action-setvalue">
         <xsl:param name="action-map" required="yes" as="map(*)" tunnel="yes"/>
-        <xsl:param name="instanceXML" required="no" as="element()" tunnel="yes"/>
+        <xsl:param name="instanceXML" required="no" as="element()?" tunnel="yes"/>
         <xsl:param name="nodeset" as="xs:string" select="''" tunnel="yes"/>
         
         <xsl:variable name="ifVari" select="xforms:getIfStatement($action-map)"/>
         <xsl:variable name="whileVari" select="xforms:getWhileStatement($action-map)"/>
         <xsl:variable name="refz" select="xforms:resolveXPathStrings($nodeset,map:get($action-map,'@ref'))"/>
+        
+        <xsl:variable name="instance-id" as="xs:string" select="xforms:getInstanceId($refz)"/>
+        <!-- override tunnel variable $instanceXML if $refz refers to a different instance -->
+        <xsl:variable name="instanceXML2" as="element()">
+            <xsl:choose>
+                <xsl:when test="$instance-id = $default-instance-id and exists($instanceXML)">
+                    <xsl:sequence select="$instanceXML"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:sequence select="xforms:getInstance-JS($refz)"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
         <xsl:variable name="valuez">
             <xsl:choose>
                 <xsl:when test="map:contains($action-map,'@value')">
@@ -3500,7 +3574,7 @@
             value = <xsl:value-of select="xs:string($valuez)"/> 
         </xsl:message> 
         
-        <!-- use ifVari and WhileVari -->
+        <!-- TODO: use ifVari and WhileVari -->
         <xsl:if test="exists($refz)">
             <xsl:variable name="associated-form-control"
                 select="ixsl:page()//*[@data-ref = $refz]" as="node()?"/>
@@ -3524,18 +3598,23 @@
         </xsl:if>
         
         
-        <!-- update instance again if there were setvalue actions -->
-        <xsl:variable name="pendingUpdates" select="js:getPendingUpdates()" as="map(xs:string, xs:string)?"/>
-        
-        <xsl:variable name="updatedInstanceXML" as="element()">                                
-            <xsl:apply-templates select="$instanceXML" mode="form-check-initial">
-                <xsl:with-param name="pendingUpdates" as="map(xs:string,xs:string)?" select="$pendingUpdates" />
-            </xsl:apply-templates>
-        </xsl:variable>
-        
-        <!-- MD 2018-06-29: handle multiple instances -->
-        <xsl:sequence select="xforms:setInstance-JS($refz,$updatedInstanceXML)"/>
-        
+        <xsl:if test="exists($refz) and not($refz = '')">
+            <!-- update instance again if there were setvalue actions -->
+            <xsl:variable name="pendingUpdates" select="js:getPendingUpdates()" as="map(xs:string, xs:string)?"/>
+            
+            <xsl:variable name="updatedInstanceXML" as="element()">   
+                <xsl:apply-templates select="$instanceXML2" mode="form-check-initial">
+                    <xsl:with-param name="instance-id" select="$instance-id" as="xs:string"/>
+                    <xsl:with-param name="pendingUpdates" as="map(xs:string,xs:string)?" select="$pendingUpdates" tunnel="yes"/>
+                </xsl:apply-templates>
+            </xsl:variable>
+            
+            <!-- MD 2018-06-29: handle multiple instances -->
+            <xsl:sequence select="xforms:setInstance-JS($refz,$updatedInstanceXML)"/>
+            <xsl:call-template name="refreshOutputs-JS"/>
+            
+        </xsl:if>
+       
     </xsl:template>
     
     
@@ -3549,114 +3628,57 @@
     </xd:doc>
     <xsl:template name="action-insert">
         <xsl:param name="action-map" required="yes" as="map(*)" tunnel="yes"/>
-        <xsl:param name="instanceXML" required="no" as="element()" tunnel="yes"/>
+        <xsl:param name="instanceXML" required="no" as="element()?" tunnel="yes"/>
         <xsl:param name="nodeset" as="xs:string" select="''" tunnel="yes"/>
+                
+        <xsl:variable name="ref" select="xforms:resolveXPathStrings($nodeset,map:get($action-map,'@ref'))" />
+        <xsl:variable name="at" select="map:get($action-map, '@at')" as="xs:string?"/>
+        <xsl:variable name="position" select="map:get($action-map, '@position')" as="xs:string?"/>
+         
         
-        <xsl:variable name="map-ref" select="map:get($action-map,'@ref')" />
+        <xsl:variable name="ref-qualified" as="xs:string?" select="
+            if (exists($ref))
+            then (
+            if (exists($at))
+            then concat($ref, '[', $at, ']')
+            else $ref
+            )
+            else ()
+            "/>
+        
+        <xsl:variable name="instance-id" as="xs:string" select="xforms:getInstanceId($ref)"/>
+        <!-- override tunnel variable $instanceXML if $map-ref refers to a different instance -->
+        <xsl:variable name="instanceXML2" as="element()">
+            <xsl:choose>
+                <xsl:when test="$instance-id = $default-instance-id and exists($instanceXML)">
+                    <xsl:sequence select="$instanceXML"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:sequence select="xforms:getInstance-JS($ref)"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        
+        
+        <xsl:message use-when="$debugMode">[action-insert] insert = <xsl:value-of select="serialize($action-map)"/> 
+            ref-qualified = <xsl:value-of select="$ref-qualified"/>
+        </xsl:message>
         
         <xsl:variable name="insert-node" as="node()">
-            <xsl:evaluate
-                xpath="concat($map-ref,'[','last()',']')"
-                context-item="$instanceXML"/>
+            <xsl:evaluate xpath="xforms:impose($ref-qualified)" context-item="$instanceXML2"/>
         </xsl:variable>
-        
-        <xsl:message use-when="$debugMode">[action-insert] insert = <xsl:value-of
-            select="serialize($action-map)"/> 
-            ref = <xsl:value-of select="$map-ref"/>
-        </xsl:message>
-        
+                
+         
         <xsl:variable name="instance-with-insert" as="element()">
-            <xsl:apply-templates select="$instanceXML" mode="insert-node">
-                <xsl:with-param name="insert-node" select="$insert-node"/>
-                <xsl:with-param name="path" select="concat('/',$map-ref)"/>
+            <xsl:apply-templates select="$instanceXML2" mode="insert-node">
+                <xsl:with-param name="insert-node" select="$insert-node" tunnel="yes"/>
+                <xsl:with-param name="position-relative" select="$position" tunnel="yes"/>
             </xsl:apply-templates>
         </xsl:variable>
         
-        <!-- MD 2018-06-29: handle multiple instances -->
-        <!--                        <xsl:sequence select="js:setInstance($instance-with-insert)"/>-->
-        <xsl:sequence select="xforms:setInstance-JS($map-ref,$instance-with-insert)"/>
-        
-        <xsl:variable name="node-to-copyi" select="ixsl:page()//div[@data-repeatable-context = $map-ref]/div[last()]" as="node()"/>
-        
-        
-        <xsl:variable name="newNodePosition" select="count(ixsl:page()//div[@data-repeatable-context = $map-ref]/div)+1" as="xs:integer" />
-        
-        <xsl:variable name="newNodeCPath" select="$map-ref" as="xs:string"/>
-        
-        <xsl:variable name="name" select="name()"/>
-        <xsl:variable name="path-updated" select="
-            if ($newNodePosition > 0) 
-            then concat($newNodeCPath, '[',$newNodePosition,']') 
-            else $newNodeCPath"/>
-        
-        <xsl:variable name="str-length" select="string-length($newNodeCPath)"/>
-        
-        <xsl:variable name="copied-node" as="node()">
-            <xsl:apply-templates select="$node-to-copyi" mode="update-ref" >
-                <xsl:with-param name="path" select="$map-ref" />
-                <xsl:with-param name="position" select="$newNodePosition" />
-            </xsl:apply-templates>
-        </xsl:variable>
-        
+        <xsl:sequence select="xforms:setInstance-JS($ref,$instance-with-insert)"/>
+        <xsl:call-template name="xforms-rebuild"/>
                 
-        <xsl:message use-when="$debugMode">[action-insert] node to copy= <xsl:value-of select="serialize($node-to-copyi)"/>
-            node to copy with updated ref = <xsl:value-of select="serialize($copied-node)"/>
-        </xsl:message>
-        
-        <xsl:for-each select="ixsl:page()//div[@data-repeatable-context = $map-ref]">
-            <xsl:result-document href="?." method="ixsl:append-content">
-                <xsl:copy-of select="$copied-node" />
-            </xsl:result-document>
-        </xsl:for-each>
-        
-        <!-- now need to check for associated actions for the new node(s) created. 
-                        If we find any then add the to the ixsl:page()/head as a new script element -->
-        
-        <xsl:variable name="findDataRefs" select="$node-to-copyi//*[exists(@data-ref) or exists(@data-action)]" as="node()*"/>
-        <xsl:for-each select="$findDataRefs">
-            <xsl:variable name="dataRef" select="@data-ref" as="xs:string?"/>
-            <xsl:variable name="dataActionRef" select="@data-action " as="xs:string?"/>
-            
-            <xsl:if test="exists($dataActionRef)">
-                
-                <xsl:variable name="actionEvents" select="js:getAction(string($dataActionRef))" as="map(*)*"/>
-                
-                
-                <xsl:variable name="newActionId" select="$copied-node//*[@data-old-action=$dataActionRef]/@data-action" as="xs:string"/>
-                <xsl:variable name="dataRefForNewNode" select="$copied-node//*[@data-old-action=$dataActionRef]/@data-ref" as="xs:string?"/>
-                
-                <xsl:variable name="actions" as="map(*)*">
-                    <xsl:for-each select="$actionEvents">
-                        <xsl:variable name="myContext" select="."/>
-                        
-                        <xsl:variable name="refExsists" select="map:contains($myContext, '@ref')" as="xs:boolean"/>
-                        <xsl:choose>
-                            
-                            <xsl:when test="$refExsists and exists($dataRefForNewNode)">
-                                
-                                <!--TODO do a manual copy of the js map instead of updateAction -->
-                                <xsl:sequence select="map:put($myContext, '@ref', string($dataRefForNewNode))" />
-                            </xsl:when>
-                            <xsl:when test="$refExsists">
-                                <xsl:variable name="contextRef" select="map:get($myContext, '@ref')" as="xs:string"/>
-                                <xsl:variable name="newPathVar" select="concat($path-updated,substring($contextRef,string-length($path-updated)+1))"/>
-                                
-                                <xsl:sequence select="map:put($myContext, '@ref', $newPathVar)" />
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:sequence select="." />
-                            </xsl:otherwise>
-                        </xsl:choose>
-                        
-                        
-                    </xsl:for-each>
-                </xsl:variable>
-                
-                <xsl:sequence select="js:addAction($newActionId, $actions)" />
-                
-            </xsl:if>
-        </xsl:for-each>     
-        
     </xsl:template>
     
  
@@ -3673,66 +3695,65 @@
         <xsl:param name="instanceXML" required="no" as="element()" tunnel="yes"/>
         <xsl:param name="nodeset" as="xs:string" select="''" tunnel="yes"/>
         
-        <xsl:variable name="delete-ref" select="xforms:resolveXPathStrings($nodeset,map:get($action-map,'@ref'))"/>
+        <xsl:variable name="ref" select="xforms:resolveXPathStrings($nodeset,map:get($action-map,'@ref'))"/>
+        <xsl:variable name="at" select="map:get($action-map, '@at')" as="xs:string?"/>
+        
+        <xsl:variable name="ref-qualified" as="xs:string?" select="
+            if (exists($ref))
+            then (
+            if (exists($at))
+            then concat($ref, '[', $at, ']')
+            else $ref
+            )
+            else ()
+            "/>
+        
+        <xsl:variable name="instance-id" as="xs:string" select="xforms:getInstanceId($ref)"/>
+        <!-- override tunnel variable $instanceXML if $map-ref refers to a different instance -->
+        <xsl:variable name="instanceXML2" as="element()">
+            <xsl:choose>
+                <xsl:when test="$instance-id = $default-instance-id and exists($instanceXML)">
+                    <xsl:sequence select="$instanceXML"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:sequence select="xforms:getInstance-JS($ref)"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
         
         <xsl:variable name="ifVar" select="xforms:getIfStatement($action-map)"/>
         <xsl:variable name="whileVar" select="xforms:getWhileStatement($action-map)"/>
          
-        <xsl:variable name="context" as="node()?">
+        <xsl:variable name="delete-node" as="node()?">
             <xsl:choose>
-                <xsl:when test="exists($delete-ref) and not($delete-ref = '')">
-                    <xsl:evaluate xpath="xforms:impose($delete-ref)" context-item="$instanceXML"/>
+                <xsl:when test="exists($ref-qualified) and not($ref-qualified = '')">
+                    <xsl:evaluate xpath="xforms:impose($ref-qualified)" context-item="$instanceXML2"/>
                 </xsl:when>
             </xsl:choose>
         </xsl:variable>
         
+<!--        <xsl:message use-when="$debugMode">[action-delete] ref-qualified = <xsl:value-of select="$ref-qualified"/>; delete-node = <xsl:value-of select="serialize($delete-node)"/></xsl:message>-->
+        
         <xsl:variable name="ifExecuted" as="xs:boolean">
             <xsl:choose>
                 <xsl:when test="exists($ifVar)">
-                    <xsl:evaluate xpath="$ifVar" context-item="$context"/>
+                    <xsl:evaluate xpath="$ifVar" context-item="$delete-node"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:sequence select="true()" />
                 </xsl:otherwise>
             </xsl:choose>                    
         </xsl:variable>
-        
-                
+                       
         <xsl:if test="$ifExecuted">
-            <xsl:variable name="instance-with-delete">
-                <xsl:apply-templates select="$instanceXML" mode="delete-node">
-                    <xsl:with-param name="path" select="$delete-ref"/>
+            <xsl:variable name="instance-with-delete" as="element()">
+                <xsl:apply-templates select="$instanceXML2" mode="delete-node">
+                    <xsl:with-param name="delete-node" select="$delete-node" tunnel="yes"/>
                 </xsl:apply-templates>
             </xsl:variable> 
             
-            <xsl:sequence select="js:setInstance-JS($delete-ref,$instance-with-delete)"/>
-            
-            <!-- save instance with delete applied -->
-            
-            <!--  <xsl:variable name="nodesToKeep" select="ixsl:page()//button[@data-action = $contextButton/@data-action]/../../../div[not()]"/>
-                            
-                            <xsl:message>nodes to kepp = <xsl:sequence select="count($nodesToKeep)"/></xsl:message>-->
-            
-            <!--<xsl:for-each
-                                select="ixsl:page()//div[./span/button/@data-action = $contextButton/@data-action]">                                
-                                <xsl:result-document href="?." method="ixsl:replace-content"></xsl:result-document>
-                            </xsl:for-each>-->
-            
-            <xsl:variable name="instanceDocs" as="map(*)">
-                <xsl:variable name="instance-keys" select="js:getInstanceKeys()" as="item()*"/>
-                <xsl:map>
-                    <xsl:for-each select="$instance-keys">
-                        <xsl:variable name="refz" as="xs:string" select="concat('instance(''', ., ''')/')"/>
-                        <xsl:map-entry key="." select="xforms:getInstance-JS($refz)"/>
-                    </xsl:for-each>
-                </xsl:map>               
-            </xsl:variable>
-            
-            <xsl:call-template name="xformsjs-main">
-                <xsl:with-param name="xforms-file" select="$xforms-file"/>
-                <xsl:with-param name="instance-docs" select="$instanceDocs"/>
-            </xsl:call-template>
-            
+            <xsl:sequence select="xforms:setInstance-JS($ref,$instance-with-delete)"/>      
+            <xsl:call-template name="xforms-rebuild"/>
         </xsl:if>
         
     </xsl:template>

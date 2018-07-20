@@ -19,6 +19,7 @@
                     <bookmark href="file:///C/source/model3.xml" name="model3" />
                     <bookmark href="file:///C/source/repeat.fo" name="repeat" />
                 </section>
+                <setValueTest>[Not set]</setValueTest>
             </bookmarks>
         </xf:instance>
 <!--        <xforms:submission id="s01" method="post" action="http://examples.com/" />-->
@@ -41,6 +42,13 @@
             </xf:input>
         </xf:repeat>
     </xf:repeat>
+    <xf:output value="instance('bookmarks')/setValueTest" class="block"/>
+    <p>
+        <xf:trigger id="setvalue-test">
+            <xf:label>xf:setvalue test</xf:label>
+            <xf:setvalue ref="instance('bookmarks')/setValueTest" ev:event="DOMActivate">SET!</xf:setvalue>
+        </xf:trigger>
+    </p>
     <p>
         <!-- INSERT BOOKMARK BUTTON -->
         <xf:trigger id="insertbutton">
@@ -57,12 +65,12 @@
         <!-- INSERT SECTION BUTTON -->
         <xf:trigger id="insertsectionbutton">
             <xf:label>Insert section</xf:label>
-            <xf:insert nodeset="section" at="index('repeatSections')" position="after" ev:event="DOMActivate" />
+            <xf:insert nodeset="instance('bookmarks')/section" at="index('repeatSections')" position="after" ev:event="DOMActivate" />
         </xf:trigger>
         <!-- DELETE SECTION BUTTON -->
         <xf:trigger id="deletesectionbutton">
             <xf:label>Delete section</xf:label>
-            <xf:delete nodeset="section" at="index('repeatSections')" ev:event="DOMActivate" />
+            <xf:delete nodeset="instance('bookmarks')/section" at="index('repeatSections')" ev:event="DOMActivate" />
         </xf:trigger>
     </p>
     <!-- SUBMIT BUTTON -->

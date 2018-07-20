@@ -74,14 +74,14 @@
     
     <xsl:function name="xforms:index" as="xs:integer">
         <xsl:param name="repeatID" as="xs:string" />
-        <xsl:variable name="element" select="js:getElementById($repeatID)"/>
+        <xsl:variable name="element" select="ixsl:page()//*[@id = $repeatID]"/>
         <xsl:choose>
             <xsl:when test="empty($element)">
                 <!--<xsl:sequence select="xs:integer('NaN')" />-->
                 <xsl:sequence select="0" />
             </xsl:when>
-            <xsl:when test="exists($element/@data-repeatable-context)">
-                <xsl:sequence select="count($element//*)" />
+            <xsl:when test="exists($element/@data-count)">
+                <xsl:sequence select="xs:integer($element/@data-count)" />
             </xsl:when>
             <xsl:otherwise>
                 <xsl:sequence select="0" />
