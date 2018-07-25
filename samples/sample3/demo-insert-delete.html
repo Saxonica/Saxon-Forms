@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+       <title>Demo of insert/delete in XForms</title>
+      <link rel="stylesheet" href="css/style.css" type="text/css" />
+      <script src="../../Saxon-JS-1.1.0/SaxonJS.js"></script>
+
+      <script>
+      window.onload = function() {
+        SaxonJS.transform({
+           "stylesheetLocation":"../../sef/saxon-xforms.sef.xml",
+           "sourceLocation":"xml/demo-insert-delete.xml",
+           "stylesheetParams": {"xforms-file":"../samples/sample3/xml/demo-insert-delete.xml"}
+           })
+      }     
+      </script>
+   </head>
+
+   <body>
+       <h1 id="title">Demo insert/delete in XForms</h1>
+      
+      <div>
+          <p>Based on <a href="https://www.w3.org/TR/xforms11/#bookmarks-in-x-smiles">Appendix H.2</a> of the XForms 1.1 spec.</p>
+      </div>
+      <div id="xForm"></div>
+    
+
+   </body>
+</html>

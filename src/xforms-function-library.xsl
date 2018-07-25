@@ -14,11 +14,19 @@
     xmlns:ev="http://www.w3.org/2001/xml-events" exclude-result-prefixes="xs math xforms"
     extension-element-prefixes="ixsl" version="3.0">
     
-    <xsl:variable name="xform-functions" select="'index', 'avg', 'foo', 'current-date', random"/>
+    <xsl:variable name="xform-functions" select="'instance', 'index', 'avg', 'foo', 'current-date', random"/>
     
     <xsl:function name="xforms:impose" as="xs:string">
         <xsl:param name="input" as="xs:string" />
         <xsl:variable name="parts" as="xs:string*" >
+            <!-- 
+            \i = "initial name character"
+            \c = "name character"
+            
+            https://www.w3.org/TR/xmlschema11-2/#Name
+            https://www.mulberrytech.com/quickref/regex.pdf
+            
+            -->
             <xsl:analyze-string select="$input" regex="\i\c*\(">
                 <xsl:matching-substring>
                     <xsl:choose>
@@ -33,11 +41,28 @@
                 <xsl:non-matching-substring>
                     <xsl:sequence select="." />
                 </xsl:non-matching-substring>
-                
-                
             </xsl:analyze-string>
         </xsl:variable>
-        <xsl:sequence select="string-join($parts)" />
+        
+        <xsl:variable name="input2" as="xs:string" select="string-join($parts)"/>
+        
+        <xsl:variable name="parts2" as="xs:string*">
+            <!-- 
+                Strip out start of XPath from root of instance "document" 
+                Assume no predicate on root element name
+            -->
+            <xsl:analyze-string select="$input2" regex="(^\s*|[^\i\c\]])/\i\c*(/)">
+                <xsl:matching-substring>
+                    <xsl:sequence select="regex-group(1)"/>
+                    <xsl:sequence select="regex-group(2)"/>
+                </xsl:matching-substring>
+                <xsl:non-matching-substring>
+                    <xsl:sequence select="." />
+                </xsl:non-matching-substring>
+            </xsl:analyze-string>
+        </xsl:variable>
+        
+        <xsl:sequence select="string-join($parts2)" />
     </xsl:function>
     
     <xsl:function name="xforms:foo" as="xs:boolean">
@@ -49,14 +74,14 @@
     
     <xsl:function name="xforms:index" as="xs:integer">
         <xsl:param name="repeatID" as="xs:string" />
-        <xsl:variable name="element" select="js:getElementById($repeatID)"/>
+        <xsl:variable name="element" select="ixsl:page()//*[@id = $repeatID]"/>
         <xsl:choose>
             <xsl:when test="empty($element)">
                 <!--<xsl:sequence select="xs:integer('NaN')" />-->
                 <xsl:sequence select="0" />
             </xsl:when>
-            <xsl:when test="exists($element/@data-repeatable-context)">
-                <xsl:sequence select="count($element//*)" />
+            <xsl:when test="exists($element/@data-count)">
+                <xsl:sequence select="xs:integer($element/@data-count)" />
             </xsl:when>
             <xsl:otherwise>
                 <xsl:sequence select="0" />
@@ -80,6 +105,12 @@
         
         <xsl:sequence select="$today"/>
         
+    </xsl:function>
+    
+    <!-- implement XForms instance() function -->
+    <xsl:function name="xforms:instance" as="element()?">
+        <xsl:param name="instance-id" as="xs:string"/>
+        <xsl:sequence select="js:getInstance($instance-id)"/> 
     </xsl:function>
     
 </xsl:stylesheet>

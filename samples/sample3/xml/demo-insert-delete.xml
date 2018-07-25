@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform  
+    xmlns:ev="http://www.w3.org/2001/xml-events" 
+    xmlns:xf="http://www.w3.org/2002/xforms" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xf:model id="model-1">
+        <xf:instance id="bookmarks">
+            <bookmarks xmlns="">
+                <section name="main">
+                    <bookmark href="http://www.example.com/xforms.xml" name="Main page" />
+                </section>
+                <section name="demos">
+                    <bookmark href="http://www.example.com/demo/images.fo" name="images" />
+                    <bookmark href="http://www.example.com/demo/xf-ecma.xml" name="ecma" />
+                    <bookmark href="http://www.example.com/demo/sip.fo" name="sip" />
+                </section>
+                <section name="XForms">
+                    <bookmark href="file:///C/source/xmlevents.xml" name="XML events" />
+                    <bookmark href="file:///C/source/model3.xml" name="model3" />
+                    <bookmark href="file:///C/source/repeat.fo" name="repeat" />
+                </section>
+                <setValueTest>[Not set]</setValueTest>
+            </bookmarks>
+        </xf:instance>
+<!--        <xforms:submission id="s01" method="post" action="http://examples.com/" />-->
+        
+
+    </xf:model>
+    
+    
+    <xf:repeat nodeset="instance('bookmarks')/section" id="repeatSections">
+        <xf:input ref="@name" class="editField">
+            <xf:label class="sectionLabel">Section</xf:label>
+        </xf:input>
+        <!-- BOOKMARK REPEAT START -->
+        <xf:repeat nodeset="bookmark" id="repeatBookmarks">
+            <xf:input ref="@name">
+                <xf:label>Bookmark name</xf:label>
+            </xf:input>
+            <xf:input ref="@href">
+                <xf:label>URL</xf:label>
+            </xf:input>
+        </xf:repeat>
+    </xf:repeat>
+    <xf:output value="instance('bookmarks')/setValueTest" class="block"/>
+    <p>
+        <xf:trigger id="setvalue-test">
+            <xf:label>xf:setvalue test</xf:label>
+            <xf:setvalue ref="instance('bookmarks')/setValueTest" ev:event="DOMActivate">SET!</xf:setvalue>
+        </xf:trigger>
+    </p>
+    <p>
+        <!-- INSERT BOOKMARK BUTTON -->
+        <xf:trigger id="insertbutton">
+            <xf:label>Insert bookmark</xf:label>
+            <xf:insert nodeset="instance('bookmarks')/section[index('repeatSections')]/bookmark" at="index('repeatBookmarks')" position="after" ev:event="DOMActivate" />
+        </xf:trigger>
+        <!-- DELETE BOOKMARK BUTTON -->
+        <xf:trigger id="delete">
+            <xf:label>Delete bookmark</xf:label>
+            <xf:delete nodeset="instance('bookmarks')/section[index('repeatSections')]/bookmark" at="index('repeatBookmarks')" ev:event="DOMActivate" />
+        </xf:trigger>
+    </p>
+    <p>
+        <!-- INSERT SECTION BUTTON -->
+        <xf:trigger id="insertsectionbutton">
+            <xf:label>Insert section</xf:label>
+            <xf:insert nodeset="instance('bookmarks')/section" at="index('repeatSections')" position="after" ev:event="DOMActivate" />
+        </xf:trigger>
+        <!-- DELETE SECTION BUTTON -->
+        <xf:trigger id="deletesectionbutton">
+            <xf:label>Delete section</xf:label>
+            <xf:delete nodeset="instance('bookmarks')/section" at="index('repeatSections')" ev:event="DOMActivate" />
+        </xf:trigger>
+    </p>
+    <!-- SUBMIT BUTTON -->
+    <!--<xforms:submit submission="s01">
+        <xforms:label>Save</xforms:label>
+        <xforms:hint>Click to submit</xforms:hint>
+    </xforms:submit>
+    -->
+    
+</xf:xform>
