@@ -6,10 +6,9 @@ Interactive XSLT 3.0 is a feature of Saxon-JS, which is an XSLT 3.0 run-time wri
 
 Presented at the following conferences:
 
-O'Neil Delpratt and Debbie Lockett. [Implementing XForms using interactive XSLT 3.0](http://www.saxonica.com/papers/xmlprague-2018ond.pdf). XML Prague 2018.
+[Implementing XForms using interactive XSLT 3.0](http://www.saxonica.com/papers/xmlprague-2018ond.pdf). XML Prague 2018.
 
-O'Neil Delpratt and Debbie Lockett. [Distributing XSLT Processing
-between Client and Server](http://xmllondon.com/2017/xmllondon-2017-proceedings.pdf). Presented at XML London 2017
+[Distributing XSLT Processing between Client and Server](http://xmllondon.com/2017/xmllondon-2017-proceedings.pdf). Presented at XML London 2017
 
 ## Build
 
