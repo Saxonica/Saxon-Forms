@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+ 
+    <xf:model>
+        <xf:instance id="hello">
+            <data xmlns="">
+                <PersonGivenName>Mark</PersonGivenName>
+                <PetType>pet</PetType>
+                <CatName></CatName>
+                <FeedingTime></FeedingTime>
+                <FedToday>1</FedToday>
+                <FedTodayStatement></FedTodayStatement>
+            </data>
+        </xf:instance>
+        <xf:bind nodeset="instance('hello')/FeedingTime" type="xs:time" />
+        <xf:bind nodeset="instance('hello')/FedToday" type="xs:boolean" />
+        <xf:bind nodeset="instance('hello')/FedTodayStatement" calculate="
+            if ( 
+                xs:boolean( instance('hello')/FedToday ) = false() 
+             )
+            then 'not'
+            else ''
+            "/>
+            "/>
+    </xf:model>
+    
+    <xf:input ref="instance('hello')/PersonGivenName" incremental="true" class="demo-input">
+        <xf:label>Please enter your first name: </xf:label>
+        <xf:hint>Also known as your given name</xf:hint>
+    </xf:input>
+
+    
+    <xf:select1 ref="instance('hello')/PetType" incremental="true" class="demo-select">
+        <xf:label>Type of pet: </xf:label>
+        <xf:item>
+            <xf:label>[Pet]</xf:label>
+            <xf:value>pet</xf:value> 
+        </xf:item>
+        <xf:item>
+            <xf:label>Cat</xf:label>
+            <xf:value>cat</xf:value> 
+        </xf:item>
+        <xf:item>
+            <xf:label>Dog</xf:label>
+            <xf:value>dog</xf:value> 
+        </xf:item>
+        <xf:item>
+            <xf:label>Tortoise</xf:label>
+            <xf:value>tortoise</xf:value> 
+        </xf:item>
+    </xf:select1>
+        
+    
+ 
+    <xf:input ref="instance('hello')/CatName" class="demo-input">
+        <xf:label>(Non-incremental) Please enter your pet's name: </xf:label>
+        <xf:hint>Or any old string</xf:hint>
+    </xf:input>
+    
+    <xf:input ref="instance('hello')/FeedingTime" class="demo-input">
+        <xf:label>Enter pet's feeding time: </xf:label>
+    </xf:input>
+    
+    <xf:input ref="instance('hello')/FedToday" class="demo-input">
+        <xf:label>Have you fed your pet today? </xf:label>
+    </xf:input>
+    
+    
+
+    <xf:output value="concat('Hello ', instance('hello')/PersonGivenName  , '. Your ', instance('hello')/PetType, ' is called ', instance('hello')/CatName)" class="block demo-output"/>
+    
+    <xf:output value="concat('I feed my ', instance('hello')/PetType, ' at ', instance('hello')/FeedingTime)" class="block demo-output"/>
+    
+    <xf:output value="concat('My ', instance('hello')/PetType, ' has ', instance('hello')/FedTodayStatement , ' been fed today.')" class="block demo-output"/>
+    
+        
+    
+
+    
+</xf:xform>
