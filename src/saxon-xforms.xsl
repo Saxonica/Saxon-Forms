@@ -17,9 +17,7 @@
     xmlns:array="http://www.w3.org/2005/xpath-functions/array"
     xmlns:saxon="http://saxon.sf.net/"
     xmlns:ev="http://www.w3.org/2001/xml-events"
-    
-    xmlns:r="http://ns.datacraft.co.uk/recipe"
-    
+        
     exclude-result-prefixes="xs math xforms sfl"
     extension-element-prefixes="ixsl saxon" version="3.0">
     
@@ -33,9 +31,7 @@
     Error detection and messaging
     
     Handlers for more events
-    
-    Namespace handling
-    
+        
     Proper handling of @if, @while, and pending updates (I haven't used this before, so need to generate an example to develop against)
     
     Handle more xforms:submission options
@@ -48,7 +44,6 @@
 
     -->
     
-    <!-- TO DO: dynamically recognize namespaces in XForms document when evaluating XPaths -->
     <!--  xmlns:r="http://ns.datacraft.co.uk/recipe" -->
     <xsl:include href="xforms-function-library.xsl"/>
 
@@ -140,7 +135,7 @@
                                     <xsl:variable name="instance-with-explicit-namespaces" as="element()">
                                         <xsl:apply-templates select="./*" mode="namespace-fix"/>
                                     </xsl:variable>
-                                    <xsl:message use-when="$debugMode">[xforms-js] Modified instance: <xsl:value-of select="serialize($instance-with-explicit-namespaces)"/></xsl:message>
+                                    
                                     <xsl:map-entry key="
                                         xs:string(
                                         if (exists(@id)) 
@@ -2263,7 +2258,6 @@
         <xsl:param name="curPath" select="''"/>
         <xsl:param name="position" select="0"/>
         <xsl:param name="pendingUpdates" as="map(xs:string, xs:string)?" tunnel="yes"/>
-        <!-- TODO namespaces?? -->
        
         <xsl:variable name="updatedPath"
             select="
@@ -2413,12 +2407,11 @@
             <!-- *** Process text content of context node -->
             <!-- Check for associated binding with nodeset=$updatedPath  -->
             
-            <xsl:message use-when="$debugMode">[binding-calculation mode] context item: <xsl:value-of select="serialize(.)"/></xsl:message>
-                       
+<!--            <xsl:message use-when="$debugMode">[binding-calculation mode] context item: <xsl:value-of select="serialize(.)"/></xsl:message>
+-->                       
             <xsl:choose>
                 <xsl:when test="exists( map:get($calculationMap,$updatedPath))">
-                    <xsl:message use-when="$debugMode">[binding-calculation] Found binding calculation associated with instance item at: <xsl:value-of
-                        select="$updatedPath"/></xsl:message>
+                    <!--                    <xsl:message use-when="$debugMode">[binding-calculation] Found binding calculation associated with instance item at: <xsl:value-of select="$updatedPath"/></xsl:message> -->
                     <xsl:variable name="calculationXPath" select="map:get($calculationMap,$updatedPath)" as="xs:string" />   
                     <xsl:sequence>
                         <xsl:evaluate xpath="xforms:impose($calculationXPath)" context-item="." namespace-context="."/>
@@ -2497,7 +2490,6 @@
                 <!--<xsl:message use-when="$debugMode">Found associated form control with id: <xsl:value-of
                         select="$updatedPath"/></xsl:message> -->
                 <xsl:attribute name="{local-name()}">
-                    <!-- TODO namespace?? -->
                     <xsl:apply-templates select="$associated-form-control" mode="get-field"/>
                 </xsl:attribute>
             </xsl:when>
@@ -3000,10 +2992,7 @@
             <xsl:variable name="value" as="xs:string">
                 <xsl:evaluate xpath="$xpath-mod" context-item="$contexti" namespace-context="$namespace-context-item"/>
             </xsl:variable>
-            
-            <xsl:message use-when="$debugMode">[refresh-outputs-JS] XPath: <xsl:value-of select="$xpath-mod"/></xsl:message>
-            <xsl:message use-when="$debugMode">[refresh-outputs-JS] New value: <xsl:value-of select="$value"/></xsl:message>
-            
+                        
             <xsl:variable name="associated-form-control" select="ixsl:page()//*[@id = $this-key]" as="node()?"/>
                         
             <xsl:choose>
@@ -3425,6 +3414,7 @@
             </xsl:variable>
             
             <xsl:message use-when="$debugMode">[xforms-recalculate] updated instance: <xsl:value-of select="serialize($updatedInstanceXML)"/></xsl:message>
+            
             <xsl:sequence select="js:setInstance(.,$updatedInstanceXML)"/>
             <xsl:call-template name="refreshOutputs-JS"/>
         </xsl:for-each>    
