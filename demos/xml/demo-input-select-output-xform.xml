@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xs="http://www.w3.org/2001/XMLSchema"  >
+ 
+    <xf:model>
+        <xf:instance id="hello">
+            <demo:data xmlns:demo="urn:saxon-xforms:demo">
+                <demo:PersonGivenName>Mark</demo:PersonGivenName>
+                <demo:PetType>pet</demo:PetType>
+                <demo:CatName></demo:CatName>
+                <demo:FeedingTime>08:00</demo:FeedingTime>
+                <demo:FedToday>1</demo:FedToday>
+                <demo:FedTodayStatement></demo:FedTodayStatement>
+            </demo:data>
+        </xf:instance>
+        <xf:bind nodeset="instance('hello')/demo:FeedingTime" type="xs:time" />
+        <xf:bind nodeset="instance('hello')/demo:FedToday" type="xs:boolean" />
+        <xf:bind nodeset="instance('hello')/demo:FedTodayStatement" calculate="
+            if ( 
+            xs:boolean( instance('hello')/demo:FedToday ) = false() 
+             )
+            then 'not'
+            else ''
+            "/>
+            "/>
+    </xf:model>
+    
+    <xf:input ref="instance('hello')/demo:PersonGivenName" incremental="true" class="demo-input">
+        <xf:label>Please enter your first name: </xf:label>
+        <xf:hint>Also known as your given name</xf:hint>
+    </xf:input>
+
+    
+    <xf:select1 ref="instance('hello')/demo:PetType" incremental="true" class="demo-select">
+        <xf:label>Type of pet: </xf:label>
+        <xf:item>
+            <xf:label>[Pet]</xf:label>
+            <xf:value>pet</xf:value> 
+        </xf:item>
+        <xf:item>
+            <xf:label>Cat</xf:label>
+            <xf:value>cat</xf:value> 
+        </xf:item>
+        <xf:item>
+            <xf:label>Dog</xf:label>
+            <xf:value>dog</xf:value> 
+        </xf:item>
+        <xf:item>
+            <xf:label>Tortoise</xf:label>
+            <xf:value>tortoise</xf:value> 
+        </xf:item>
+    </xf:select1>
+        
+    
+ 
+    <xf:input ref="instance('hello')/demo:CatName" class="demo-input">
+        <xf:label>(Non-incremental) Please enter your pet's name: </xf:label>
+        <xf:hint>Or any old string</xf:hint>
+    </xf:input>
+    
+    <xf:input ref="instance('hello')/demo:FeedingTime" class="demo-input">
+        <xf:label>Enter pet's feeding time: </xf:label>
+    </xf:input>
+    
+    <xf:input ref="instance('hello')/demo:FedToday" class="demo-input">
+        <xf:label>Have you fed your pet today? </xf:label>
+    </xf:input>
+    
+    
+
+    <xf:output value="concat('Hello ', instance('hello')/demo:PersonGivenName  , '. Your ', instance('hello')/demo:PetType, ' is called ', instance('hello')/demo:CatName)" class="block demo-output"/>
+    
+    <xf:output value="concat('I feed my ', instance('hello')/demo:PetType, ' at ', instance('hello')/demo:FeedingTime)" class="block demo-output"/>
+    
+    <xf:output value="concat('My ', instance('hello')/demo:PetType, ' has ', instance('hello')/demo:FedTodayStatement , ' been fed today.')" class="block demo-output"/>
+    
+        
+    
+
+    
+</xf:xform>
