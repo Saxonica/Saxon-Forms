@@ -60,7 +60,7 @@
     <xsl:param name="xforms-file" as="xs:string?"/>
 
     <xsl:variable static="yes" name="debugMode" select="true()"/>
-    <xsl:variable static="yes" name="debugTiming" select="true()"/>
+    <xsl:variable static="yes" name="debugTiming" select="false()"/>
     <xsl:variable static="yes" name="default-instance-id" select="'saxon-forms-default'" as="xs:string"/>
     <xsl:variable static="yes" name="default-submission-id" select="'saxon-forms-default-submission'" as="xs:string"/>
     
@@ -950,8 +950,7 @@
     <xsl:template match="xforms:output">
         <xsl:param name="position" as="xs:integer" required="no" select="0"/>
 
-        <xsl:variable name="myid" as="xs:string"
-            select=" if (exists(@id)) then @id else concat(generate-id(), '-', $position )"/>
+        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $position )"/>
         
          
         <!-- get xforms:bind element relevant to this -->
@@ -1052,8 +1051,7 @@
     <xsl:template match="xforms:input">
         <xsl:param name="position" as="xs:integer" required="no" select="0"/>
         
-        <xsl:variable name="myid" as="xs:string"
-            select=" if (exists(@id)) then @id else concat(generate-id(), '-', $position )"/>
+        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $position )"/>
         
         <xsl:variable name="time-id" as="xs:string" select="generate-id()"/>
         <xsl:sequence use-when="$debugTiming" select="js:startTime(concat('XForms-input-', $time-id))" />
@@ -1241,9 +1239,8 @@
     <xsl:template match="xforms:textarea" priority="2">
         <xsl:param name="position" as="xs:integer" required="no" select="0"/>
         
-        <xsl:variable name="myid" as="xs:string"
-            select=" if (exists(@id)) then @id else concat(generate-id(), '-', $position )"/>
-                
+        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $position )"/>
+        
         <!-- get xforms:bind element relevant to this -->
         <xsl:variable name="bindingi" as="node()?">
             <xsl:call-template name="getBinding">
@@ -1318,9 +1315,8 @@
     </xd:doc>
     <xsl:template match="xforms:select1 | xforms:select">
         <xsl:param name="position" as="xs:integer" required="no" select="0"/>
-
-        <xsl:variable name="myid" as="xs:string"
-            select=" if (exists(@id)) then @id else concat(generate-id(), '-', $position )"/>
+        
+        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $position )"/>
         
         <xsl:variable name="time-id" select="generate-id()"/>
         <xsl:sequence use-when="$debugTiming" select="js:startTime(concat('XForms-select', $time-id))" />
@@ -1506,8 +1502,7 @@
     <xsl:template match="xforms:repeat">
         <xsl:param name="position" as="xs:integer" required="no" select="0"/>
         
-        <xsl:variable name="myid" as="xs:string"
-            select=" if (exists(@id)) then @id else concat(generate-id(), '-', $position )"/>
+        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $position )"/>
         
         <xsl:variable name="time-id" select="generate-id()"/>
         <xsl:sequence use-when="$debugTiming" select="js:startTime(concat('XForms-repeat', $time-id))" />
@@ -1549,6 +1544,8 @@
            
         <xsl:if test="exists($selectedRepeatVar)">
             <div>
+                <xsl:sequence select="xforms:getClass(.)"/>
+                
                 <xsl:attribute name="data-repeatable-context" select="$refi" />
                 <xsl:attribute name="data-count" select="count($selectedRepeatVar)" />
                 <xsl:attribute name="id" select="$myid"/>
@@ -1694,7 +1691,7 @@
     
     <xsl:template match="*" mode="update-ref" >
         <xsl:param name="path" as="xs:string" select="''" />
-        <xsl:param name="position" select="0" />
+        <xsl:param name="position" select="'0'" />
         
         <xsl:copy>
             <xsl:apply-templates select="@*|node()" mode="update-ref" >
@@ -1729,8 +1726,7 @@
     <xsl:template match="xforms:trigger">
         <xsl:param name="position" as="xs:integer" required="no" select="0"/>
         
-        <xsl:variable name="myid" as="xs:string"
-            select=" if (exists(@id)) then @id else concat(generate-id(), '-', $position )"/>
+        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $position )"/>
         
         <!-- get xforms:bind element relevant to this -->
         <xsl:variable name="bindingi" as="node()?">
@@ -1801,11 +1797,7 @@
         </xd:desc>
     </xd:doc>
     <xsl:template match="xforms:action | xforms:*[local-name() = $xforms-actions] | xforms:show | xforms:hide | xforms:script | xforms:unload">
-        <xsl:variable name="myid"
-            select="
-            if (exists(@id)) 
-            then @id
-            else generate-id()"/>
+        <xsl:variable name="myid" select="if (exists(@id)) then @id else generate-id()"/>
         
         <xsl:variable name="time-id" select="generate-id()"/>
         <xsl:sequence use-when="$debugTiming" select="js:startTime(concat('XForms-action', $time-id))" />        
@@ -2079,6 +2071,7 @@
            </xsl:variable>
            <xsl:sequence select="array{$array}" />
        </xsl:map-entry>
+        
         
     </xsl:template>
     
@@ -2908,8 +2901,10 @@
                             <xsl:with-param name="instance-id" select="map:get($instance-map,'instance-id')"/>
                         </xsl:call-template>
                     </xsl:variable>
-                                        
-                    <xsl:evaluate xpath="map:get($instance-map,'xpath')" context-item="$this-instance" namespace-context="$this-instance"/>
+                    
+                    <xsl:variable name="xpath-mod" as="xs:string" select="xforms:impose(map:get($instance-map,'xpath'))"/>
+                    
+                    <xsl:evaluate xpath="$xpath-mod" context-item="$this-instance" namespace-context="$this-instance"/>
                     
                 </xsl:when>
                 <xsl:otherwise>
@@ -3048,7 +3043,7 @@
         
         <xsl:variable name="instance-id" as="xs:string" select="xforms:getInstanceId($ref)"/>
         <!-- override tunnel variable $instanceXML if $refz refers to a different instance -->
-        <xsl:variable name="instanceXML2" as="element()">
+        <xsl:variable name="instanceXML2" as="element()?">
             <xsl:choose>
                 <xsl:when test="$instance-id = $default-instance-id and exists($instanceXML)">
                     <xsl:sequence select="$instanceXML"/>
@@ -3090,6 +3085,9 @@
             <xsl:variable name="action-name" as="xs:string" select="map:get($action-map,'name')"/>
             
             <xsl:choose>
+                <xsl:when test="$action-name = 'action'">
+                    <!-- xforms:action is just a wrapper -->
+                </xsl:when>
                 <xsl:when test="$action-name = 'setvalue'">
                     <xsl:call-template name="action-setvalue">
                         <xsl:with-param name="nodeset" select="$ref" as="xs:string" tunnel="yes"/>
@@ -3110,6 +3108,9 @@
                 </xsl:when>
                 <xsl:when test="$action-name = 'message'">
                     <xsl:call-template name="action-message"/>
+                </xsl:when>
+                <xsl:when test="$action-name = 'rebuild'">
+                    <xsl:call-template name="xforms-rebuild"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:message use-when="$debugMode">[applyActions] action '<xsl:value-of select="$action-name"/>' not yet handled!</xsl:message>
@@ -3139,12 +3140,14 @@
         <xsl:param name="action-name" required="yes" as="xs:string"/>
         
         <xsl:if test="map:contains($action-map,$action-name)">
-            <xsl:variable name="actionsArray" select="map:find($action-map, $action-name)" as="array(map(*))"/>
+            <xsl:variable name="actionsArray" select="map:get($action-map, $action-name)" as="array(map(*))"/>
             <xsl:variable name="actions" as="item()*">
                 <xsl:sequence select="array:flatten($actionsArray)"/>
             </xsl:variable>
             <xsl:for-each select="$actions">
-                <xsl:call-template name="applyActions"/>
+                <xsl:call-template name="applyActions">
+                    <xsl:with-param name="action-map" select="." tunnel="yes"/>
+                </xsl:call-template>
             </xsl:for-each>
         </xsl:if>
     </xsl:template>
@@ -3213,6 +3216,10 @@
                 <xsl:map-entry key="'@submission'" select="string(@submission)" />
             </xsl:if>
             
+            <xsl:if test="exists(@model)">
+                <xsl:map-entry key="'@model'" select="string(@model)" />
+            </xsl:if>
+
             <xsl:for-each-group select="$this/child::*" group-by="local-name()">
                 <xsl:apply-templates select="." mode="xforms-action-map"/>
             </xsl:for-each-group>          
