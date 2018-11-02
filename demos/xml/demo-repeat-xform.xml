@@ -1,0 +1,140 @@
+<xf:xform xmlns:rest="http://exquery.org/ns/restxq" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:demo="urn:saxon-xforms:demo">
+    <!-- 
+    
+    Have to use *: in XPaths. For some reason namespace declaration is not retained by betterForms
+    
+    Have to use namespace. For some reason betterForms treats no namespace as XHTML namespace.
+    
+    -->
+    <xf:model id="m-recipes">
+        <xf:instance id="all">
+            <demo:recipes>
+                <demo:recipe>
+                    <demo:id>1</demo:id>
+                    <demo:title>Orange and ginger chicken</demo:title>
+                    <demo:ingredients>
+                        <demo:ingredient>chicken</demo:ingredient>
+                        <demo:ingredient>ginger</demo:ingredient>
+                        <demo:ingredient>orange</demo:ingredient>
+                    </demo:ingredients>
+                </demo:recipe>
+                <demo:recipe>
+                    <demo:id>2</demo:id>
+                    <demo:title>Sausage and mash</demo:title>
+                    <demo:ingredients>
+                        <demo:ingredient>sausages</demo:ingredient>
+                        <demo:ingredient>potatoes</demo:ingredient>
+                        <demo:ingredient>gravy</demo:ingredient>
+                    </demo:ingredients>
+                </demo:recipe>
+                <demo:recipe>
+                    <demo:id>3</demo:id>
+                    <demo:title>Broccoli pasta</demo:title>
+                    <demo:ingredients>
+                        <demo:ingredient>broccoli</demo:ingredient>
+                        <demo:ingredient>pasta</demo:ingredient>
+                        <demo:ingredient>pesto</demo:ingredient>
+                        <demo:ingredient>lemon</demo:ingredient>
+                    </demo:ingredients>
+                </demo:recipe>
+            </demo:recipes>
+        </xf:instance>
+               
+        <!-- empty <ingredient> to insert -->
+        <xf:instance id="i-new-ingredient">
+            <demo:ingredient/>
+        </xf:instance>
+        
+    </xf:model>
+    
+    
+    <div id="content">
+        <h2>Recipe list</h2>
+        
+        <xf:repeat id="recipe-repeat" nodeset="instance('all')/demo:recipe" class="repeat">
+            <xf:output ref="demo:title"/>
+            <xf:repeat id="ingredient-repeat" nodeset="demo:ingredients/demo:ingredient" class="repeat">
+                <xf:output ref="text()"/>
+            </xf:repeat>
+        </xf:repeat>  
+        
+        <xf:trigger>
+            <xf:label>Rebuild</xf:label>
+            <xf:action ev:event="DOMActivate">
+                <xf:rebuild model="m-recipes"/>
+            </xf:action>
+        </xf:trigger>
+        
+        <!-- 
+                            
+                            EDIT RECIPE 
+                        
+                        -->
+        
+        <h2>Edit recipe</h2>
+        
+        <xf:group ref="instance('all')/demo:recipe[index('recipe-repeat')]" appearance="full" class="edit">
+            <xf:input ref="demo:title">
+                <xf:label>Recipe Name:</xf:label>
+            </xf:input>
+            <xf:repeat id="ingredients-repeat" nodeset="demo:ingredients/demo:ingredient">
+                <xf:input ref=".">
+                    <xf:label>Ingredient:</xf:label>
+                </xf:input>
+            </xf:repeat>
+            
+            
+            <!-- http://wiki.orbeon.com/forms/how-to/logic/repeat-insert-position -->
+            <xf:trigger>
+                <xf:label>Add ingredient after selected item</xf:label>
+                <xf:action ev:event="DOMActivate">
+                    <xf:insert context="." nodeset="demo:ingredients/demo:ingredient" at="index('ingredients-repeat')" position="after" origin="instance('i-new-ingredient')"/>
+                </xf:action>
+            </xf:trigger>
+
+            <xf:trigger>
+                <xf:label>Delete selected ingredient</xf:label>
+                <xf:action ev:event="DOMActivate">
+                    <xf:delete context="." nodeset="demo:ingredients/demo:ingredient" at="index('ingredients-repeat')"/>
+                </xf:action>
+            </xf:trigger>
+            
+            <xf:trigger>
+                <xf:label>Move selected ingredient Up</xf:label>
+                <!-- xf:action groups a sequence of actions -->
+                <xf:action ev:event="DOMActivate" if="index('ingredients-repeat') != 1">
+                    <!-- insert changes "focus" index to the newly inserted node -->
+                    <xf:insert context="." nodeset="demo:ingredients/demo:ingredient" at="index('ingredients-repeat') - 1" position="before" origin="demo:ingredients/demo:ingredient[index('ingredients-repeat')]"/>
+                    <!-- push focus back to original node -->
+                    <xf:setindex repeat="ingredients-repeat" index="index('ingredients-repeat') + 2"/>
+                    <xf:setfocus control="ingredients-repeat"/>
+                    <xf:delete context="." nodeset="demo:ingredients/demo:ingredient" at="index('ingredients-repeat')"/>
+                    <xf:rebuild model="m-recipes"/>
+                </xf:action>
+            </xf:trigger>
+            
+            <xf:trigger>
+                <xf:label>Move selected ingredient Down</xf:label>
+                <!-- xf:action groups a sequence of actions 
+                     
+                     tried position() instead of index('ingredients-repeat') but didn't work
+                     possibly because focus was on a different row from where 'Down' was clicked
+                     -->
+                <xf:action ev:event="DOMActivate" if="index('ingredients-repeat') != count(ingredients/ingredient)">
+                    <!-- insert changes "focus" index to the newly inserted node 
+                     
+                     weirdly, this doesn't work properly using the REST URL
+                     -->
+                    <xf:insert context="." nodeset="demo:ingredients/demo:ingredient" at="index('ingredients-repeat') + 1" position="after" origin="demo:ingredients/demo:ingredient[index('ingredients-repeat')]"/>
+                    <!-- push focus back to original node -->
+                    <xf:setindex repeat="ingredients-repeat" index="index('ingredients-repeat') - 2"/>
+                    <xf:setfocus control="ingredients-repeat"/>
+                    <xf:delete context="." nodeset="demo:ingredients/demo:ingredient" at="index('ingredients-repeat')"/>
+                </xf:action>
+            </xf:trigger>
+        </xf:group>
+        
+        
+   </div>
+    
+</xf:xform>
