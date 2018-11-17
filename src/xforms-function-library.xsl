@@ -74,20 +74,13 @@
     
     <xsl:function name="xforms:index" as="xs:integer">
         <xsl:param name="repeatID" as="xs:string" />
-        
-<!--        <xsl:variable name="repeatIndexMap" select="js:getRepeatIndexMap()" as="map(xs:string,xs:integer)"/>-->
-        
-        
+                
         <!-- call to js:getRepeatIndex doesn't work on first pass for some reason -->
         <xsl:variable name="repeat-index" as="xs:double?" select="js:getRepeatIndex($repeatID)"/>
-        
-<!--        <xsl:variable name="repeat-index" as="xs:integer?" select="map:get($repeatIndexMap,$repeatID)"/>-->
-        
+                
         <!-- assign value '0' if $repeat-index does not exist -->
         <xsl:sequence select="if (exists($repeat-index)) then xs:integer($repeat-index) else 0"/>
         
-        <xsl:message>[xforms:index] Index of '<xsl:value-of select="$repeatID"/>' is '<xsl:value-of select="$repeat-index"/>'</xsl:message>
-                
     </xsl:function>
     
     <xsl:function name="xforms:random" as="xs:double">
