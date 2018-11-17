@@ -18,6 +18,10 @@
     margin-left: 1em;
 }
 
+span.selected {
+    background-color: #e4eef0;
+}
+
 /* 
 Text blue: #3D5B96
 Dark blue: #c1cede

@@ -189,10 +189,11 @@
                 <xsl:for-each select="$xforms-doci/xforms:xform/xforms:model/xforms:bind">
                     <!-- [exists(@type)] -->
                     <xsl:map-entry
-                        key="
-                            xs:string(if (exists(@id)) 
+                        key="xs:string(
+                            if (exists(@id)) 
                             then @id
-                            else @nodeset)"
+                            else @nodeset
+                            )"
                         select="."/>
                 </xsl:for-each>
             </xsl:map>
@@ -223,7 +224,7 @@
         </xsl:variable>
         
         <xsl:message use-when="$debugMode">[xformsjs-main] RelevantBindings = <xsl:sequence select="serialize($RelevantBindings)"/></xsl:message>
-
+        
 
         <xsl:variable name="CalculationBindings" as="map(xs:string, xs:string)">
             <xsl:map>
@@ -286,6 +287,8 @@
                             var outputs = {};
                             var relevantMap = {};
                             var calculationMap = {};
+                            var repeatIndexMap = {};
+                            var elementsUsingIndexFunction = {};
                             
                             var getCurrentDate = function(){
                                 var today = new Date();
@@ -358,6 +361,10 @@
                            
                             var getInstanceKeys = function() {
                                 return Object.keys(instanceDocs);
+                            }
+                            
+                            var getInstances = function() {
+                                return instanceDocs;
                             }
                             
                             var setPendingUpdates = function(map1) {
@@ -434,12 +441,58 @@
                                 return calculationMap;
                             }
   
+                            
+                            var setRepeatIndex = function(name, value) {
+                                repeatIndexMap[name] = value;
+                            }
+                            
+                            var getRepeatIndex = function(name) {
+                                if ( typeof(repeatIndexMap[name]) != 'undefined' ) {
+                                    return repeatIndexMap[name];
+                                }
+                                else {
+                                    return 0;
+                                }
+                            } 
+                            
+                            var setElementUsingIndexFunction = function(name, value) {
+                                elementsUsingIndexFunction[name] = value;
+                            } 
+                            
+                            var getElementUsingIndexFunction = function(name) {
+                                return elementsUsingIndexFunction[name];
+                            }
+                            
+                            var getElementsUsingIndexFunctionKeys = function() {
+                            return Object.keys(elementsUsingIndexFunction);
+                            }
+                            
+                            
                             var startTime = function(name) {
                                 console.time(name);
                             }
                             
                             var endTime = function(name) {
                                 console.timeEnd(name);
+                            }
+                            
+                            var highlightClicked = function(id) {
+                                var item = document.getElementById(id);
+                                toggleClass(item);
+                            }
+                            
+                            var toggleClass = function(element) {
+                                if (element.className == 'selected') {
+                                    element.classList.remove('selected');
+                                }
+                                else {
+                                    var x = document.getElementsByClassName('selected');
+                                    var i;
+                                    for (i = 0; i &lt; x.length; i++) {
+                                        x[i].classList.remove('selected');
+                                    } 
+                                    element.classList.add('selected');
+                                }
                             }
                             
                         </script>
@@ -588,7 +641,7 @@
     <xd:doc scope="component">
         <xd:desc>Handle incremental change to HTML input</xd:desc>
     </xd:doc>
-    <xsl:template match="input[exists(@class) and xforms:hasClass(@class,'incremental')]" mode="ixsl:onkeyup">
+    <xsl:template match="input[xforms:hasClass(.,'incremental')]" mode="ixsl:onkeyup">
         
         <xsl:call-template name="xforms-value-changed">
             <xsl:with-param name="form-control" select="."/>
@@ -616,10 +669,32 @@
     </xsl:template>
     
     
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Highlight repeat item when selected</xd:p>
+        </xd:desc>
+    </xd:doc>
+    <xsl:template match="div[@data-repeat-item = 'true']//span" mode="ixsl:onclick">
+        <xsl:sequence select="js:highlightClicked( string(@id) )"/>
+                
+        <!-- update repeat index of ancestors (we may have clicked on a repeat item within a repeat item) -->
+        <xsl:for-each select="./ancestor::div[@data-repeat-item = 'true']">
+            <xsl:variable name="repeat-id" as="xs:string" select="./ancestor::div[xforms:hasClass(.,'repeat')][1]/@id"/>
+            <xsl:variable name="item-position" as="xs:integer" select="count(./preceding-sibling::div[@data-repeat-item = 'true']) + 1"/>
+            
+<!--            <xsl:message use-when="$debugMode">[div onclick] Setting repeat index '<xsl:value-of select="$repeat-id"/>' to value '<xsl:value-of select="$item-position"/>'</xsl:message>
+-->            <xsl:sequence select="js:setRepeatIndex($repeat-id,$item-position)"/>                        
+        </xsl:for-each>
+        
+        <xsl:call-template name="refreshElementsUsingIndexFunction-JS"/>
+
+    </xsl:template>
+    
+    
 
     <xd:doc scope="component">
         <xd:desc>
-            <xd:p>Function to get 'if' statemenmt from an action map</xd:p>
+            <xd:p>Function to get 'if' statement from an action map</xd:p>
         </xd:desc>
         <xd:return>Value of map entry for @if (XPath expression)</xd:return>
         <xd:param name="map">Action map</xd:param>
@@ -669,45 +744,47 @@
         <xsl:param name="base" as="xs:string"/>
         <xsl:param name="relative" as="xs:string"/>
         
-        <xsl:choose>
-            <xsl:when test="starts-with($relative,'/')">
-                <xsl:sequence select="$relative"/>
-            </xsl:when>
-            <xsl:when test="starts-with($relative,'instance(')">
-                <xsl:sequence select="$relative"/>
-            </xsl:when>
-            <xsl:when test="$base = ''">
-                <xsl:sequence select="$relative"/>
-            </xsl:when>
-            <xsl:when test="$relative = ''">
-                <xsl:sequence select="$base"/>
-            </xsl:when>
-            <xsl:otherwise>
-                
-                <xsl:variable name="parentCallCount" select="if(contains($relative, '/')) then count(tokenize($relative, '/')[. ='..']) else if(contains($relative, '..')) then 1 else 0"/>
-                <xsl:variable name="slashes"
-                    select="if(contains($base, '/')) then index-of(string-to-codepoints($base), string-to-codepoints('/')) else 0"
-                    as="xs:integer*"/>
-                
-<!--                <xsl:message use-when="$debugMode">resolveXPathString base =<xsl:value-of select="$base"/> 
+        <!-- first get full path -->
+        <xsl:variable name="full-path" as="xs:string">
+            <xsl:choose>
+                <xsl:when test="starts-with($relative,'/')">
+                    <xsl:sequence select="$relative"/>
+                </xsl:when>
+                <xsl:when test="starts-with($relative,'instance(')">
+                    <xsl:sequence select="$relative"/>
+                </xsl:when>
+                <xsl:when test="$base = ''">
+                    <xsl:sequence select="$relative"/>
+                </xsl:when>
+                <xsl:when test="$relative = ''">
+                    <xsl:sequence select="$base"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    
+                    <xsl:variable name="parentCallCount" select="if(contains($relative, '/')) then count(tokenize($relative, '/')[. ='..']) else if(contains($relative, '..')) then 1 else 0"/>
+                    <xsl:variable name="slashes"
+                        select="if(contains($base, '/')) then index-of(string-to-codepoints($base), string-to-codepoints('/')) else 0"
+                        as="xs:integer*"/>
+                    
+                    <!--                <xsl:message use-when="$debugMode">resolveXPathString base =<xsl:value-of select="$base"/> 
                     relative <xsl:value-of select="$relative"/>
                     parentCallCount = <xsl:value-of select="$parentCallCount"/>
                     slashes = <xsl:value-of select="$slashes"/>
                 </xsl:message>
 -->                
-                <xsl:variable name="parentSlash"
-                    as="xs:integer">
-                    <xsl:choose>
-                        <xsl:when test="(count($slashes) >= $parentCallCount) and ($parentCallCount>0)">
-                            <xsl:sequence select="$slashes[last() - ($parentCallCount - 1)]" />
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:sequence select="$slashes[last()]" />
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
-                
-               <!-- <xsl:message use-when="$debugMode">[xforms:resolveXPathStrings] base =<xsl:value-of select="$base"/> 
+                    <xsl:variable name="parentSlash"
+                        as="xs:integer">
+                        <xsl:choose>
+                            <xsl:when test="(count($slashes) >= $parentCallCount) and ($parentCallCount>0)">
+                                <xsl:sequence select="$slashes[last() - ($parentCallCount - 1)]" />
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:sequence select="$slashes[last()]" />
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:variable>
+                    
+                    <!-- <xsl:message use-when="$debugMode">[xforms:resolveXPathStrings] base =<xsl:value-of select="$base"/> 
                     lastSlash = <xsl:value-of select="$parentSlash"/> 
                     relative = <xsl:value-of select="$relative"/> 
                     countparent = <xsl:value-of select="$parentCallCount"/>
@@ -717,21 +794,44 @@
                     </xsl:if>
                     
                 </xsl:message>-->
-                
-                <xsl:choose>
-                    <xsl:when test="$parentCallCount gt 0">
-                        <!-- TODO - need to resolve path. This does not work properly -->
-                        <xsl:sequence
-                            select="concat(substring($base, 1, $parentSlash), replace($relative, '\.\./', ''))"
-                        />
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:sequence select="concat($base, '/', $relative)"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-                
-            </xsl:otherwise>
-        </xsl:choose>
+                    
+                    <xsl:choose>
+                        <xsl:when test="$parentCallCount gt 0">
+                            <!-- TODO - need to resolve path. This does not work properly -->
+                            <xsl:sequence
+                                select="concat(substring($base, 1, $parentSlash), replace($relative, '\.\./', ''))"
+                            />
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:sequence select="concat($base, '/', $relative)"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                    
+                </xsl:otherwise>
+            </xsl:choose>            
+        </xsl:variable>
+        
+        <!-- then resolve index() into an integer position -->
+        <xsl:variable name="full-path-parsed-components" as="xs:string+">
+            <xsl:analyze-string select="$full-path" regex="(index\(&apos;([^&apos;]+)&apos;\)|/.$)">
+                <xsl:matching-substring>
+                    <xsl:variable name="match" select="regex-group(1)"/>
+                    <xsl:choose>
+                        <xsl:when test="$match = '/.'"/>
+                        <xsl:otherwise>
+                            <xsl:sequence select="xs:string( js:getRepeatIndex( regex-group(2) ) )"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:matching-substring>
+                <xsl:non-matching-substring>
+                    <xsl:sequence select="normalize-space(.)"/>
+                </xsl:non-matching-substring>
+            </xsl:analyze-string>
+        </xsl:variable>
+        
+        <xsl:sequence select="string-join($full-path-parsed-components)"/>
+        
+<!--        <xsl:sequence select="$full-path"/>-->
 
     </xsl:function>
 
@@ -946,11 +1046,19 @@
             <xd:p>Generates HTML output field and registers actions.</xd:p>
         </xd:desc>
         <xd:param name="position">Integer representing position of item (in a repeat list for example).</xd:param>
+        <xd:param name="context-position">String representing position of item in a hierarchy (e.g. in nested repeat)</xd:param>
     </xd:doc>
     <xsl:template match="xforms:output">
         <xsl:param name="position" as="xs:integer" required="no" select="0"/>
-
-        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $position )"/>
+        <xsl:param name="context-position" as="xs:string" required="no" select="''"/>
+        
+        <xsl:variable name="string-position" as="xs:string" select="if ($context-position != '') then $context-position else string($position)"/>
+        
+        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $string-position )"/>
+        
+        <xsl:if test="xforms:usesIndexFunction(.) and not(ancestor::*[xforms:usesIndexFunction(.)])">
+            <xsl:sequence select="js:setElementUsingIndexFunction($myid,.)"/>
+        </xsl:if>
         
          
         <!-- get xforms:bind element relevant to this -->
@@ -1047,11 +1155,19 @@
             <xd:p>Generates HTML input field and registers actions.</xd:p>
         </xd:desc>
         <xd:param name="position">Integer representing position of item (in a repeat list for example).</xd:param>
+        <xd:param name="context-position">String representing position of item in a hierarchy (e.g. in nested repeat)</xd:param>
     </xd:doc>
     <xsl:template match="xforms:input">
         <xsl:param name="position" as="xs:integer" required="no" select="0"/>
+        <xsl:param name="context-position" as="xs:string" required="no" select="''"/>
         
-        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $position )"/>
+        <xsl:variable name="string-position" as="xs:string" select="if ($context-position != '') then $context-position else string($position)"/>
+        
+        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $string-position )"/>
+        
+        <xsl:if test="xforms:usesIndexFunction(.) and not(ancestor::*[xforms:usesIndexFunction(.)])">
+            <xsl:sequence select="js:setElementUsingIndexFunction($myid,.)"/>
+        </xsl:if>
         
         <xsl:variable name="time-id" as="xs:string" select="generate-id()"/>
         <xsl:sequence use-when="$debugTiming" select="js:startTime(concat('XForms-input-', $time-id))" />
@@ -1235,11 +1351,19 @@
             <xd:p>Generates HTML output field and registers actions.</xd:p>
         </xd:desc>
         <xd:param name="position">Integer representing position of item (in a repeat list for example).</xd:param>
+        <xd:param name="context-position">String representing position of item in a hierarchy (e.g. in nested repeat)</xd:param>
     </xd:doc>
     <xsl:template match="xforms:textarea" priority="2">
         <xsl:param name="position" as="xs:integer" required="no" select="0"/>
+        <xsl:param name="context-position" as="xs:string" required="no" select="''"/>
         
-        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $position )"/>
+        <xsl:variable name="string-position" as="xs:string" select="if ($context-position != '') then $context-position else string($position)"/>
+        
+        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $string-position )"/>
+        
+        <xsl:if test="xforms:usesIndexFunction(.) and not(ancestor::*[xforms:usesIndexFunction(.)])">
+            <xsl:sequence select="js:setElementUsingIndexFunction($myid,.)"/>
+        </xsl:if>
         
         <!-- get xforms:bind element relevant to this -->
         <xsl:variable name="bindingi" as="node()?">
@@ -1312,11 +1436,19 @@
             <xd:p>Generates HTML select field and registers actions.</xd:p>
         </xd:desc>
         <xd:param name="position">Integer representing position of item (in a repeat list for example).</xd:param>
+        <xd:param name="context-position">String representing position of item in a hierarchy (e.g. in nested repeat)</xd:param>
     </xd:doc>
     <xsl:template match="xforms:select1 | xforms:select">
         <xsl:param name="position" as="xs:integer" required="no" select="0"/>
+        <xsl:param name="context-position" as="xs:string" required="no" select="''"/>
         
-        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $position )"/>
+        <xsl:variable name="string-position" as="xs:string" select="if ($context-position != '') then $context-position else string($position)"/>
+        
+        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $string-position )"/>
+        
+        <xsl:if test="xforms:usesIndexFunction(.) and not(ancestor::*[xforms:usesIndexFunction(.)])">
+            <xsl:sequence select="js:setElementUsingIndexFunction($myid,.)"/>
+        </xsl:if>
         
         <xsl:variable name="time-id" select="generate-id()"/>
         <xsl:sequence use-when="$debugTiming" select="js:startTime(concat('XForms-select', $time-id))" />
@@ -1465,9 +1597,22 @@
     <xd:doc scope="component">
         <xd:desc>
             <xd:p>Implementation of XForms <a href="https://www.w3.org/TR/xforms11/#ui-group">group element</a></xd:p>
-            <xd:p>Generates an HTML div and passes @ref or @nodeset to descendants.</xd:p></xd:desc>
+            <xd:p>Generates an HTML div and passes @ref or @nodeset to descendants.</xd:p>
+        </xd:desc>
+        <xd:param name="position">Integer representing position of item (in a repeat list for example).</xd:param>
+        <xd:param name="context-position">String representing position of item in a hierarchy (e.g. in nested repeat)</xd:param>
     </xd:doc>
     <xsl:template match="xforms:group">
+        <xsl:param name="position" as="xs:integer" required="no" select="0"/>
+        <xsl:param name="context-position" as="xs:string" required="no" select="''"/>
+        
+        <xsl:variable name="string-position" as="xs:string" select="if ($context-position != '') then $context-position else string($position)"/>
+        
+        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $string-position )"/>
+        
+        <xsl:if test="xforms:usesIndexFunction(.) and not(ancestor::*[xforms:usesIndexFunction(.)])">
+            <xsl:sequence select="js:setElementUsingIndexFunction($myid,.)"/>
+        </xsl:if>
         
         <xsl:variable name="refi" as="xs:string?">
             <xsl:choose>
@@ -1477,12 +1622,12 @@
             </xsl:choose>
         </xsl:variable>
         
+
+
         <div>
+            <xsl:attribute name="id" select="$myid"/>
             <xsl:if test="exists($refi)">
                 <xsl:attribute name="data-group-ref" select="$refi" />
-            </xsl:if>
-            <xsl:if test="exists(@id)">
-                <xsl:attribute name="id" select="@id"/>
             </xsl:if>
             <xsl:apply-templates select="child::*">
                 <xsl:with-param name="nodeset" select="if(exists($refi))then $refi else ''" tunnel="yes"/>
@@ -1498,11 +1643,15 @@
             <xd:p>Generates HTML div and iterates over items within.</xd:p>
         </xd:desc>
         <xd:param name="position">Integer representing position of item (in a repeat list for example).</xd:param>
+        <xd:param name="context-position">String representing position of item in a hierarchy (e.g. in nested repeat)</xd:param>
     </xd:doc>
     <xsl:template match="xforms:repeat">
         <xsl:param name="position" as="xs:integer" required="no" select="0"/>
+        <xsl:param name="context-position" as="xs:string" required="no" select="''"/>
         
-        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $position )"/>
+        <xsl:variable name="string-position" as="xs:string" select="if ($context-position != '') then $context-position else string($position)"/>
+        
+        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $string-position )"/>
         
         <xsl:variable name="time-id" select="generate-id()"/>
         <xsl:sequence use-when="$debugTiming" select="js:startTime(concat('XForms-repeat', $time-id))" />
@@ -1532,7 +1681,7 @@
             <xsl:sequence use-when="$debugTiming" select="js:endTime(concat('XForms-repeat-evaluate', $time-id))" />
         </xsl:variable>
         
-        <xsl:message use-when="$debugMode">
+        <!--<xsl:message use-when="$debugMode">
             <xsl:choose>
                 <xsl:when test="exists($selectedRepeatVar)">
                     [xforms:repeat] ref = <xsl:sequence select="$refi" />
@@ -1540,7 +1689,7 @@
                 </xsl:when>
                 <xsl:otherwise>[xforms:repeat] No repeat found for ref <xsl:sequence select="$refi" /></xsl:otherwise>
             </xsl:choose>
-        </xsl:message>
+        </xsl:message>-->
            
         <xsl:if test="exists($selectedRepeatVar)">
             <div>
@@ -1551,10 +1700,13 @@
                 <xsl:attribute name="id" select="$myid"/>
                 <xsl:variable name="xf-repeat" select="." as="element(xforms:repeat)"/>
                 <xsl:for-each select="$selectedRepeatVar">
+                    <xsl:variable name="string-position" as="xs:string" select="string(position())"/>
+                    <xsl:variable name="new-context-position" as="xs:string" select="if ($context-position != '') then concat($context-position, '.', $string-position) else $string-position"/>
                     <div data-repeat-item="true">
                         <xsl:apply-templates select="$xf-repeat/child::*">
                             <xsl:with-param name="nodeset" select="concat($refi, '[', position(), ']')" tunnel="yes"/>
                             <xsl:with-param name="position" select="position()"/>
+                            <xsl:with-param name="context-position" select="$new-context-position"/>
                         </xsl:apply-templates>
                     </div>
                 </xsl:for-each>
@@ -1656,7 +1808,7 @@
         </xsl:choose>
     </xsl:template>
     
-    <xsl:template match="@data-action" mode="update-ref" priority="2" >
+<!--    <xsl:template match="@data-action" mode="update-ref" priority="2" >
         <xsl:param name="path" as="xs:string" select="''" />
         <xsl:param name="position" select="0" />
         
@@ -1701,7 +1853,7 @@
         </xsl:copy>
         
     </xsl:template> 
-
+-->
  
     <xd:doc scope="component">
         <xd:desc>Handle HTML button click</xd:desc>
@@ -1722,11 +1874,19 @@
             <xd:p>Generates HTML link or button and registers actions.</xd:p>
         </xd:desc>
         <xd:param name="position">Integer representing position of item (in a repeat list for example).</xd:param>
+        <xd:param name="context-position">String representing position of item in a hierarchy (e.g. in nested repeat)</xd:param>
     </xd:doc>
     <xsl:template match="xforms:trigger">
         <xsl:param name="position" as="xs:integer" required="no" select="0"/>
+        <xsl:param name="context-position" as="xs:string" required="no" select="''"/>
         
-        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $position )"/>
+        <xsl:variable name="string-position" as="xs:string" select="if ($context-position != '') then $context-position else string($position)"/>
+        
+        <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else concat( generate-id(), '-', $string-position )"/>
+        
+        <xsl:if test="xforms:usesIndexFunction(.) and not(ancestor::*[xforms:usesIndexFunction(.)])">
+            <xsl:sequence select="js:setElementUsingIndexFunction($myid,.)"/>
+        </xsl:if>
         
         <!-- get xforms:bind element relevant to this -->
         <xsl:variable name="bindingi" as="node()?">
@@ -1828,7 +1988,7 @@
     
     <!-- mode="xforms-action" REDUNDANT? MD 2018-07-01 -->
 
-    <xsl:template match="xforms:insert" mode="xforms-action">
+<!--    <xsl:template match="xforms:insert" mode="xforms-action">
         <xsl:param name="nodeset" select="''" tunnel="yes"/>
         <insert>
             <xsl:if test="exists(@ref)">
@@ -1932,7 +2092,7 @@
 
     <xsl:template match="xforms:setvalue" mode="xforms-action">
         <xsl:param name="nodeset" select="''" tunnel="yes"/>
-<!--        <xsl:message use-when="$debugMode">setvalue ZZZ= <xsl:value-of select="serialize(.)"/></xsl:message>-->
+<!-\-        <xsl:message use-when="$debugMode">setvalue ZZZ= <xsl:value-of select="serialize(.)"/></xsl:message>-\->
         <setvalue>
             <xsl:if test="exists(@value)">
                 <xsl:attribute name="value">
@@ -2050,7 +2210,7 @@
         </reset>
     </xsl:template>
     
-    
+-->    
     
     <!-- action-to-map -->
     
@@ -2077,7 +2237,7 @@
     
     
 
-    <xsl:function name="xforms:convert-xml-to-jxml" as="node()" exclude-result-prefixes="#all">
+<!--    <xsl:function name="xforms:convert-xml-to-jxml" as="node()" exclude-result-prefixes="#all">
         <xsl:param name="xinstance" as="node()"/>
         <xsl:variable name="rep-xml">
             <xsl:element name="map" namespace="http://www.w3.org/2005/xpath-functions">
@@ -2091,8 +2251,8 @@
     <xsl:template match="*" mode="json-xml">
 
         <xsl:choose>
-            <!-- TODO handle attributes??? -->
-            <!--<xsl:when test="attribute()"></xsl:when>-->
+            <!-\- TODO handle attributes??? -\->
+            <!-\-<xsl:when test="attribute()"></xsl:when>-\->
             <xsl:when test="count(*) > 0">
                 <xsl:for-each-group select="* | @*" group-by="local-name()">
                     <xsl:choose>
@@ -2152,18 +2312,18 @@
         </xsl:choose>
 
     </xsl:template>
-
-
+-->
+<!--
     <xsl:function name="xforms:convert-json-to-xml" as="node()" exclude-result-prefixes="#all">
         <xsl:param name="jinstance" as="xs:string"/>
         <xsl:variable name="rep-xml">
             <xsl:sequence select="json-to-xml($jinstance)"/>
         </xsl:variable>
-        <!-- <xsl:message use-when="$debugMode">TESTING json xml map = <xsl:value-of select="serialize($rep-xml)"/></xsl:message> -->
+        <!-\- <xsl:message use-when="$debugMode">TESTING json xml map = <xsl:value-of select="serialize($rep-xml)"/></xsl:message> -\->
         <xsl:variable name="result">
-            <!--<xsl:element name="document"> -->
+            <!-\-<xsl:element name="document"> -\->
             <xsl:apply-templates select="$rep-xml" mode="jxml-xml"/>
-            <!--  </xsl:element> -->
+            <!-\-  </xsl:element> -\->
         </xsl:variable>
         <xsl:sequence select="$result"/>
     </xsl:function>
@@ -2218,7 +2378,7 @@
 
     </xsl:template>
 
-
+-->
     <!-- Form instance check for updates made -->
 
     <xd:doc scope="component">
@@ -2249,9 +2409,37 @@
         </xsl:variable>
         
         <xsl:copy>
-            <xsl:apply-templates select="*" mode="form-check">
-                <xsl:with-param name="curPath" select="$curPath"/>
-            </xsl:apply-templates>
+            
+            <xsl:for-each-group select="element()" group-by="local-name(.)">                  
+                
+                <xsl:variable name="updatedChildPath" select="concat($curPath, current-grouping-key())"/>
+                <!--<xsl:variable name="repeatableVar"
+                select="ixsl:page()//*[@data-repeatable-context = $updatedPath2]"/>-->
+                
+                <xsl:variable name="dataRefWithFilter"
+                    select="ixsl:page()//*[starts-with(@data-ref, concat($updatedChildPath,'['))]"/>
+                <xsl:choose>
+                    <xsl:when test="count(current-group()) > 1 or exists($dataRefWithFilter)">   
+                        <xsl:for-each select="current-group()">
+                            <xsl:apply-templates select="." mode="form-check">
+                                <xsl:with-param name="curPath" select="$curPath"/>
+                                <xsl:with-param name="position" select="position()"/>
+                            </xsl:apply-templates>
+                        </xsl:for-each>                    
+                    </xsl:when>
+                    
+                    <xsl:otherwise>
+                        <xsl:for-each select="current-group()">
+                            <xsl:apply-templates select="." mode="form-check">
+                                <xsl:with-param name="curPath" select="$curPath"/>
+                            </xsl:apply-templates>
+                        </xsl:for-each>                        
+                    </xsl:otherwise>
+                    
+                </xsl:choose>
+                
+            </xsl:for-each-group>
+            
         </xsl:copy>
     </xsl:template>
     
@@ -2274,10 +2462,10 @@
                 then concat($curPath, name(), '[', $position, ']')
                 else concat($curPath, name())"/>
 
-<!--        <xsl:message use-when="$debugMode">form-check processing node: <xsl:value-of select="local-name()"/></xsl:message>-->
-<!--        <xsl:message use-when="$debugMode">form-check updatedPath: <xsl:value-of select="$updatedPath"/></xsl:message> -->
+<!--        <xsl:message use-when="$debugMode">form-check processing node: <xsl:value-of select="local-name()"/></xsl:message>
+        <xsl:message use-when="$debugMode">form-check updatedPath: <xsl:value-of select="$updatedPath"/></xsl:message> 
         
-        
+-->        
         <xsl:copy>
             <!-- *** Process attributes of context node -->
             <xsl:apply-templates select="attribute()" mode="form-check">
@@ -2286,16 +2474,19 @@
             
             <!-- *** Process text content of context node -->
             <!-- Check for associated/bound form-control with id=$updatedPath  -->
-            <xsl:variable name="associated-form-control"
-                select="ixsl:page()//*[@data-ref = $updatedPath]"/>
+            <xsl:variable name="associated-form-control" as="element()*"
+                select="ixsl:page()//*[self::input or self::select or self::textarea][@data-ref = $updatedPath]"/>
                      
+            <xsl:if test="count($associated-form-control) > 1">
+                <xsl:message>[form-check] More than one form element controls the value of XForm node at <xsl:value-of select="$updatedPath"/>; Saxon-Forms will apply the value of the first</xsl:message>
+            </xsl:if>
             
             <xsl:choose>
                 <xsl:when test="exists($associated-form-control)">
-                    <!--<xsl:message use-when="$debugMode">[form-check mode] Found form control &lt;<xsl:value-of select="name($associated-form-control)"/>&gt; associated with instance item at: <xsl:value-of
+                    <!--<xsl:message use-when="$debugMode">[form-check mode] Found form control &lt;<xsl:value-of select="name($associated-form-control[1])"/>&gt; associated with instance item at: <xsl:value-of
                         select="$updatedPath"/></xsl:message> -->
                     <xsl:value-of>
-                        <xsl:apply-templates select="$associated-form-control" mode="get-field"/>
+                        <xsl:apply-templates select="$associated-form-control[1]" mode="get-field"/>
                     </xsl:value-of>
                 </xsl:when>
                 <xsl:when test="exists($pendingUpdates) and map:contains($pendingUpdates, $updatedPath)">
@@ -2601,6 +2792,53 @@
     -->
     
     <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Determine if an XForms element has a reference to the index() function.</xd:p>
+            <xd:p>(If so, it will be added to a Javascript variable to support the xforms-recalculate event)</xd:p>
+        </xd:desc>
+        <xd:param name="this">Element to be checked</xd:param>
+    </xd:doc>
+    <xsl:function name="xforms:usesIndexFunction" as="xs:boolean">
+        <xsl:param name="this" as="element()"/>
+        <xsl:variable name="index-function-match" as="xs:string*" >
+            <!-- 
+            \i = "initial name character"
+            \c = "name character"
+            
+            https://www.w3.org/TR/xmlschema11-2/#Name
+            https://www.mulberrytech.com/quickref/regex.pdf
+            
+            -->
+            <xsl:analyze-string select="$this/@ref" regex="\i\c*\(">
+                <xsl:matching-substring>
+                    <xsl:choose>
+                        <xsl:when test="substring-before(.,'(')= 'index'">
+                            <xsl:sequence select="'i'" />
+                        </xsl:when>
+                        <xsl:otherwise/>
+                    </xsl:choose>
+                </xsl:matching-substring>
+                <xsl:non-matching-substring/>
+            </xsl:analyze-string>
+            
+            <xsl:analyze-string select="$this/@nodeset" regex="\i\c*\(">
+                <xsl:matching-substring>
+                    <xsl:choose>
+                        <xsl:when test="substring-before(.,'(')= 'index'">
+                            <xsl:sequence select="'i'" />
+                        </xsl:when>
+                        <xsl:otherwise/>
+                    </xsl:choose>
+                </xsl:matching-substring>
+                <xsl:non-matching-substring/>
+            </xsl:analyze-string>
+        </xsl:variable>
+        
+        <xsl:sequence select="if (exists($index-function-match)) then true() else false()"/>
+        
+    </xsl:function>
+    
+    <xd:doc scope="component">
         <xd:desc>Add all relevant namespace declarations to the xform element, to help with xsl:evaluation</xd:desc>
         <xd:param name="this">Element for which namespaces are needed</xd:param>
     </xd:doc>
@@ -2621,12 +2859,14 @@
     <xd:doc scope="component">
         <xd:desc>Find string in HTML @class attribute.</xd:desc>
         <xd:return>True if $string is one of the values of $class</xd:return>
-        <xd:param name="class">HTML @class attribute (e.g. class="block incremental")</xd:param>
+        <xd:param name="element">HTML element that may have a @class attribute (e.g. class="block incremental")</xd:param>
         <xd:param name="string">String to match in class (e.g. "incremental")</xd:param>
     </xd:doc>
     <xsl:function name="xforms:hasClass" as="xs:boolean">
-        <xsl:param name="class" as="attribute(class)"/>
+        <xsl:param name="element" as="element()"/>
         <xsl:param name="string" as="xs:string"/>
+        
+        <xsl:variable name="class" as="xs:string?" select="$element/@class"/>
         <xsl:variable name="classes" as="xs:string*" select="tokenize($class)"/>
         <xsl:choose>
             <xsl:when test="$string = $classes">
@@ -2848,20 +3088,29 @@
             then normalize-space( xs:string($this/@ref) ) 
             else ()"/>
         
-        <xsl:variable name="data-ref" as="xs:string">
+        <xsl:variable name="this-binding-ref" as="xs:string?">
             <xsl:choose>
                 <xsl:when test="exists($bindingi)">
                     <!-- 
-                    MD 2018-07-01: xforms:bind should not have a @ref element 
-                
-                    https://www.w3.org/TR/xforms11/#structure-bind-element
-                -->
+                        MD 2018-07-01: xforms:bind should not have a @ref element
+                        https://www.w3.org/TR/xforms11/#structure-bind-element
+                    -->
                     <xsl:value-of
                         select="
                         if (exists($bindingi/@nodeset)) 
-                        then $bindingi/@nodeset
-                        else $bindingi/@ref"
+                        then normalize-space( xs:string($bindingi/@nodeset) )
+                        else normalize-space( xs:string($bindingi/@ref) )
+                        "
                     />
+                </xsl:when>
+            </xsl:choose>
+        </xsl:variable>
+        
+        <xsl:variable name="data-ref" as="xs:string">
+            <xsl:choose>
+                <xsl:when test="exists($bindingi)">
+                    
+                    <xsl:sequence select="xforms:resolveXPathStrings('',$this-binding-ref)"/>
                 </xsl:when>
                 <xsl:when test="exists($this-ref)">
                     <xsl:sequence select="xforms:resolveXPathStrings($nodeset,$this-ref)"/>
@@ -2998,6 +3247,43 @@
         
     </xsl:template>
     
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Update HTML display elements corresponding to XForms elements that use the index() function</xd:p>
+        </xd:desc>
+    </xd:doc>
+    <xsl:template name="refreshElementsUsingIndexFunction-JS">
+        <xsl:variable name="ElementsUsingIndexFunction-keys" select="js:getElementsUsingIndexFunctionKeys()" as="item()*"/>
+        
+        <xsl:variable name="instance-keys" as="item()*" select="js:getInstanceKeys()"/>
+        <xsl:variable name="instances" as="map(xs:string, element())">
+            <xsl:map>
+                <xsl:for-each select="$instance-keys">
+                    <xsl:map-entry key="." select="js:getInstance(.)"/>
+                </xsl:for-each>
+            </xsl:map>
+        </xsl:variable>
+                
+        <xsl:for-each select="$ElementsUsingIndexFunction-keys">
+            <xsl:variable name="this-key" as="xs:string" select="."/>
+            <xsl:variable name="this-element" as="element()" select="js:getElementUsingIndexFunction($this-key)"/>
+            <xsl:variable name="this-element-refi" as="xs:string?">
+                <xsl:choose>
+                    <xsl:when test="exists($this-element/@nodeset)"><xsl:sequence select="$this-element/@nodeset" /></xsl:when>
+                    <xsl:when test="exists($this-element/@ref)"><xsl:sequence select="$this-element/@ref" /></xsl:when>
+                    <xsl:otherwise/>
+                </xsl:choose>
+            </xsl:variable>
+            <xsl:result-document href="#{$this-key}" method="ixsl:replace-content">
+                <xsl:apply-templates select="$this-element/*">
+                    <xsl:with-param name="instances" select="$instances" tunnel="yes"/>
+                    <xsl:with-param name="nodeset" select="if(exists($this-element-refi))then $this-element-refi else ''" tunnel="yes"/>
+                </xsl:apply-templates>
+            </xsl:result-document>
+            
+        </xsl:for-each>
+        
+    </xsl:template>
     
     <xd:doc scope="component">
         <xd:desc>
@@ -3416,10 +3702,11 @@
                 </xsl:apply-templates>
             </xsl:variable>
             
-            <xsl:message use-when="$debugMode">[xforms-recalculate] updated instance: <xsl:value-of select="serialize($updatedInstanceXML)"/></xsl:message>
+            <!--<xsl:message use-when="$debugMode">[xforms-recalculate] updated instance: <xsl:value-of select="serialize($updatedInstanceXML)"/></xsl:message>-->
             
             <xsl:sequence select="js:setInstance(.,$updatedInstanceXML)"/>
             <xsl:call-template name="refreshOutputs-JS"/>
+            <xsl:call-template name="refreshElementsUsingIndexFunction-JS"/>
         </xsl:for-each>    
                 
     </xsl:template>
