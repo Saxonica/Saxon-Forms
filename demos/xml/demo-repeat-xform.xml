@@ -99,15 +99,17 @@
                 </xf:action>
             </xf:trigger>
             
-            <xf:trigger>
+           
+              
+              <xf:trigger>
                 <xf:label>Move selected ingredient Up</xf:label>
                 <!-- xf:action groups a sequence of actions -->
                 <xf:action ev:event="DOMActivate" if="index('edit-ingredient-repeat') != 1">
                     <!-- insert changes "focus" index to the newly inserted node -->
                     <xf:insert context="." nodeset="demo:ingredients/demo:ingredient" at="index('edit-ingredient-repeat') - 1" position="before" origin="demo:ingredients/demo:ingredient[index('edit-ingredient-repeat')]"/>
-                    <!-- push focus back to original node -->
-                    <xf:setindex repeat="edit-ingredient-repeat" index="index('edit-ingredient-repeat') + 2"/>
-                    <xf:setfocus control="edit-ingredient-repeat"/>
+                    <!-- original node is now at index() + 1 -->
+                    <xf:setindex repeat="edit-ingredient-repeat" index="index('edit-ingredient-repeat') + 1"/>
+<!--                    <xf:setfocus control="edit-ingredient-repeat"/>-->
                     <xf:delete context="." nodeset="demo:ingredients/demo:ingredient" at="index('edit-ingredient-repeat')"/>
                     <xf:rebuild model="m-recipes"/>
                 </xf:action>
@@ -126,9 +128,7 @@
                      weirdly, this doesn't work properly using the REST URL
                      -->
                     <xf:insert context="." nodeset="demo:ingredients/demo:ingredient" at="index('edit-ingredient-repeat') + 1" position="after" origin="demo:ingredients/demo:ingredient[index('edit-ingredient-repeat')]"/>
-                    <!-- push focus back to original node -->
-                    <xf:setindex repeat="edit-ingredient-repeat" index="index('edit-ingredient-repeat') - 2"/>
-                    <xf:setfocus control="edit-ingredient-repeat"/>
+<!--                    <xf:setfocus control="edit-ingredient-repeat"/>-->
                     <xf:delete context="." nodeset="demo:ingredients/demo:ingredient" at="index('edit-ingredient-repeat')"/>
                 </xf:action>
             </xf:trigger>
