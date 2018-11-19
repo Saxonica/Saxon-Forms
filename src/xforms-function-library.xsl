@@ -74,19 +74,12 @@
     
     <xsl:function name="xforms:index" as="xs:integer">
         <xsl:param name="repeatID" as="xs:string" />
-        <xsl:variable name="element" select="ixsl:page()//*[@id = $repeatID]"/>
-        <xsl:choose>
-            <xsl:when test="empty($element)">
-                <!--<xsl:sequence select="xs:integer('NaN')" />-->
-                <xsl:sequence select="0" />
-            </xsl:when>
-            <xsl:when test="exists($element/@data-count)">
-                <xsl:sequence select="xs:integer($element/@data-count)" />
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:sequence select="0" />
-            </xsl:otherwise>
-        </xsl:choose>
+                
+        <!-- call to js:getRepeatIndex doesn't work on first pass for some reason -->
+        <xsl:variable name="repeat-index" as="xs:double?" select="js:getRepeatIndex($repeatID)"/>
+                
+        <!-- assign value '0' if $repeat-index does not exist -->
+        <xsl:sequence select="if (exists($repeat-index)) then xs:integer($repeat-index) else 0"/>
         
     </xsl:function>
     
