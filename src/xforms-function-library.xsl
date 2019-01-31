@@ -14,7 +14,7 @@
     xmlns:ev="http://www.w3.org/2001/xml-events" exclude-result-prefixes="xs math xforms"
     extension-element-prefixes="ixsl" version="3.0">
     
-    <xsl:variable name="xform-functions" select="'instance', 'index', 'avg', 'foo', 'current-date', random"/>
+    <xsl:variable name="xform-functions" select="'instance', 'index', 'avg', 'foo', 'current-date', 'random'"/>
     
     <xsl:function name="xforms:impose" as="xs:string">
         <xsl:param name="input" as="xs:string" />
