@@ -51,7 +51,7 @@
     <div id="content">
         <h2>Recipe list</h2>
         
-        <xf:repeat id="recipe-repeat" nodeset="instance('all')/demo:recipe" class="repeat">
+        <xf:repeat id="recipe-repeat" nodeset="instance('all')/demo:recipe" class="repeat" startindex="2">
             <xf:output ref="demo:title"/>
             <xf:repeat id="ingredient-repeat" nodeset="demo:ingredients/demo:ingredient" class="repeat">
                 <xf:output ref="text()"/>
@@ -78,7 +78,7 @@
                 <xf:label>Recipe Name:</xf:label>
             </xf:input>
             <xf:repeat id="edit-ingredient-repeat" nodeset="demo:ingredients/demo:ingredient">
-                <xf:input ref=".">
+                <xf:input ref="." id="edit-ingredient-repeat-input">
                     <xf:label>Ingredient:</xf:label>
                 </xf:input>
             </xf:repeat>
@@ -89,6 +89,7 @@
                 <xf:label>Add ingredient after selected item</xf:label>
                 <xf:action ev:event="DOMActivate">
                     <xf:insert context="." nodeset="demo:ingredients/demo:ingredient" at="index('edit-ingredient-repeat')" position="after" origin="instance('i-new-ingredient')"/>
+                    <xf:setfocus control="edit-ingredient-repeat-input"/>
                 </xf:action>
             </xf:trigger>
 
@@ -96,6 +97,7 @@
                 <xf:label>Delete selected ingredient</xf:label>
                 <xf:action ev:event="DOMActivate">
                     <xf:delete context="." nodeset="demo:ingredients/demo:ingredient" at="index('edit-ingredient-repeat')"/>
+                    <xf:setfocus control="edit-ingredient-repeat-input"/>
                 </xf:action>
             </xf:trigger>
             
@@ -107,11 +109,9 @@
                 <xf:action ev:event="DOMActivate" if="index('edit-ingredient-repeat') != 1">
                     <!-- insert changes "focus" index to the newly inserted node -->
                     <xf:insert context="." nodeset="demo:ingredients/demo:ingredient" at="index('edit-ingredient-repeat') - 1" position="before" origin="demo:ingredients/demo:ingredient[index('edit-ingredient-repeat')]"/>
-                    <!-- original node is now at index() + 1 -->
-                    <xf:setindex repeat="edit-ingredient-repeat" index="index('edit-ingredient-repeat') + 1"/>
-<!--                    <xf:setfocus control="edit-ingredient-repeat"/>-->
-                    <xf:delete context="." nodeset="demo:ingredients/demo:ingredient" at="index('edit-ingredient-repeat')"/>
-                    <xf:rebuild model="m-recipes"/>
+                    <!-- original node is now at index() + 2 -->
+                    <xf:delete context="." nodeset="demo:ingredients/demo:ingredient" at="index('edit-ingredient-repeat') + 2"/>
+                    <xf:setfocus control="edit-ingredient-repeat-input"/>
                 </xf:action>
             </xf:trigger>
             
@@ -123,13 +123,13 @@
                      possibly because focus was on a different row from where 'Down' was clicked
                      -->
                 <xf:action ev:event="DOMActivate" if="index('edit-ingredient-repeat') != count(ingredients/ingredient)">
-                    <!-- insert changes "focus" index to the newly inserted node 
-                     
-                     weirdly, this doesn't work properly using the REST URL
-                     -->
+                    <!-- insert changes "focus" index to the newly inserted node -->
                     <xf:insert context="." nodeset="demo:ingredients/demo:ingredient" at="index('edit-ingredient-repeat') + 1" position="after" origin="demo:ingredients/demo:ingredient[index('edit-ingredient-repeat')]"/>
-<!--                    <xf:setfocus control="edit-ingredient-repeat"/>-->
-                    <xf:delete context="." nodeset="demo:ingredients/demo:ingredient" at="index('edit-ingredient-repeat')"/>
+                    <!-- original node is now at index() - 2 -->
+                    <xf:delete context="." nodeset="demo:ingredients/demo:ingredient" at="index('edit-ingredient-repeat') - 2"/>
+                    <!-- copy of original node is now at index() - 1 -->
+                    <xf:setindex repeat="edit-ingredient-repeat" index="index('edit-ingredient-repeat') - 1"/>
+                    <xf:setfocus control="edit-ingredient-repeat-input"/>
                 </xf:action>
             </xf:trigger>
         </xf:group>
