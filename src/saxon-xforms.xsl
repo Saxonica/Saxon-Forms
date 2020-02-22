@@ -604,6 +604,7 @@
         <xsl:for-each select="$submissionKeys">
             <xsl:variable name="submission" select="map:get($submissions, .)" as="map(*)" />  
             <xsl:message use-when="$debugMode">Setting submission with ID '<xsl:value-of select="."/>'</xsl:message>
+            <xsl:message use-when="$debugMode">Submission map: '<xsl:value-of select="serialize($submission)"/>'</xsl:message>
             <xsl:sequence select="js:addSubmission(.,$submission)"/>
         </xsl:for-each>
         
@@ -1010,7 +1011,7 @@
             response as an XDM map.
            ?body is an XML document. -->
         <xsl:context-item as="map(*)" use="required"/>
-        
+                
         <xsl:param name="instance-id" as="xs:string" required="no" select="$default-instance-id"/>
         <xsl:param name="targetref" as="xs:string?" required="no"/>
         <xsl:param name="replace" as="xs:string?" required="no"/>
@@ -1874,6 +1875,10 @@
     <xsl:template match="xforms:submit">
         <xsl:param name="submissions" select="map{}" as="map(xs:string, map(*))" tunnel="yes"/>
         
+        <xsl:message use-when="$debugMode">[xforms:submit] Generating form control for submission ID '<xsl:sequence select="string(@submission)"/>'</xsl:message>
+        
+<!--        <xsl:message use-when="$debugMode">[xforms:submit] Comparing ID with submissions map '<xsl:sequence select="serialize($submissions)"/>'</xsl:message>-->
+        
         <xsl:variable name="innerbody">
             <xsl:apply-templates select="xforms:label"/>
         </xsl:variable>
@@ -1888,6 +1893,7 @@
                 <button type="button">
                     <xsl:copy-of select="@*[local-name() != 'submission']"/>
                     <xsl:if test="exists(@submission) and map:contains($submissions, @submission)">
+                        <xsl:message use-when="$debugMode">[xforms:submit] Submission found</xsl:message>
                         <xsl:attribute name="data-submit" select="@submission"/>
                     </xsl:if>
                     <xsl:copy-of select="$innerbody"/>
@@ -2607,16 +2613,39 @@
         <xsl:param name="curPath" select="''"/>
         <xsl:param name="position" select="0"/>
         <xsl:param name="pendingUpdates" as="map(xs:string, xs:string)?" tunnel="yes"/>
+       <xsl:param name="updated-node" as="node()?" tunnel="yes"/>
+        <xsl:param name="value" as="xs:string?" tunnel="yes"/>
        
+       <!-- 
+       problems when repeats are used
+       
+       the first item's position is not made explicit
+       
+       we really need to evaluate the XPath
+       
+       maybe "pendingUpdates" should be used for this ... ?
+       
+       at xforms-value-changed, xsl:evaluate the data-ref XPath
+       to identify the precise node that changed
+       and do a node comparison here instead of an XPat string comparison
+       
+       ... it works ...
+       -->
         <xsl:variable name="updatedPath"
             select="
                 if ($position > 0) 
                 then concat($curPath, name(), '[', $position, ']')
                 else concat($curPath, name())"/>
-
+<!--        <xsl:variable name="updatedPath" select="concat($curPath, name(), '[', $position, ']')"/>-->
+        
 <!--        <xsl:message use-when="$debugMode">form-check processing node: <xsl:value-of select="local-name()"/></xsl:message>-->
 <!--        <xsl:message use-when="$debugMode">form-check updatedPath: <xsl:value-of select="$updatedPath"/></xsl:message> -->
         
+        <xsl:message use-when="$debugMode">[form-check] looking for form control for XPath '<xsl:sequence select="$updatedPath"/>'</xsl:message>
+        <xsl:for-each select="ixsl:page()//*[self::input or self::select or self::textarea]">
+            <xsl:message use-when="$debugMode">[form-check] checking <xsl:sequence select="name(.)"/>, @data-ref = '<xsl:sequence select="@data-ref"/>'</xsl:message>
+            <xsl:message use-when="$debugMode">[form-check] resolved @data-ref = '<xsl:sequence select="xforms:resolve-index(@data-ref)"/>'</xsl:message>
+        </xsl:for-each>
         
         <xsl:copy>
             <!-- *** Process attributes of context node -->
@@ -2634,6 +2663,12 @@
             </xsl:if>
             
             <xsl:choose>
+                <xsl:when test="$updated-node is .">
+                    <xsl:message use-when="$debugMode">
+                        [form-check] Matched node!!
+                    </xsl:message>
+                    <xsl:value-of select="$value"/>
+                </xsl:when>
                 <xsl:when test="exists($associated-form-control)">
                     <!--<xsl:message use-when="$debugMode">[form-check mode] Found form control &lt;<xsl:value-of select="name($associated-form-control[1])"/>&gt; associated with instance item at: <xsl:value-of
                         select="$updatedPath"/></xsl:message> -->
@@ -3111,9 +3146,6 @@
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:variable>
-                    <xsl:message use-when="$debugMode">[xforms:getInstanceMap] From $nodeset = '<xsl:sequence select="$nodeset"/>'</xsl:message>
-                    <xsl:message use-when="$debugMode">[xforms:getInstanceMap] 'instance-id' = '<xsl:sequence select="regex-group(1)"/>'</xsl:message>
-                    <xsl:message use-when="$debugMode">[xforms:getInstanceMap] 'xpath' = '<xsl:sequence select="$xpath"/>'</xsl:message>
                     <xsl:map-entry key="'instance-id'" select="regex-group(1)"/>
                     <xsl:map-entry key="'xpath'" select="$xpath"/>
                 </xsl:matching-substring>
@@ -3405,7 +3437,7 @@
     <xsl:template name="getReferencedInstanceField">
         <xsl:param name="refi" as="xs:string" required="no" select="''"/>
         
-        <xsl:message use-when="$debugMode">[getReferencedInstanceField] $refi = '<xsl:value-of select="$refi"/>'</xsl:message>
+<!--        <xsl:message use-when="$debugMode">[getReferencedInstanceField] $refi = '<xsl:value-of select="$refi"/>'</xsl:message>-->
         
         <xsl:variable name="field" as="node()*">
             <xsl:choose>
@@ -3606,9 +3638,13 @@
                 </xsl:for-each>
             </xsl:map>
         </xsl:variable>
+        
                 
         <xsl:for-each select="$ElementsUsingIndexFunction-keys">
             <xsl:variable name="this-key" as="xs:string" select="."/>
+            
+            <xsl:message use-when="$debugMode">[refreshElementsUsingIndexFunction-JS] Refreshing item with key '<xsl:sequence select="$this-key"/>'</xsl:message>
+            
             <xsl:variable name="this-element" as="element()" select="js:getElementUsingIndexFunction($this-key)"/>
             <xsl:variable name="this-element-refi" as="xs:string?">
                 <xsl:choose>
@@ -4129,11 +4165,28 @@
         
         <!-- MD 2018-06-29: handle multiple instances -->
         <xsl:variable name="instanceXML" as="element()" select="xforms:getInstance-JS($refi)"/>
-        <xsl:variable name="updatedInstanceXML" as="element()">
+        <!--<xsl:variable name="updatedInstanceXML" as="element()">
             <xsl:apply-templates select="$instanceXML" mode="form-check-initial">
                 <xsl:with-param name="instance-id" select="$instance-id"/>
             </xsl:apply-templates>
+        </xsl:variable>-->
+        
+        <!-- MD 2020-02-22 -->
+        <xsl:variable name="updatedNode" as="node()">
+            <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceXML" namespace-context="$instanceXML"/>
         </xsl:variable>
+        <xsl:variable name="new-value" as="xs:string">
+            <xsl:apply-templates select="$form-control" mode="get-field"/>
+        </xsl:variable>
+        <xsl:variable name="updatedInstanceXML" as="element()">
+            <xsl:apply-templates select="$instanceXML" mode="form-check-initial">
+                <xsl:with-param name="instance-id" select="$instance-id"/>
+                <xsl:with-param name="updated-node" select="$updatedNode" tunnel="yes"/>
+                <xsl:with-param name="value" select="$new-value" tunnel="yes"/>
+            </xsl:apply-templates>
+        </xsl:variable>
+        
+        <xsl:message use-when="$debugMode">[xforms-value-changed] Updated XML: <xsl:sequence select="serialize($updatedInstanceXML)"/></xsl:message>
  
 
         <xsl:sequence select="xforms:setInstance-JS($refi,$updatedInstanceXML)"/>
@@ -4239,13 +4292,15 @@
             </xsl:apply-templates>
         </xsl:variable>
         
+        
+        
         <xsl:variable name="required-fieldsi" select="ixsl:page()//*[@data-required]" as="item()*"/>
         
         <xsl:variable name="required-fields-check" as="item()*" select="xforms:check-required-fields($updatedInstanceXML)"/>
         
-<!--        <xsl:message use-when="$debugMode">[xforms-submit] Submitting instance XML: <xsl:value-of select="serialize($instanceXML)"/></xsl:message>
-        <xsl:message use-when="$debugMode">[xforms-submit] Updated instance XML: <xsl:value-of select="serialize($instanceXML)"/></xsl:message>
--->        
+        <xsl:message use-when="$debugMode">[xforms-submit] Submitting instance XML: <xsl:value-of select="serialize($instanceXML)"/></xsl:message>
+        <xsl:message use-when="$debugMode">[xforms-submit] Updated instance XML: <xsl:value-of select="serialize($updatedInstanceXML)"/></xsl:message>
+        
         <xsl:choose>
             <xsl:when test="empty($required-fields-check)">
                 <xsl:variable name="requestBodyXML" as="element()">
@@ -4314,6 +4369,8 @@
                         <xsl:map-entry key="'media-type'" select="$mediatype"/>
                     </xsl:map>
                 </xsl:variable>
+                
+                <xsl:message use-when="$debugMode">[xforms-submit] Sending HTTP request '<xsl:sequence select="fn:serialize($HTTPrequest)"/>'</xsl:message>
                 
                  
                 <ixsl:schedule-action http-request="$HTTPrequest">
