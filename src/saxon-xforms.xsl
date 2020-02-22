@@ -144,7 +144,13 @@
                     <xsl:map>
                         <xsl:choose>
                             <xsl:when test="empty($instance-xml)">
-                                <xsl:for-each select="$xforms-doci/xforms:xform/xforms:model/xforms:instance">
+                                <xsl:variable name="instances" as="element(xforms:instance)*" select="$xforms-doci/xforms:xform/xforms:model/xforms:instance"/>
+                                <xsl:if test="count($instances[not(@id)])">
+                                    <xsl:variable name="message" as="xs:string" select="'[xformsjs-main] FATAL ERROR: The XForm contains more than one instance with no ID. At most one instance may have no ID.'"/>
+                                    <xsl:message terminate="yes" select="$message"/>
+                                </xsl:if>
+                                
+                                <xsl:for-each select="$instances">
                                     <xsl:variable name="instance-with-explicit-namespaces" as="element()">
                                         <xsl:apply-templates select="./*" mode="namespace-fix"/>
                                     </xsl:variable>
@@ -176,6 +182,7 @@
             </xsl:choose> 
         </xsl:variable>
         
+      
         <!-- first instance (use as default if all instances have @id) -->
         <xsl:variable name="default-instance" as="element()">
             <xsl:choose>
@@ -3001,6 +3008,20 @@
         </xsl:element>
     </xsl:function>
     
+    <xd:doc scope="component">
+        <xd:desc>Write message to HTML page for the user.</xd:desc>
+        <xd:param name="message">String message.</xd:param>
+    </xd:doc>
+    <xsl:function name="xforms:logToPage" as="empty-sequence()">
+        <xsl:param name="message" as="xs:string"/>
+        <xsl:result-document href="#{$xform-html-id}" method="ixsl:append-content">
+            <div class="message">
+                <p>
+                    <xsl:sequence select="$message"/>
+                </p>
+            </div>
+        </xsl:result-document>
+    </xsl:function>
     
     <xd:doc scope="component">
         <xd:desc>Find string in HTML @class attribute.</xd:desc>
@@ -3507,7 +3528,7 @@
     </xd:doc>
     <xsl:template name="refreshRepeats-JS">
                 
-        <xsl:message use-when="$debugMode">[refreshOutputs-JS] START refreshRepeats</xsl:message>
+        <xsl:message use-when="$debugMode">[refreshRepeats-JS] START refreshRepeats</xsl:message>
         
         
         <xsl:variable name="repeat-keys" select="js:getRepeatKeys()" as="item()*"/>
@@ -3516,7 +3537,7 @@
             <xsl:variable name="this-key" as="xs:string" select="."/>
             <xsl:variable name="this-repeat-nodeset" as="xs:string" select="js:getRepeat($this-key)"/>
             
-            <xsl:message use-when="$debugMode">[refreshOutputs-JS] Refreshing repeat ID = '<xsl:sequence select="$this-key"/>'</xsl:message>
+            <xsl:message use-when="$debugMode">[refreshRepeats-JS] Refreshing repeat ID = '<xsl:sequence select="$this-key"/>'</xsl:message>
             
             
             <xsl:variable name="instance-map" as="map(xs:string,xs:string)">
@@ -3686,6 +3707,8 @@
             </xsl:choose>                    
         </xsl:variable>
         
+        
+        <!-- https://www.w3.org/TR/xforms11/#action -->
         <xsl:if test="$ifExecuted">
             <xsl:variable name="action-name" as="xs:string" select="map:get($action-map,'name')"/>
             
@@ -3711,23 +3734,41 @@
                         <xsl:with-param name="instanceXML" select="$instanceXML2" as="element()" tunnel="yes"/>
                     </xsl:call-template>
                 </xsl:when>
-                <xsl:when test="$action-name = 'message'">
-                    <xsl:call-template name="action-message"/>
-                </xsl:when>
-                <xsl:when test="$action-name = 'send'">
-                    <xsl:call-template name="action-send"/>
-                </xsl:when>
-                <xsl:when test="$action-name = 'setfocus'">
-                    <xsl:call-template name="action-setfocus"/>
-                </xsl:when>
                 <xsl:when test="$action-name = 'setindex'">
                     <xsl:call-template name="action-setindex"/>
                 </xsl:when>
+                <!--<xsl:when test="$action-name = 'toggle'">
+                    <xsl:call-template name="action-toggle"/>
+                </xsl:when>-->
+                <xsl:when test="$action-name = 'setfocus'">
+                    <xsl:call-template name="action-setfocus"/>
+                </xsl:when>
+                <!--<xsl:when test="$action-name = 'dispatch'">
+                    <xsl:call-template name="action-dispatch"/>
+                </xsl:when>-->
                 <xsl:when test="$action-name = 'rebuild'">
                     <xsl:call-template name="xforms-rebuild"/>
                 </xsl:when>
                 <xsl:when test="$action-name = 'recalculate'">
                     <xsl:call-template name="xforms-recalculate"/>
+                </xsl:when>
+                <!--<xsl:when test="$action-name = 'revalidate'">
+                    <xsl:call-template name="xforms-revalidate"/>
+                </xsl:when>-->
+                <!--<xsl:when test="$action-name = 'refresh'">
+                    <xsl:call-template name="action-refresh"/>
+                </xsl:when>-->
+                <xsl:when test="$action-name = 'reset'">
+                    <xsl:call-template name="action-reset"/>
+                </xsl:when>
+                <!--<xsl:when test="$action-name = 'load'">
+                    <xsl:call-template name="action-load"/>
+                </xsl:when>-->
+                <xsl:when test="$action-name = 'send'">
+                    <xsl:call-template name="action-send"/>
+                </xsl:when>
+                <xsl:when test="$action-name = 'message'">
+                    <xsl:call-template name="action-message"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:message use-when="$debugMode">[applyActions] action '<xsl:value-of select="$action-name"/>' not yet handled!</xsl:message>
