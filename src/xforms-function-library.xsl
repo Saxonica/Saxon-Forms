@@ -35,6 +35,7 @@
                     <xsl:choose>
                         <xsl:when test="substring-before(.,'(')=$xform-functions">
                             <xsl:sequence select="concat('xforms:',.)" />
+<!--                            <xsl:sequence select="concat('Q{http://www.w3.org/2002/xforms}',.)" />-->
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:sequence select="." />

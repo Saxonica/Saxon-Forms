@@ -54,11 +54,11 @@
         doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
         doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
     
-    <xsl:use-package name="http://saxon.sf.net/packages/logger.xsl" package-version="1.0">
+    <!--<xsl:use-package name="http://saxon.sf.net/packages/logger.xsl" package-version="1.0">
         <xsl:override>
             <xsl:variable name="sfp:LOGLEVEL" select="$sfp:LOGLEVEL_ALL"/>
         </xsl:override>
-    </xsl:use-package>
+    </xsl:use-package>-->
 
     <xsl:param name="xforms-instance-id" select="'xforms-jinstance'"/>
     <xsl:param name="xforms-cache-id" select="'xforms-cache'"/>
@@ -3098,7 +3098,7 @@
         <xsl:param name="nodeset" as="xs:string"/>
         <xsl:map>
             <xsl:analyze-string select="normalize-space($nodeset)"
-                regex="^instance\s*\(\s*&apos;(.*)&apos;\s*\)\s*(/\s*(.*)|)$"
+                regex="^instance\s*\(\s*&apos;([^&apos;]+)&apos;\s*\)\s*(/\s*(.*)|)$"
                 >
                 <xsl:matching-substring>
                     <xsl:variable name="xpath" as="xs:string">
@@ -3111,6 +3111,9 @@
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:variable>
+                    <xsl:message use-when="$debugMode">[xforms:getInstanceMap] From $nodeset = '<xsl:sequence select="$nodeset"/>'</xsl:message>
+                    <xsl:message use-when="$debugMode">[xforms:getInstanceMap] 'instance-id' = '<xsl:sequence select="regex-group(1)"/>'</xsl:message>
+                    <xsl:message use-when="$debugMode">[xforms:getInstanceMap] 'xpath' = '<xsl:sequence select="$xpath"/>'</xsl:message>
                     <xsl:map-entry key="'instance-id'" select="regex-group(1)"/>
                     <xsl:map-entry key="'xpath'" select="$xpath"/>
                 </xsl:matching-substring>
@@ -3402,7 +3405,7 @@
     <xsl:template name="getReferencedInstanceField">
         <xsl:param name="refi" as="xs:string" required="no" select="''"/>
         
-<!--        <xsl:message use-when="$debugMode">[getReferencedInstanceField] $refi = '<xsl:value-of select="$refi"/>'</xsl:message>-->
+        <xsl:message use-when="$debugMode">[getReferencedInstanceField] $refi = '<xsl:value-of select="$refi"/>'</xsl:message>
         
         <xsl:variable name="field" as="node()*">
             <xsl:choose>
@@ -3422,6 +3425,7 @@
                     
                     <xsl:variable name="xpath-mod" as="xs:string" select="xforms:impose(map:get($instance-map,'xpath'))"/>
                                       
+                 
                     
                     <xsl:evaluate xpath="$xpath-mod" context-item="$this-instance" namespace-context="$this-instance"/>
                     
