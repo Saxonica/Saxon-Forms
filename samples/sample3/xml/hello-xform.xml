@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+ 
+    <xf:model>
+        <xf:instance id="hello">
+            <data xmlns="">
+                <PersonGivenName>Mark</PersonGivenName>
+                <PetType>pet</PetType>
+                <CatName></CatName>
+            </data>
+        </xf:instance>
+    </xf:model>
+    
+    <xf:input ref="instance('hello')/PersonGivenName" incremental="true" class="hello-input">
+        <xf:label>Please enter your first name: </xf:label>
+        <xf:hint>Also known as your given name</xf:hint>
+    </xf:input>
+
+    
+    <xf:select1 ref="instance('hello')/PetType" incremental="true">
+        <xf:label>Type of pet:</xf:label>
+        <xf:item>
+            <xf:label>[Pet]</xf:label>
+            <xf:value>pet</xf:value> 
+        </xf:item>
+        <xf:item>
+            <xf:label>Cat</xf:label>
+            <xf:value>cat</xf:value> 
+        </xf:item>
+        <xf:item>
+            <xf:label>Dog</xf:label>
+            <xf:value>dog</xf:value> 
+        </xf:item>
+        <xf:item>
+            <xf:label>Tortoise</xf:label>
+            <xf:value>tortoise</xf:value> 
+        </xf:item>
+    </xf:select1>
+        
+    
+ 
+    <xf:input ref="instance('hello')/CatName" class="hello-input">
+        <xf:label>(Non-incremental) Please enter your pet's name: </xf:label>
+        <xf:hint>Or any old string</xf:hint>
+    </xf:input>
+    
+    
+    
+
+    <xf:output value="concat('Hello ', instance('hello')/PersonGivenName  , '. Your ', instance('hello')/PetType, ' is called ', instance('hello')/CatName)" class="block"/>
+    
+
+    
+</xf:xform>

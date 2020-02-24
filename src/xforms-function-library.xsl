@@ -3,15 +3,18 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:math="http://www.w3.org/2005/xpath-functions/math"
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-    xmlns:xforms="http://www.w3.org/2002/xforms" xmlns:xhtml="http://www.w3.org/1999/xhtml"
+    xmlns:xforms="http://www.w3.org/2002/xforms" 
+    xmlns:xhtml="http://www.w3.org/1999/xhtml"
     xmlns:xf="http://www.w3.org/2002/xforms"
-    xmlns:js="http://saxonica.com/ns/globalJS" xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT"
+    xmlns:js="http://saxonica.com/ns/globalJS" 
+    xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT"
     xmlns:in="http://www.w3.org/2002/xforms-instance"
     xmlns:fn="http://www.w3.org/2005/xpath-functions"
     xmlns:map="http://www.w3.org/2005/xpath-functions/map"
     xmlns:array="http://www.w3.org/2005/xpath-functions/array"
     xmlns:sfl="http://saxonica.com/ns/forms-local"
-    xmlns:ev="http://www.w3.org/2001/xml-events" exclude-result-prefixes="xs math xforms"
+    xmlns:ev="http://www.w3.org/2001/xml-events" 
+    exclude-result-prefixes="xs math xforms"
     extension-element-prefixes="ixsl" version="3.0">
     
     <xsl:variable name="xform-functions" select="'instance', 'index', 'avg', 'foo', 'current-date', 'random'"/>
@@ -32,6 +35,7 @@
                     <xsl:choose>
                         <xsl:when test="substring-before(.,'(')=$xform-functions">
                             <xsl:sequence select="concat('xforms:',.)" />
+<!--                            <xsl:sequence select="concat('Q{http://www.w3.org/2002/xforms}',.)" />-->
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:sequence select="." />
@@ -63,6 +67,24 @@
         </xsl:variable>
         
         <xsl:sequence select="string-join($parts2)" />
+    </xsl:function>
+    
+    <xsl:function name="xforms:resolve-index" as="xs:string">
+        <xsl:param name="input" as="xs:string" />
+        <xsl:variable name="parts" as="xs:string*">
+            <xsl:analyze-string select="$input" regex="index\s*\(\s*&apos;([^&apos;]+)&apos;\s*\)">
+                <xsl:matching-substring>
+<!--                    <xsl:message>[xforms:resolve-index] Resolving index of '<xsl:value-of select="regex-group(1)"/>' to '<xsl:value-of select="xforms:index(regex-group(1))"/>'</xsl:message>-->
+                    <xsl:sequence select="xs:string(xforms:index(regex-group(1)))"/>
+                </xsl:matching-substring>
+                <xsl:non-matching-substring>
+                    <xsl:sequence select="." />
+                </xsl:non-matching-substring>
+            </xsl:analyze-string>
+        </xsl:variable>
+<!--        <xsl:message>[xforms:resolve-index] XPath '<xsl:value-of select="$input"/>' resolves to '<xsl:value-of select="string-join($parts)"/>'</xsl:message>-->
+        
+        <xsl:sequence select="string-join($parts)" />
     </xsl:function>
     
     <xsl:function name="xforms:foo" as="xs:boolean">
