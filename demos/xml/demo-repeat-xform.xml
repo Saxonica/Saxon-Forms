@@ -96,7 +96,10 @@
             <xf:trigger>
                 <xf:label>Delete selected ingredient</xf:label>
                 <xf:action ev:event="DOMActivate">
+                    <xf:setindex repeat="edit-ingredient-repeat" index="index('edit-ingredient-repeat') - 1" if="index('edit-ingredient-repeat') != 1"/>
                     <xf:delete context="." nodeset="demo:ingredients/demo:ingredient" at="index('edit-ingredient-repeat')"/>
+                    <xf:insert context="./demo:ingredients" if="not(demo:ingredient)" nodeset="demo:ingredient" origin="instance('i-new-ingredient')"/>
+                    
                     <xf:setfocus control="edit-ingredient-repeat-input"/>
                 </xf:action>
             </xf:trigger>
