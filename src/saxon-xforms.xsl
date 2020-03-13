@@ -1670,6 +1670,7 @@
     </xd:doc>
     <xsl:template match="xforms:label">
         <label>
+            <xsl:copy-of select="@class"/>
             <xsl:choose>
                 <xsl:when test="count(./node()) &gt; 0">
                     <xsl:apply-templates select="node()"/>
@@ -2769,6 +2770,7 @@
         
         <xsl:variable name="updated-node" as="element()?" select="$updated-nodes[. is fn:current()]"/>
         
+         
         <xsl:copy>
             <xsl:apply-templates select="@*" mode="recalculate"/>
             
@@ -2877,7 +2879,7 @@
         <!-- select="ixsl:get(ixsl:page()//*[@id=$updatedPath],'value')" -->
         <xsl:choose>
             <xsl:when test="exists(@type) and @type = 'checkbox'">
-                <xsl:sequence select="ixsl:get(., 'checked')"/>
+                <xsl:sequence select="if (ixsl:get(., 'checked') = true()) then 'true' else ''"/>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:sequence select="ixsl:get(., 'value')"/>
@@ -4174,11 +4176,11 @@
                     <xsl:sequence select="($value,'')[1]"/>
                 </xsl:for-each>
             </xsl:variable>
-            
+                        
             <xsl:variable name="updatedInstanceXML" as="element()">
                 <xsl:apply-templates select="$instanceXML" mode="recalculate">
-                    <xsl:with-param name="updated-nodes" select="$calculated-nodes"/>
-                    <xsl:with-param name="updated-values" select="$calculated-values"/>
+                    <xsl:with-param name="updated-nodes" select="$calculated-nodes" tunnel="yes"/>
+                    <xsl:with-param name="updated-values" select="$calculated-values" tunnel="yes"/>
                 </xsl:apply-templates>
             </xsl:variable>
             
@@ -4371,8 +4373,8 @@
         
         <xsl:variable name="updatedInstanceXML" as="element()">
             <xsl:apply-templates select="$instanceXML" mode="recalculate">
-                <xsl:with-param name="updated-nodes" select="$calculated-nodes"/>
-                <xsl:with-param name="updated-values" select="$calculated-values"/>
+                <xsl:with-param name="updated-nodes" select="$calculated-nodes" tunnel="yes"/>
+                <xsl:with-param name="updated-values" select="$calculated-values" tunnel="yes"/>
             </xsl:apply-templates>
         </xsl:variable>
         
