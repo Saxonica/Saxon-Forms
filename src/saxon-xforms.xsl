@@ -261,7 +261,7 @@
             </xsl:map>  
         </xsl:variable>
         
-<!--        <xsl:message use-when="$debugMode">[xformsjs-main] CalculationBindings = <xsl:sequence select="serialize($CalculationBindings)"/></xsl:message>-->
+        <!--<xsl:message use-when="$debugMode">[xformsjs-main] CalculationBindings = <xsl:sequence select="serialize($CalculationBindings)"/></xsl:message>-->
         
         
         <!-- copy xform-doc to HTML page -->
@@ -4137,7 +4137,13 @@
         <xsl:variable name="instances-with-calculations" as="map(xs:string,map(*)*)">
             <xsl:map>
                 <xsl:for-each-group select="map:keys($calculationMap)" group-by="xforms:getInstanceId(.)">
-                    <xsl:map-entry key="fn:current-grouping-key()" select="fn:current-group()"/>
+                    <xsl:map-entry key="fn:current-grouping-key()">
+                        <xsl:for-each select="fn:current-group()">
+                            <xsl:map>
+                                <xsl:map-entry key="." select="map:get($calculationMap,.)"/>
+                            </xsl:map>
+                        </xsl:for-each>
+                    </xsl:map-entry>
                 </xsl:for-each-group>
             </xsl:map>
         </xsl:variable>

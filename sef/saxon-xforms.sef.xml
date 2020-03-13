@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<package xmlns='http://ns.saxonica.com/xslt/export' xmlns:fn='http://www.w3.org/2005/xpath-functions' xmlns:xs='http://www.w3.org/2001/XMLSchema' xmlns:vv='http://saxon.sf.net/generated-variable' xmlns:java-type='http://saxon.sf.net/java-type' when='2020-03-13T14:41:49.557Z' id='0' version='30' packageVersion='1' saxonVersion='9.9.1.5' target='JS' targetVersion='1' relocatable='true' implicit='true'>
+<package xmlns='http://ns.saxonica.com/xslt/export' xmlns:fn='http://www.w3.org/2005/xpath-functions' xmlns:xs='http://www.w3.org/2001/XMLSchema' xmlns:vv='http://saxon.sf.net/generated-variable' xmlns:java-type='http://saxon.sf.net/java-type' when='2020-03-13T15:05:29.385Z' id='0' version='30' packageVersion='1' saxonVersion='9.9.1.5' target='JS' targetVersion='1' relocatable='true' implicit='true'>
  <co id='0' binds='1 2 1 2 3 3 3 4 5 6 3 7'>
-  <template name='Q{}action-insert' flags='os' line='4673' module='saxon-xforms.xsl' slots='21'>
-   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4674'>
+  <template name='Q{}action-insert' flags='os' line='4679' module='saxon-xforms.xsl' slots='21'>
+   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4680'>
     <param name='Q{}action-map' slot='0' flags='tr' as='map(*)'>
      <treat role='conversion' as='map(*)' jsTest='return SaxonJS.U.isMap(item)' diag='8|0|XTTE0590|action-map'>
       <check card='1' diag='8|0|XTTE0590|action-map'>
@@ -10,7 +10,7 @@
       </check>
      </treat>
     </param>
-    <param line='4675' name='Q{}instanceXML' slot='1' flags='t' as='element()?'>
+    <param line='4681' name='Q{}instanceXML' slot='1' flags='t' as='element()?'>
      <empty role='select'/>
      <treat role='conversion' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='8|0|XTTE0590|instanceXML'>
       <check card='?' diag='8|0|XTTE0590|instanceXML'>
@@ -18,7 +18,7 @@
       </check>
      </treat>
     </param>
-    <param line='4676' name='Q{}nodeset' slot='2' flags='t' as='xs:string'>
+    <param line='4682' name='Q{}nodeset' slot='2' flags='t' as='xs:string'>
      <str role='select' val=''/>
      <treat role='conversion' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='8|0|XTTE0590|nodeset'>
       <check card='1' diag='8|0|XTTE0590|nodeset'>
@@ -30,7 +30,7 @@
       </check>
      </treat>
     </param>
-    <let line='4678' var='Q{}ref' as='xs:string' slot='3' eval='16'>
+    <let line='4684' var='Q{}ref' as='xs:string' slot='3' eval='16'>
      <let var='Q{}relative' as='xs:string' slot='4' eval='16'>
       <treat as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='0|1||xforms:resolveXPathStrings'>
        <check card='1' diag='0|1||xforms:resolveXPathStrings'>
@@ -55,7 +55,7 @@
         <str val='instance('/>
        </fn>
        <varRef line='842' name='Q{}relative' slot='4'/>
-       <fn line='4678' name='not'>
+       <fn line='4684' name='not'>
         <varRef name='Q{}nodeset' slot='2'/>
        </fn>
        <varRef line='845' name='Q{}relative' slot='4'/>
@@ -68,7 +68,7 @@
          <str val='.'/>
         </vc>
        </or>
-       <varRef line='4678' name='Q{}nodeset' slot='2'/>
+       <varRef line='4684' name='Q{}nodeset' slot='2'/>
        <true/>
        <let line='852' var='Q{}parentCallCount' as='xs:integer' slot='5' eval='16'>
         <choose>
@@ -99,13 +99,13 @@
         </choose>
         <let line='855' var='Q{}slashes' as='xs:integer*' slot='6' eval='4'>
          <choose>
-          <fn line='4678' name='contains'>
+          <fn line='4684' name='contains'>
            <varRef name='Q{}nodeset' slot='2'/>
            <str val='/'/>
           </fn>
           <fn name='index-of'>
            <fn name='string-to-codepoints'>
-            <varRef line='4678' name='Q{}nodeset' slot='2'/>
+            <varRef line='4684' name='Q{}nodeset' slot='2'/>
            </fn>
            <int val='47'/>
           </fn>
@@ -118,7 +118,7 @@
           </compareToInt>
           <fn line='891' name='concat'>
            <fn name='substring'>
-            <varRef line='4678' name='Q{}nodeset' slot='2'/>
+            <varRef line='4684' name='Q{}nodeset' slot='2'/>
             <int val='1'/>
             <choose line='866'>
              <and op='and'>
@@ -163,7 +163,7 @@
            </fn>
           </fn>
           <true/>
-          <fn line='4678' name='concat'>
+          <fn line='4684' name='concat'>
            <varRef name='Q{}nodeset' slot='2'/>
            <str val='/'/>
            <varRef line='894' name='Q{}relative' slot='4'/>
@@ -173,7 +173,7 @@
        </let>
       </choose>
      </let>
-     <let line='4679' var='Q{}at' as='xs:string?' slot='8' eval='7'>
+     <let line='4685' var='Q{}at' as='xs:string?' slot='8' eval='7'>
       <treat as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|at'>
        <check card='?' diag='3|0|XTTE0570|at'>
         <cvUntyped to='xs:string' diag='3|0|XTTE0570|at'>
@@ -186,7 +186,7 @@
         </cvUntyped>
        </check>
       </treat>
-      <let line='4680' var='Q{}position' as='xs:string?' slot='9' eval='7'>
+      <let line='4686' var='Q{}position' as='xs:string?' slot='9' eval='7'>
        <treat as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|position'>
         <check card='?' diag='3|0|XTTE0570|position'>
          <cvUntyped to='xs:string' diag='3|0|XTTE0570|position'>
@@ -199,7 +199,7 @@
          </cvUntyped>
         </check>
        </treat>
-       <let line='4681' var='Q{}origin-ref' as='xs:string?' slot='10' eval='7'>
+       <let line='4687' var='Q{}origin-ref' as='xs:string?' slot='10' eval='7'>
         <treat as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|origin-ref'>
          <check card='?' diag='3|0|XTTE0570|origin-ref'>
           <cvUntyped to='xs:string' diag='3|0|XTTE0570|origin-ref'>
@@ -212,12 +212,12 @@
           </cvUntyped>
          </check>
         </treat>
-        <let line='4695' var='Q{}instance-id' as='xs:string' slot='11' eval='16'>
+        <let line='4701' var='Q{}instance-id' as='xs:string' slot='11' eval='16'>
          <ufCall name='Q{http://www.w3.org/2002/xforms}getInstanceId' tailCall='false' bSlot='0' eval='6'>
           <varRef name='Q{}ref' slot='3'/>
          </ufCall>
-         <let line='4697' var='Q{}instanceXML2' as='element()' slot='12' eval='16'>
-          <choose line='4699'>
+         <let line='4703' var='Q{}instanceXML2' as='element()' slot='12' eval='16'>
+          <choose line='4705'>
            <and op='and'>
             <vc op='eq' onEmpty='0' comp='CCC'>
              <varRef name='Q{}instance-id' slot='11'/>
@@ -227,24 +227,24 @@
              <varRef name='Q{}instanceXML' slot='1'/>
             </fn>
            </and>
-           <check line='4700' card='1' diag='3|0|XTTE0570|instanceXML2'>
+           <check line='4706' card='1' diag='3|0|XTTE0570|instanceXML2'>
             <varRef name='Q{}instanceXML' slot='1'/>
            </check>
            <true/>
-           <check line='4703' card='1' diag='3|0|XTTE0570|instanceXML2'>
+           <check line='4709' card='1' diag='3|0|XTTE0570|instanceXML2'>
             <ufCall name='Q{http://www.w3.org/2002/xforms}instance' tailCall='false' bSlot='1' eval='6'>
              <varRef name='Q{}instance-id' slot='11'/>
             </ufCall>
            </check>
           </choose>
-          <let line='4716' var='Q{}instance-id-origin' as='xs:string' slot='13' eval='16'>
+          <let line='4722' var='Q{}instance-id-origin' as='xs:string' slot='13' eval='16'>
            <ufCall name='Q{http://www.w3.org/2002/xforms}getInstanceId' tailCall='false' bSlot='2' eval='16'>
             <check card='1' diag='0|0||xforms:getInstanceId'>
              <varRef name='Q{}origin-ref' slot='10'/>
             </check>
            </ufCall>
-           <let line='4718' var='Q{}instanceXML-origin' as='element()' slot='14' eval='16'>
-            <choose line='4720'>
+           <let line='4724' var='Q{}instanceXML-origin' as='element()' slot='14' eval='16'>
+            <choose line='4726'>
              <and op='and'>
               <vc op='eq' onEmpty='0' comp='CCC'>
                <varRef name='Q{}instance-id-origin' slot='13'/>
@@ -254,18 +254,18 @@
                <varRef name='Q{}instanceXML' slot='1'/>
               </fn>
              </and>
-             <check line='4721' card='1' diag='3|0|XTTE0570|instanceXML-origin'>
+             <check line='4727' card='1' diag='3|0|XTTE0570|instanceXML-origin'>
               <varRef name='Q{}instanceXML' slot='1'/>
              </check>
              <true/>
-             <check line='4724' card='1' diag='3|0|XTTE0570|instanceXML-origin'>
+             <check line='4730' card='1' diag='3|0|XTTE0570|instanceXML-origin'>
               <ufCall name='Q{http://www.w3.org/2002/xforms}instance' tailCall='false' bSlot='3' eval='6'>
                <varRef name='Q{}instance-id-origin' slot='13'/>
               </ufCall>
              </check>
             </choose>
-            <let line='4729' var='Q{}origin-node' as='node()?' slot='15' eval='7'>
-             <treat line='4730' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|origin-node'>
+            <let line='4735' var='Q{}origin-node' as='node()?' slot='15' eval='7'>
+             <treat line='4736' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|origin-node'>
               <check card='?' diag='3|0|XTTE0570|origin-node'>
                <evaluate dxns=''>
                 <ufCall role='xpath' name='Q{http://www.w3.org/2002/xforms}impose' tailCall='false' bSlot='4' eval='16'>
@@ -281,13 +281,13 @@
                </evaluate>
               </check>
              </treat>
-             <let line='4733' var='Q{}insert-node-location' as='node()?' slot='16' eval='7'>
-              <treat line='4734' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|insert-node-location'>
+             <let line='4739' var='Q{}insert-node-location' as='node()?' slot='16' eval='7'>
+              <treat line='4740' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|insert-node-location'>
                <check card='?' diag='3|0|XTTE0570|insert-node-location'>
                 <evaluate dxns=''>
                  <ufCall role='xpath' name='Q{http://www.w3.org/2002/xforms}impose' tailCall='false' bSlot='5' eval='16'>
                   <check card='1' diag='0|0||xforms:impose'>
-                   <choose line='4693'>
+                   <choose line='4699'>
                     <vc op='ne' onEmpty='0' comp='GAC|http://www.w3.org/2005/xpath-functions/collation/codepoint'>
                      <varRef name='Q{}ref' slot='3'/>
                      <str val=''/>
@@ -316,14 +316,14 @@
                 </evaluate>
                </check>
               </treat>
-              <let line='4737' var='Q{}context-node' as='node()' slot='17' eval='16'>
-               <treat line='4738' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|context-node'>
+              <let line='4743' var='Q{}context-node' as='node()' slot='17' eval='16'>
+               <treat line='4744' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|context-node'>
                 <check card='1' diag='3|0|XTTE0570|context-node'>
                  <evaluate dxns=''>
                   <ufCall role='xpath' name='Q{http://www.w3.org/2002/xforms}impose' tailCall='false' bSlot='6' eval='16'>
-                   <treat line='4682' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|context'>
-                    <check line='4738' card='1' diag='0|0||xforms:impose'>
-                     <check line='4682' card='?' diag='3|0|XTTE0570|context'>
+                   <treat line='4688' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|context'>
+                    <check line='4744' card='1' diag='0|0||xforms:impose'>
+                     <check line='4688' card='?' diag='3|0|XTTE0570|context'>
                       <cvUntyped to='xs:string' diag='3|0|XTTE0570|context'>
                        <data>
                         <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}get' type='item()*'>
@@ -344,13 +344,13 @@
                  </evaluate>
                 </check>
                </treat>
-               <let line='4755' var='Q{}instance-with-insert' as='element()' slot='18' eval='16'>
-                <treat line='4756' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='3|0|XTTE0570|instance-with-insert'>
+               <let line='4761' var='Q{}instance-with-insert' as='element()' slot='18' eval='16'>
+                <treat line='4762' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='3|0|XTTE0570|instance-with-insert'>
                  <check card='1' diag='3|0|XTTE0570|instance-with-insert'>
                   <applyT mode='Q{}insert-node' bSlot='7'>
                    <varRef role='select' name='Q{}instanceXML2' slot='12'/>
                    <withParam name='Q{}insert-node-location' flags='t' as='node()?'>
-                    <choose line='4757'>
+                    <choose line='4763'>
                      <fn name='exists'>
                       <varRef name='Q{}insert-node-location' slot='16'/>
                      </fn>
@@ -360,21 +360,21 @@
                     </choose>
                    </withParam>
                    <withParam name='Q{}node-to-insert' flags='t' as='node()?'>
-                    <choose line='4744'>
+                    <choose line='4750'>
                      <fn name='exists'>
                       <varRef name='Q{}origin-node' slot='15'/>
                      </fn>
-                     <copyOf line='4745' flags='vc'>
+                     <copyOf line='4751' flags='vc'>
                       <varRef name='Q{}origin-node' slot='15'/>
                      </copyOf>
                      <true/>
-                     <copyOf line='4748' flags='vc'>
+                     <copyOf line='4754' flags='vc'>
                       <varRef name='Q{}insert-node-location' slot='16'/>
                      </copyOf>
                     </choose>
                    </withParam>
                    <withParam name='Q{}position-relative' flags='t' as='xs:string?'>
-                    <choose line='4759'>
+                    <choose line='4765'>
                      <fn name='exists'>
                       <varRef name='Q{}insert-node-location' slot='16'/>
                      </fn>
@@ -386,25 +386,25 @@
                   </applyT>
                  </check>
                 </treat>
-                <sequence line='4765'>
+                <sequence line='4771'>
                  <ufCall name='Q{http://www.w3.org/2002/xforms}setInstance-JS' tailCall='false' bSlot='8' eval='6 6'>
                   <varRef name='Q{}ref' slot='3'/>
                   <varRef name='Q{}instance-with-insert' slot='18'/>
                  </ufCall>
-                 <choose line='4769'>
+                 <choose line='4775'>
                   <fn name='matches'>
                    <varRef name='Q{}at' slot='8'/>
                    <str val='index\s*\('/>
                    <str val=''/>
                   </fn>
-                  <let line='4770' var='Q{}repeat-id' as='xs:string?' slot='19' eval='7'>
+                  <let line='4776' var='Q{}repeat-id' as='xs:string?' slot='19' eval='7'>
                    <ufCall name='Q{http://www.w3.org/2002/xforms}getRepeatID' tailCall='false' bSlot='9' eval='16'>
                     <check card='1' diag='0|0||xforms:getRepeatID'>
                      <varRef name='Q{}at' slot='8'/>
                     </check>
                    </ufCall>
-                   <let line='4771' var='Q{}at-position' as='xs:integer' slot='20' eval='16'>
-                    <treat line='4772' as='xs:integer' jsTest='return SaxonJS.U.Atomic.integer.matches(item);' diag='3|0|XTTE0570|at-position'>
+                   <let line='4777' var='Q{}at-position' as='xs:integer' slot='20' eval='16'>
+                    <treat line='4778' as='xs:integer' jsTest='return SaxonJS.U.Atomic.integer.matches(item);' diag='3|0|XTTE0570|at-position'>
                      <check card='1' diag='3|0|XTTE0570|at-position'>
                       <cvUntyped to='xs:integer' diag='3|0|XTTE0570|at-position'>
                        <data>
@@ -423,16 +423,16 @@
                       </cvUntyped>
                      </check>
                     </treat>
-                    <choose line='4777'>
+                    <choose line='4783'>
                      <fn name='exists'>
                       <varRef name='Q{}repeat-id' slot='19'/>
                      </fn>
-                     <choose line='4779'>
+                     <choose line='4785'>
                       <vc op='eq' onEmpty='0' comp='CCC'>
                        <varRef name='Q{}position' slot='9'/>
                        <str val='before'/>
                       </vc>
-                      <ifCall line='4780' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
+                      <ifCall line='4786' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
                        <check card='1' diag='0|0||ixsl:call'>
                         <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}window' type='item()?'/>
                        </check>
@@ -443,7 +443,7 @@
                        </arrayBlock>
                       </ifCall>
                       <true/>
-                      <ifCall line='4783' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
+                      <ifCall line='4789' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
                        <check card='1' diag='0|0||ixsl:call'>
                         <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}window' type='item()?'/>
                        </check>
@@ -461,7 +461,7 @@
                    </let>
                   </let>
                  </choose>
-                 <callT line='4793' name='Q{}xforms-recalculate' bSlot='11' flags='t'/>
+                 <callT line='4799' name='Q{}xforms-recalculate' bSlot='11' flags='t'/>
                 </sequence>
                </let>
               </let>
@@ -479,8 +479,8 @@
   </template>
  </co>
  <co id='8' binds='1 2 3 3 9 5 7'>
-  <template name='Q{}action-delete' flags='os' line='4805' module='saxon-xforms.xsl' slots='16'>
-   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4806'>
+  <template name='Q{}action-delete' flags='os' line='4811' module='saxon-xforms.xsl' slots='16'>
+   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4812'>
     <param name='Q{}action-map' slot='0' flags='tr' as='map(*)'>
      <treat role='conversion' as='map(*)' jsTest='return SaxonJS.U.isMap(item)' diag='8|0|XTTE0590|action-map'>
       <check card='1' diag='8|0|XTTE0590|action-map'>
@@ -488,14 +488,14 @@
       </check>
      </treat>
     </param>
-    <param line='4807' name='Q{}instanceXML' slot='1' flags='ti' as='element()'>
+    <param line='4813' name='Q{}instanceXML' slot='1' flags='ti' as='element()'>
      <treat role='conversion' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='8|0|XTTE0590|instanceXML'>
       <check card='1' diag='8|0|XTTE0590|instanceXML'>
        <supplied slot='1'/>
       </check>
      </treat>
     </param>
-    <param line='4808' name='Q{}nodeset' slot='2' flags='t' as='xs:string'>
+    <param line='4814' name='Q{}nodeset' slot='2' flags='t' as='xs:string'>
      <str role='select' val=''/>
      <treat role='conversion' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='8|0|XTTE0590|nodeset'>
       <check card='1' diag='8|0|XTTE0590|nodeset'>
@@ -507,7 +507,7 @@
       </check>
      </treat>
     </param>
-    <let line='4810' var='Q{}ref' as='xs:string' slot='3' eval='16'>
+    <let line='4816' var='Q{}ref' as='xs:string' slot='3' eval='16'>
      <let var='Q{}relative' as='xs:string' slot='4' eval='16'>
       <treat as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='0|1||xforms:resolveXPathStrings'>
        <check card='1' diag='0|1||xforms:resolveXPathStrings'>
@@ -532,7 +532,7 @@
         <str val='instance('/>
        </fn>
        <varRef line='842' name='Q{}relative' slot='4'/>
-       <fn line='4810' name='not'>
+       <fn line='4816' name='not'>
         <varRef name='Q{}nodeset' slot='2'/>
        </fn>
        <varRef line='845' name='Q{}relative' slot='4'/>
@@ -545,7 +545,7 @@
          <str val='.'/>
         </vc>
        </or>
-       <varRef line='4810' name='Q{}nodeset' slot='2'/>
+       <varRef line='4816' name='Q{}nodeset' slot='2'/>
        <true/>
        <let line='852' var='Q{}parentCallCount' as='xs:integer' slot='5' eval='16'>
         <choose>
@@ -576,13 +576,13 @@
         </choose>
         <let line='855' var='Q{}slashes' as='xs:integer*' slot='6' eval='4'>
          <choose>
-          <fn line='4810' name='contains'>
+          <fn line='4816' name='contains'>
            <varRef name='Q{}nodeset' slot='2'/>
            <str val='/'/>
           </fn>
           <fn name='index-of'>
            <fn name='string-to-codepoints'>
-            <varRef line='4810' name='Q{}nodeset' slot='2'/>
+            <varRef line='4816' name='Q{}nodeset' slot='2'/>
            </fn>
            <int val='47'/>
           </fn>
@@ -595,7 +595,7 @@
           </compareToInt>
           <fn line='891' name='concat'>
            <fn name='substring'>
-            <varRef line='4810' name='Q{}nodeset' slot='2'/>
+            <varRef line='4816' name='Q{}nodeset' slot='2'/>
             <int val='1'/>
             <choose line='866'>
              <and op='and'>
@@ -640,7 +640,7 @@
            </fn>
           </fn>
           <true/>
-          <fn line='4810' name='concat'>
+          <fn line='4816' name='concat'>
            <varRef name='Q{}nodeset' slot='2'/>
            <str val='/'/>
            <varRef line='894' name='Q{}relative' slot='4'/>
@@ -650,7 +650,7 @@
        </let>
       </choose>
      </let>
-     <let line='4811' var='Q{}at' as='xs:string?' slot='8' eval='7'>
+     <let line='4817' var='Q{}at' as='xs:string?' slot='8' eval='7'>
       <treat as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|at'>
        <check card='?' diag='3|0|XTTE0570|at'>
         <cvUntyped to='xs:string' diag='3|0|XTTE0570|at'>
@@ -663,7 +663,7 @@
         </cvUntyped>
        </check>
       </treat>
-      <let line='4821' var='Q{}ref-qualified' as='xs:string' slot='9' eval='16'>
+      <let line='4827' var='Q{}ref-qualified' as='xs:string' slot='9' eval='16'>
        <choose>
         <fn name='exists'>
          <varRef name='Q{}at' slot='8'/>
@@ -677,28 +677,28 @@
         <true/>
         <varRef name='Q{}ref' slot='3'/>
        </choose>
-       <let line='4823' var='Q{}instance-id' as='xs:string' slot='10' eval='16'>
+       <let line='4829' var='Q{}instance-id' as='xs:string' slot='10' eval='16'>
         <ufCall name='Q{http://www.w3.org/2002/xforms}getInstanceId' tailCall='false' bSlot='0' eval='6'>
          <varRef name='Q{}ref' slot='3'/>
         </ufCall>
-        <let line='4825' var='Q{}instanceXML2' as='element()' slot='11' eval='16'>
-         <choose line='4827'>
+        <let line='4831' var='Q{}instanceXML2' as='element()' slot='11' eval='16'>
+         <choose line='4833'>
           <vc op='eq' onEmpty='0' comp='CCC'>
            <varRef name='Q{}instance-id' slot='10'/>
            <str val='saxon-forms-default'/>
           </vc>
-          <varRef line='4828' name='Q{}instanceXML' slot='1'/>
+          <varRef line='4834' name='Q{}instanceXML' slot='1'/>
           <true/>
-          <check line='4831' card='1' diag='3|0|XTTE0570|instanceXML2'>
+          <check line='4837' card='1' diag='3|0|XTTE0570|instanceXML2'>
            <ufCall name='Q{http://www.w3.org/2002/xforms}instance' tailCall='false' bSlot='1' eval='6'>
             <varRef name='Q{}instance-id' slot='10'/>
            </ufCall>
           </check>
          </choose>
-         <let line='4836' var='Q{}ifVar' as='xs:string?' slot='12' eval='7'>
+         <let line='4842' var='Q{}ifVar' as='xs:string?' slot='12' eval='7'>
           <choose line='793'>
            <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}contains' type='xs:boolean'>
-            <varRef line='4836' name='Q{}action-map' slot='0'/>
+            <varRef line='4842' name='Q{}action-map' slot='0'/>
             <str val='@if'/>
            </ifCall>
            <treat line='794' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='5|0|XTTE0780|xforms:getIfStatement#1'>
@@ -706,7 +706,7 @@
              <cvUntyped to='xs:string' diag='5|0|XTTE0780|xforms:getIfStatement#1'>
               <data>
                <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}get' type='item()*'>
-                <varRef line='4836' name='Q{}action-map' slot='0'/>
+                <varRef line='4842' name='Q{}action-map' slot='0'/>
                 <str val='@if'/>
                </ifCall>
               </data>
@@ -714,8 +714,8 @@
             </check>
            </treat>
           </choose>
-          <let line='4839' var='Q{}delete-node' as='node()*' slot='13' eval='8'>
-           <choose line='4841'>
+          <let line='4845' var='Q{}delete-node' as='node()*' slot='13' eval='8'>
+           <choose line='4847'>
             <and op='and'>
              <fn name='exists'>
               <varRef name='Q{}ref-qualified' slot='9'/>
@@ -725,7 +725,7 @@
               <str val=''/>
              </vc>
             </and>
-            <treat line='4842' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|delete-node'>
+            <treat line='4848' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|delete-node'>
              <evaluate dxns=''>
               <ufCall role='xpath' name='Q{http://www.w3.org/2002/xforms}impose' tailCall='false' bSlot='2' eval='16'>
                <check card='1' diag='0|0||xforms:impose'>
@@ -740,12 +740,12 @@
              </evaluate>
             </treat>
            </choose>
-           <let line='4847' var='Q{}ifExecuted' as='xs:boolean' slot='14' eval='16'>
-            <choose line='4849'>
+           <let line='4853' var='Q{}ifExecuted' as='xs:boolean' slot='14' eval='16'>
+            <choose line='4855'>
              <fn name='exists'>
               <varRef name='Q{}ifVar' slot='12'/>
              </fn>
-             <treat line='4850' as='xs:boolean' jsTest='return SaxonJS.U.Atomic.boolean.matches(item);' diag='3|0|XTTE0570|ifExecuted'>
+             <treat line='4856' as='xs:boolean' jsTest='return SaxonJS.U.Atomic.boolean.matches(item);' diag='3|0|XTTE0570|ifExecuted'>
               <check card='1' diag='3|0|XTTE0570|ifExecuted'>
                <cvUntyped to='xs:boolean' diag='3|0|XTTE0570|ifExecuted'>
                 <data>
@@ -772,25 +772,25 @@
              <true/>
              <true/>
             </choose>
-            <choose line='4858'>
+            <choose line='4864'>
              <varRef name='Q{}ifExecuted' slot='14'/>
-             <let line='4859' var='Q{}instance-with-delete' as='element()' slot='15' eval='16'>
-              <treat line='4860' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='3|0|XTTE0570|instance-with-delete'>
+             <let line='4865' var='Q{}instance-with-delete' as='element()' slot='15' eval='16'>
+              <treat line='4866' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='3|0|XTTE0570|instance-with-delete'>
                <check card='1' diag='3|0|XTTE0570|instance-with-delete'>
                 <applyT mode='Q{}delete-node' bSlot='4'>
                  <varRef role='select' name='Q{}instanceXML2' slot='11'/>
                  <withParam name='Q{}delete-node' flags='t' as='node()*'>
-                  <varRef line='4861' name='Q{}delete-node' slot='13'/>
+                  <varRef line='4867' name='Q{}delete-node' slot='13'/>
                  </withParam>
                 </applyT>
                </check>
               </treat>
-              <sequence line='4867'>
+              <sequence line='4873'>
                <ufCall name='Q{http://www.w3.org/2002/xforms}setInstance-JS' tailCall='false' bSlot='5' eval='6 6'>
                 <varRef name='Q{}ref' slot='3'/>
                 <varRef name='Q{}instance-with-delete' slot='15'/>
                </ufCall>
-               <callT line='4896' name='Q{}xforms-recalculate' bSlot='6' flags='t'/>
+               <callT line='4902' name='Q{}xforms-recalculate' bSlot='6' flags='t'/>
               </sequence>
              </let>
             </choose>
@@ -806,8 +806,8 @@
   </template>
  </co>
  <co id='10' binds='11'>
-  <template name='Q{}action-send' flags='os' line='4941' module='saxon-xforms.xsl' slots='1'>
-   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4942'>
+  <template name='Q{}action-send' flags='os' line='4947' module='saxon-xforms.xsl' slots='1'>
+   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4948'>
     <param name='Q{}action-map' slot='0' flags='tr' as='map(*)'>
      <treat role='conversion' as='map(*)' jsTest='return SaxonJS.U.isMap(item)' diag='8|0|XTTE0590|action-map'>
       <check card='1' diag='8|0|XTTE0590|action-map'>
@@ -815,9 +815,9 @@
       </check>
      </treat>
     </param>
-    <callT line='4948' name='Q{}xforms-submit' bSlot='0' flags='t'>
+    <callT line='4954' name='Q{}xforms-submit' bSlot='0' flags='t'>
      <withParam name='Q{}submission' flags='c' as='xs:string'>
-      <treat line='4946' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|submission'>
+      <treat line='4952' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|submission'>
        <check card='1' diag='3|0|XTTE0570|submission'>
         <cvUntyped to='xs:string' diag='3|0|XTTE0570|submission'>
          <data>
@@ -1510,8 +1510,8 @@
   </function>
  </co>
  <co id='17' binds=''>
-  <template name='Q{}action-reset' flags='os' line='4988' module='saxon-xforms.xsl' slots='1'>
-   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4989'>
+  <template name='Q{}action-reset' flags='os' line='4994' module='saxon-xforms.xsl' slots='1'>
+   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4995'>
     <param name='Q{}action-map' slot='0' flags='tr' as='map(*)'>
      <treat role='conversion' as='map(*)' jsTest='return SaxonJS.U.isMap(item)' diag='8|0|XTTE0590|action-map'>
       <check card='1' diag='8|0|XTTE0590|action-map'>
@@ -1519,7 +1519,7 @@
       </check>
      </treat>
     </param>
-    <message line='4991'>
+    <message line='4997'>
      <valueOf role='select'>
       <str val='[action-reset] Reset triggered!'/>
      </valueOf>
@@ -1530,8 +1530,8 @@
   </template>
  </co>
  <co id='18' binds='1 2 3 15 19 5 20 7 21'>
-  <template name='Q{}xforms-value-changed' flags='os' line='4198' module='saxon-xforms.xsl' slots='9'>
-   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4199'>
+  <template name='Q{}xforms-value-changed' flags='os' line='4204' module='saxon-xforms.xsl' slots='9'>
+   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4205'>
     <param name='Q{}form-control' slot='0' flags='i' as='node()'>
      <treat role='conversion' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='8|0|XTTE0590|form-control'>
       <check card='1' diag='8|0|XTTE0590|form-control'>
@@ -1539,12 +1539,12 @@
       </check>
      </treat>
     </param>
-    <let line='4201' var='Q{}refi' as='attribute(Q{}data-ref)?' slot='1' eval='8'>
+    <let line='4207' var='Q{}refi' as='attribute(Q{}data-ref)?' slot='1' eval='8'>
      <slash simple='1'>
       <varRef name='Q{}form-control' slot='0'/>
       <axis name='attribute' nodeTest='attribute(Q{}data-ref)' jsTest='return item.name===&#39;data-ref&#39;'/>
      </slash>
-     <let line='4204' var='Q{}instance-id' as='xs:string' slot='2' eval='16'>
+     <let line='4210' var='Q{}instance-id' as='xs:string' slot='2' eval='16'>
       <ufCall name='Q{http://www.w3.org/2002/xforms}getInstanceId' tailCall='false' bSlot='0' eval='16'>
        <check card='1' diag='0|0||xforms:getInstanceId'>
         <cvUntyped to='xs:string'>
@@ -1554,7 +1554,7 @@
         </cvUntyped>
        </check>
       </ufCall>
-      <let line='4205' var='Q{}actions' as='item()?' slot='3' eval='8'>
+      <let line='4211' var='Q{}actions' as='item()?' slot='3' eval='8'>
        <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
         <check card='1' diag='0|0||ixsl:call'>
          <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}window' type='item()?'/>
@@ -1569,14 +1569,14 @@
          </fn>
         </arrayBlock>
        </ifCall>
-       <let line='4216' var='Q{}instanceXML' as='element()' slot='4' eval='16'>
+       <let line='4222' var='Q{}instanceXML' as='element()' slot='4' eval='16'>
         <check card='1' diag='3|0|XTTE0570|instanceXML'>
          <ufCall name='Q{http://www.w3.org/2002/xforms}instance' tailCall='false' bSlot='1' eval='6'>
           <varRef name='Q{}instance-id' slot='2'/>
          </ufCall>
         </check>
-        <let line='4217' var='Q{}updatedNode' as='node()' slot='5' eval='16'>
-         <treat line='4218' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|updatedNode'>
+        <let line='4223' var='Q{}updatedNode' as='node()' slot='5' eval='16'>
+         <treat line='4224' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|updatedNode'>
           <check card='1' diag='3|0|XTTE0570|updatedNode'>
            <evaluate dxns=''>
             <ufCall role='xpath' name='Q{http://www.w3.org/2002/xforms}impose' tailCall='false' bSlot='2' eval='16'>
@@ -1596,8 +1596,8 @@
            </evaluate>
           </check>
          </treat>
-         <let line='4220' var='Q{}new-value' as='xs:string' slot='6' eval='16'>
-          <treat line='4221' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|new-value'>
+         <let line='4226' var='Q{}new-value' as='xs:string' slot='6' eval='16'>
+          <treat line='4227' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|new-value'>
            <check card='1' diag='3|0|XTTE0570|new-value'>
             <cvUntyped to='xs:string' diag='3|0|XTTE0570|new-value'>
              <data>
@@ -1608,24 +1608,24 @@
             </cvUntyped>
            </check>
           </treat>
-          <let line='4223' var='Q{}updatedInstanceXML' as='element()' slot='7' eval='16'>
-           <treat line='4224' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='3|0|XTTE0570|updatedInstanceXML'>
+          <let line='4229' var='Q{}updatedInstanceXML' as='element()' slot='7' eval='16'>
+           <treat line='4230' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='3|0|XTTE0570|updatedInstanceXML'>
             <check card='1' diag='3|0|XTTE0570|updatedInstanceXML'>
              <applyT mode='Q{}recalculate' bSlot='4'>
               <varRef role='select' name='Q{}instanceXML' slot='4'/>
               <withParam name='Q{}instance-id' as='xs:string'>
-               <varRef line='4225' name='Q{}instance-id' slot='2'/>
+               <varRef line='4231' name='Q{}instance-id' slot='2'/>
               </withParam>
               <withParam name='Q{}updated-nodes' flags='t' as='node()'>
-               <varRef line='4226' name='Q{}updatedNode' slot='5'/>
+               <varRef line='4232' name='Q{}updatedNode' slot='5'/>
               </withParam>
               <withParam name='Q{}updated-values' flags='t' as='xs:string'>
-               <varRef line='4227' name='Q{}new-value' slot='6'/>
+               <varRef line='4233' name='Q{}new-value' slot='6'/>
               </withParam>
              </applyT>
             </check>
            </treat>
-           <sequence line='4234'>
+           <sequence line='4240'>
             <ufCall name='Q{http://www.w3.org/2002/xforms}setInstance-JS' tailCall='false' bSlot='5' eval='16 6'>
              <check card='1' diag='0|0||xforms:setInstance-JS'>
               <cvUntyped to='xs:string'>
@@ -1636,40 +1636,40 @@
              </check>
              <varRef name='Q{}updatedInstanceXML' slot='7'/>
             </ufCall>
-            <ifCall line='4241' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
+            <ifCall line='4247' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
              <check card='1' diag='0|0||ixsl:call'>
               <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}window' type='item()?'/>
              </check>
              <str val='setPendingUpdates'/>
              <arrayBlock>
-              <treat line='4238' as='map(xs:string, xs:string)' jsTest='function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);' diag='3|0||pendingInstanceUpdates'>
+              <treat line='4244' as='map(xs:string, xs:string)' jsTest='function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);' diag='3|0||pendingInstanceUpdates'>
                <map size='0'/>
               </treat>
              </arrayBlock>
             </ifCall>
-            <ifCall line='4242' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
+            <ifCall line='4248' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
              <check card='1' diag='0|0||ixsl:call'>
               <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}window' type='item()?'/>
              </check>
              <str val='setUpdates'/>
              <arrayBlock>
-              <treat line='4239' as='map(xs:string, xs:string)' jsTest='function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);' diag='3|0||instanceUpdates'>
+              <treat line='4245' as='map(xs:string, xs:string)' jsTest='function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);' diag='3|0||instanceUpdates'>
                <map size='0'/>
               </treat>
              </arrayBlock>
             </ifCall>
-            <forEach line='4244'>
+            <forEach line='4250'>
              <varRef name='Q{}actions' slot='3'/>
-             <let line='4245' var='Q{}action-map' as='item()' slot='8' eval='16'>
+             <let line='4251' var='Q{}action-map' as='item()' slot='8' eval='16'>
               <dot/>
-              <choose line='4247'>
+              <choose line='4253'>
                <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}contains' type='xs:boolean'>
                 <treat as='map(*)' jsTest='return SaxonJS.U.isMap(item)' diag='0|0||map:contains'>
                  <varRef name='Q{}action-map' slot='8'/>
                 </treat>
                 <str val='@event'/>
                </ifCall>
-               <choose line='4248'>
+               <choose line='4254'>
                 <gc op='=' card='N:1' comp='GAC|http://www.w3.org/2005/xpath-functions/collation/codepoint'>
                  <data>
                   <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}get' type='item()*'>
@@ -1681,12 +1681,12 @@
                  </data>
                  <str val='xforms-value-changed'/>
                 </gc>
-                <callT line='4250' name='Q{}applyActions' bSlot='6'>
+                <callT line='4256' name='Q{}applyActions' bSlot='6'>
                  <withParam name='Q{}action-map' flags='t' as='item()'>
-                  <varRef line='4251' name='Q{}action-map' slot='8'/>
+                  <varRef line='4257' name='Q{}action-map' slot='8'/>
                  </withParam>
                  <withParam name='Q{}nodeset' flags='t' as='xs:string'>
-                  <check line='4252' card='1' diag='8|0|XTTE0590|nodeset'>
+                  <check line='4258' card='1' diag='8|0|XTTE0590|nodeset'>
                    <cvUntyped to='xs:string' diag='8|0|XTTE0590|nodeset'>
                     <data>
                      <varRef name='Q{}refi' slot='1'/>
@@ -1695,19 +1695,19 @@
                   </check>
                  </withParam>
                  <withParam name='Q{}instanceXML' flags='t' as='element()'>
-                  <varRef line='4253' name='Q{}updatedInstanceXML' slot='7'/>
+                  <varRef line='4259' name='Q{}updatedInstanceXML' slot='7'/>
                  </withParam>
                 </callT>
                </choose>
               </choose>
              </let>
             </forEach>
-            <callT line='4259' name='Q{}xforms-recalculate' bSlot='7'/>
-            <ufCall line='4261' name='Q{http://www.w3.org/2002/xforms}checkRelevantFields' tailCall='false' bSlot='8' eval='16'>
+            <callT line='4265' name='Q{}xforms-recalculate' bSlot='7'/>
+            <ufCall line='4267' name='Q{http://www.w3.org/2002/xforms}checkRelevantFields' tailCall='false' bSlot='8' eval='16'>
              <check card='1' diag='0|0||xforms:checkRelevantFields'>
               <cvUntyped to='xs:string'>
                <data>
-                <slash line='4202' simple='1'>
+                <slash line='4208' simple='1'>
                  <varRef name='Q{}form-control' slot='0'/>
                  <axis name='attribute' nodeTest='attribute(Q{}data-element)' jsTest='return item.name===&#39;data-element&#39;'/>
                 </slash>
@@ -1796,8 +1796,8 @@
   </template>
  </co>
  <co id='25' binds=''>
-  <template name='Q{}action-message' flags='os' line='4908' module='saxon-xforms.xsl' slots='1'>
-   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4909'>
+  <template name='Q{}action-message' flags='os' line='4914' module='saxon-xforms.xsl' slots='1'>
+   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4915'>
     <param name='Q{}action-map' slot='0' flags='tr' as='map(*)'>
      <treat role='conversion' as='map(*)' jsTest='return SaxonJS.U.isMap(item)' diag='8|0|XTTE0590|action-map'>
       <check card='1' diag='8|0|XTTE0590|action-map'>
@@ -1805,13 +1805,13 @@
       </check>
      </treat>
     </param>
-    <message line='4913'>
+    <message line='4919'>
      <sequence role='select'>
       <valueOf>
        <str val='[action-message] Message reads "'/>
       </valueOf>
       <valueOf>
-       <treat line='4911' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|message-value'>
+       <treat line='4917' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|message-value'>
         <check card='1' diag='3|0|XTTE0570|message-value'>
          <cvUntyped to='xs:string' diag='3|0|XTTE0570|message-value'>
           <data>
@@ -2011,8 +2011,8 @@
   </function>
  </co>
  <co id='29' binds='3'>
-  <template name='Q{}action-setindex' flags='os' line='4961' module='saxon-xforms.xsl' slots='2'>
-   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4962'>
+  <template name='Q{}action-setindex' flags='os' line='4967' module='saxon-xforms.xsl' slots='2'>
+   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4968'>
     <param name='Q{}action-map' slot='0' flags='tr' as='map(*)'>
      <treat role='conversion' as='map(*)' jsTest='return SaxonJS.U.isMap(item)' diag='8|0|XTTE0590|action-map'>
       <check card='1' diag='8|0|XTTE0590|action-map'>
@@ -2020,14 +2020,14 @@
       </check>
      </treat>
     </param>
-    <let line='4968' var='Q{}new-index' as='xs:integer' slot='1' eval='16'>
-     <treat line='4969' as='xs:integer' jsTest='return SaxonJS.U.Atomic.integer.matches(item);' diag='3|0|XTTE0570|new-index'>
+    <let line='4974' var='Q{}new-index' as='xs:integer' slot='1' eval='16'>
+     <treat line='4975' as='xs:integer' jsTest='return SaxonJS.U.Atomic.integer.matches(item);' diag='3|0|XTTE0570|new-index'>
       <check card='1' diag='3|0|XTTE0570|new-index'>
        <cvUntyped to='xs:integer' diag='3|0|XTTE0570|new-index'>
         <data>
          <evaluate dxns=''>
           <ufCall role='xpath' name='Q{http://www.w3.org/2002/xforms}impose' tailCall='false' bSlot='0' eval='16'>
-           <treat line='4965' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|new-index-ref'>
+           <treat line='4971' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|new-index-ref'>
             <check card='1' diag='3|0|XTTE0570|new-index-ref'>
              <cvUntyped to='xs:string' diag='3|0|XTTE0570|new-index-ref'>
               <data>
@@ -2049,13 +2049,13 @@
        </cvUntyped>
       </check>
      </treat>
-     <ifCall line='4974' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
+     <ifCall line='4980' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
       <check card='1' diag='0|0||ixsl:call'>
        <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}window' type='item()?'/>
       </check>
       <str val='setRepeatIndex'/>
       <arrayBlock>
-       <treat line='4964' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|repeatID'>
+       <treat line='4970' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|repeatID'>
         <check card='1' diag='3|0|XTTE0570|repeatID'>
          <cvUntyped to='xs:string' diag='3|0|XTTE0570|repeatID'>
           <data>
@@ -2075,8 +2075,8 @@
   </template>
  </co>
  <co id='30' binds='31'>
-  <template name='Q{}action-setfocus' flags='os' line='4923' module='saxon-xforms.xsl' slots='1'>
-   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4924'>
+  <template name='Q{}action-setfocus' flags='os' line='4929' module='saxon-xforms.xsl' slots='1'>
+   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4930'>
     <param name='Q{}action-map' slot='0' flags='tr' as='map(*)'>
      <treat role='conversion' as='map(*)' jsTest='return SaxonJS.U.isMap(item)' diag='8|0|XTTE0590|action-map'>
       <check card='1' diag='8|0|XTTE0590|action-map'>
@@ -2084,9 +2084,9 @@
       </check>
      </treat>
     </param>
-    <callT line='4928' name='Q{}xforms-focus' bSlot='0' flags='t'>
+    <callT line='4934' name='Q{}xforms-focus' bSlot='0' flags='t'>
      <withParam name='Q{}control' flags='c' as='xs:string'>
-      <treat line='4926' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|control'>
+      <treat line='4932' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|control'>
        <check card='1' diag='3|0|XTTE0570|control'>
         <cvUntyped to='xs:string' diag='3|0|XTTE0570|control'>
          <data>
@@ -2104,8 +2104,8 @@
   </template>
  </co>
  <co id='32' binds='1 3 3 33 16 34 5 35'>
-  <template name='Q{}action-setvalue' flags='os' line='4585' module='saxon-xforms.xsl' slots='14'>
-   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4586'>
+  <template name='Q{}action-setvalue' flags='os' line='4591' module='saxon-xforms.xsl' slots='14'>
+   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4592'>
     <param name='Q{}action-map' slot='0' flags='tr' as='map(*)'>
      <treat role='conversion' as='map(*)' jsTest='return SaxonJS.U.isMap(item)' diag='8|0|XTTE0590|action-map'>
       <check card='1' diag='8|0|XTTE0590|action-map'>
@@ -2113,7 +2113,7 @@
       </check>
      </treat>
     </param>
-    <param line='4587' name='Q{}instanceXML' slot='1' flags='t' as='element()?'>
+    <param line='4593' name='Q{}instanceXML' slot='1' flags='t' as='element()?'>
      <empty role='select'/>
      <treat role='conversion' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='8|0|XTTE0590|instanceXML'>
       <check card='?' diag='8|0|XTTE0590|instanceXML'>
@@ -2121,7 +2121,7 @@
       </check>
      </treat>
     </param>
-    <param line='4588' name='Q{}nodeset' slot='2' flags='t' as='xs:string'>
+    <param line='4594' name='Q{}nodeset' slot='2' flags='t' as='xs:string'>
      <str role='select' val=''/>
      <treat role='conversion' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='8|0|XTTE0590|nodeset'>
       <check card='1' diag='8|0|XTTE0590|nodeset'>
@@ -2133,7 +2133,7 @@
       </check>
      </treat>
     </param>
-    <let line='4592' var='Q{}refz' as='xs:string' slot='3' eval='16'>
+    <let line='4598' var='Q{}refz' as='xs:string' slot='3' eval='16'>
      <let var='Q{}relative' as='xs:string' slot='4' eval='16'>
       <treat as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='0|1||xforms:resolveXPathStrings'>
        <check card='1' diag='0|1||xforms:resolveXPathStrings'>
@@ -2158,7 +2158,7 @@
         <str val='instance('/>
        </fn>
        <varRef line='842' name='Q{}relative' slot='4'/>
-       <fn line='4592' name='not'>
+       <fn line='4598' name='not'>
         <varRef name='Q{}nodeset' slot='2'/>
        </fn>
        <varRef line='845' name='Q{}relative' slot='4'/>
@@ -2171,7 +2171,7 @@
          <str val='.'/>
         </vc>
        </or>
-       <varRef line='4592' name='Q{}nodeset' slot='2'/>
+       <varRef line='4598' name='Q{}nodeset' slot='2'/>
        <true/>
        <let line='852' var='Q{}parentCallCount' as='xs:integer' slot='5' eval='16'>
         <choose>
@@ -2202,13 +2202,13 @@
         </choose>
         <let line='855' var='Q{}slashes' as='xs:integer*' slot='6' eval='4'>
          <choose>
-          <fn line='4592' name='contains'>
+          <fn line='4598' name='contains'>
            <varRef name='Q{}nodeset' slot='2'/>
            <str val='/'/>
           </fn>
           <fn name='index-of'>
            <fn name='string-to-codepoints'>
-            <varRef line='4592' name='Q{}nodeset' slot='2'/>
+            <varRef line='4598' name='Q{}nodeset' slot='2'/>
            </fn>
            <int val='47'/>
           </fn>
@@ -2221,7 +2221,7 @@
           </compareToInt>
           <fn line='891' name='concat'>
            <fn name='substring'>
-            <varRef line='4592' name='Q{}nodeset' slot='2'/>
+            <varRef line='4598' name='Q{}nodeset' slot='2'/>
             <int val='1'/>
             <choose line='866'>
              <and op='and'>
@@ -2266,7 +2266,7 @@
            </fn>
           </fn>
           <true/>
-          <fn line='4592' name='concat'>
+          <fn line='4598' name='concat'>
            <varRef name='Q{}nodeset' slot='2'/>
            <str val='/'/>
            <varRef line='894' name='Q{}relative' slot='4'/>
@@ -2276,19 +2276,19 @@
        </let>
       </choose>
      </let>
-     <let line='4594' var='Q{}instance-id' as='xs:string' slot='8' eval='16'>
+     <let line='4600' var='Q{}instance-id' as='xs:string' slot='8' eval='16'>
       <ufCall name='Q{http://www.w3.org/2002/xforms}getInstanceId' tailCall='false' bSlot='0' eval='6'>
        <varRef name='Q{}refz' slot='3'/>
       </ufCall>
-      <let line='4607' var='Q{}valuez' as='document-node()' slot='9' eval='16'>
-       <doc line='4609' validation='preserve'>
+      <let line='4613' var='Q{}valuez' as='document-node()' slot='9' eval='16'>
+       <doc line='4615' validation='preserve'>
         <choose>
          <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}contains' type='xs:boolean'>
           <varRef name='Q{}action-map' slot='0'/>
           <str val='@value'/>
          </ifCall>
-         <let line='4610' var='Q{}contexti' as='node()' slot='10' eval='8'>
-          <evaluate line='4611' as='node()' dxns=''>
+         <let line='4616' var='Q{}contexti' as='node()' slot='10' eval='8'>
+          <evaluate line='4617' as='node()' dxns=''>
            <ufCall role='xpath' name='Q{http://www.w3.org/2002/xforms}impose' tailCall='false' bSlot='1' eval='6'>
             <varRef name='Q{}nodeset' slot='2'/>
            </ufCall>
@@ -2300,7 +2300,7 @@
            <map role='options' size='0'/>
            <map role='wp' size='0'/>
           </evaluate>
-          <evaluate line='4614' dxns=''>
+          <evaluate line='4620' dxns=''>
            <ufCall role='xpath' name='Q{http://www.w3.org/2002/xforms}impose' tailCall='false' bSlot='2' eval='16'>
             <treat as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='0|0||xforms:impose'>
              <check card='1' diag='0|0||xforms:impose'>
@@ -2322,13 +2322,13 @@
            <map role='wp' size='0'/>
           </evaluate>
          </let>
-         <ifCall line='4617' name='Q{http://www.w3.org/2005/xpath-functions/map}contains' type='xs:boolean'>
+         <ifCall line='4623' name='Q{http://www.w3.org/2005/xpath-functions/map}contains' type='xs:boolean'>
           <treat as='map(*)' jsTest='return SaxonJS.U.isMap(item)' diag='0|0||map:contains'>
            <dot flags='a'/>
           </treat>
           <str val='value'/>
          </ifCall>
-         <ifCall line='4618' name='Q{http://www.w3.org/2005/xpath-functions/map}get' type='item()*'>
+         <ifCall line='4624' name='Q{http://www.w3.org/2005/xpath-functions/map}get' type='item()*'>
           <varRef name='Q{}action-map' slot='0'/>
           <str val='value'/>
          </ifCall>
@@ -2336,8 +2336,8 @@
          <str val=''/>
         </choose>
        </doc>
-       <sequence line='4628'>
-        <let line='4630' var='Q{}associated-form-control' as='element()?' slot='11' eval='7'>
+       <sequence line='4634'>
+        <let line='4636' var='Q{}associated-form-control' as='element()?' slot='11' eval='7'>
          <check card='?' diag='3|0|XTTE0570|associated-form-control'>
           <filter flags='b'>
            <slash simple='1'>
@@ -2352,22 +2352,22 @@
            </vc>
           </filter>
          </check>
-         <choose line='4632'>
+         <choose line='4638'>
           <fn name='exists'>
            <varRef name='Q{}associated-form-control' slot='11'/>
           </fn>
-          <sequence line='4633'>
+          <sequence line='4639'>
            <applyT mode='Q{}set-field' bSlot='3'>
             <varRef role='select' name='Q{}associated-form-control' slot='11'/>
             <withParam name='Q{}value' flags='t' as='xs:string'>
-             <cast line='4634' as='xs:string' emptiable='0'>
+             <cast line='4640' as='xs:string' emptiable='0'>
               <data>
                <varRef name='Q{}valuez' slot='9'/>
               </data>
              </cast>
             </withParam>
            </applyT>
-           <ifCall line='4636' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
+           <ifCall line='4642' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
             <check card='1' diag='0|0||ixsl:call'>
              <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}window' type='item()?'/>
             </check>
@@ -2396,7 +2396,7 @@
            </ifCall>
           </sequence>
           <true/>
-          <ifCall line='4639' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
+          <ifCall line='4645' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
            <check card='1' diag='0|0||ixsl:call'>
             <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}window' type='item()?'/>
            </check>
@@ -2425,12 +2425,12 @@
           </ifCall>
          </choose>
         </let>
-        <choose line='4645'>
+        <choose line='4651'>
          <vc op='ne' onEmpty='1' comp='GAC|http://www.w3.org/2005/xpath-functions/collation/codepoint'>
           <varRef name='Q{}refz' slot='3'/>
           <str val=''/>
          </vc>
-         <let line='4647' var='Q{}pendingUpdates' as='map(xs:string, xs:string)?' slot='12' eval='7'>
+         <let line='4653' var='Q{}pendingUpdates' as='map(xs:string, xs:string)?' slot='12' eval='7'>
           <treat as='map(xs:string, xs:string)' jsTest='function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);' diag='3|0|XTTE0570|pendingUpdates'>
            <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
             <check card='1' diag='0|0||ixsl:call'>
@@ -2440,11 +2440,11 @@
             <array size='0'/>
            </ifCall>
           </treat>
-          <let line='4649' var='Q{}updatedInstanceXML' as='element()' slot='13' eval='16'>
-           <treat line='4650' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='3|0|XTTE0570|updatedInstanceXML'>
+          <let line='4655' var='Q{}updatedInstanceXML' as='element()' slot='13' eval='16'>
+           <treat line='4656' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='3|0|XTTE0570|updatedInstanceXML'>
             <check card='1' diag='3|0|XTTE0570|updatedInstanceXML'>
              <applyT mode='Q{}form-check-initial' bSlot='4'>
-              <choose role='select' line='4598'>
+              <choose role='select' line='4604'>
                <and op='and'>
                 <vc op='eq' onEmpty='0' comp='CCC'>
                  <varRef name='Q{}instance-id' slot='8'/>
@@ -2454,31 +2454,31 @@
                  <varRef name='Q{}instanceXML' slot='1'/>
                 </fn>
                </and>
-               <check line='4599' card='1' diag='3|0|XTTE0570|instanceXML2'>
+               <check line='4605' card='1' diag='3|0|XTTE0570|instanceXML2'>
                 <varRef name='Q{}instanceXML' slot='1'/>
                </check>
                <true/>
-               <check line='4602' card='1' diag='3|0|XTTE0570|instanceXML2'>
+               <check line='4608' card='1' diag='3|0|XTTE0570|instanceXML2'>
                 <ufCall name='Q{http://www.w3.org/2002/xforms}getInstance-JS' tailCall='false' bSlot='5' eval='6'>
                  <varRef name='Q{}refz' slot='3'/>
                 </ufCall>
                </check>
               </choose>
               <withParam name='Q{}instance-id' as='xs:string'>
-               <varRef line='4651' name='Q{}instance-id' slot='8'/>
+               <varRef line='4657' name='Q{}instance-id' slot='8'/>
               </withParam>
               <withParam name='Q{}pendingUpdates' flags='t' as='map(xs:string, xs:string)?'>
-               <varRef line='4652' name='Q{}pendingUpdates' slot='12'/>
+               <varRef line='4658' name='Q{}pendingUpdates' slot='12'/>
               </withParam>
              </applyT>
             </check>
            </treat>
-           <sequence line='4657'>
+           <sequence line='4663'>
             <ufCall name='Q{http://www.w3.org/2002/xforms}setInstance-JS' tailCall='false' bSlot='6' eval='6 6'>
              <varRef name='Q{}refz' slot='3'/>
              <varRef name='Q{}updatedInstanceXML' slot='13'/>
             </ufCall>
-            <callT line='4658' name='Q{}refreshOutputs-JS' bSlot='7' flags='t'/>
+            <callT line='4664' name='Q{}refreshOutputs-JS' bSlot='7' flags='t'/>
            </sequence>
           </let>
          </let>
@@ -3247,7 +3247,7 @@
                  </map>
                 </ifCall>
                </treat>
-               <resultDoc line='3601' global='#&#xD;&#xA;#Fri Mar 13 14:41:49 GMT 2020&#xD;&#xA;indent=no&#xD;&#xA;doctype-system=http\://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&#xD;&#xA;encoding=utf-8&#xD;&#xA;doctype-public=-//W3C//DTD XHTML 1.0 Transitional//EN&#xD;&#xA;omit-xml-declaration=no&#xD;&#xA;method=html&#xD;&#xA;' local='#&#xD;&#xA;#Fri Mar 13 14:41:49 GMT 2020&#xD;&#xA;method={http\://saxonica.com/ns/interactiveXSLT}replace-content&#xD;&#xA;'>
+               <resultDoc line='3601' global='#&#xD;&#xA;#Fri Mar 13 15:05:29 GMT 2020&#xD;&#xA;indent=no&#xD;&#xA;doctype-system=http\://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&#xD;&#xA;encoding=utf-8&#xD;&#xA;doctype-public=-//W3C//DTD XHTML 1.0 Transitional//EN&#xD;&#xA;omit-xml-declaration=no&#xD;&#xA;method=html&#xD;&#xA;' local='#&#xD;&#xA;#Fri Mar 13 15:05:29 GMT 2020&#xD;&#xA;method={http\://saxonica.com/ns/interactiveXSLT}replace-content&#xD;&#xA;'>
                 <fn role='href' name='concat'>
                  <str val='#'/>
                  <varRef name='Q{}this-key' slot='1'/>
@@ -3483,7 +3483,7 @@
                <fn name='exists'>
                 <varRef name='Q{}associated-form-control' slot='7'/>
                </fn>
-               <resultDoc line='3544' global='#&#xD;&#xA;#Fri Mar 13 14:41:49 GMT 2020&#xD;&#xA;indent=no&#xD;&#xA;doctype-system=http\://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&#xD;&#xA;encoding=utf-8&#xD;&#xA;doctype-public=-//W3C//DTD XHTML 1.0 Transitional//EN&#xD;&#xA;omit-xml-declaration=no&#xD;&#xA;method=html&#xD;&#xA;' local='#&#xD;&#xA;#Fri Mar 13 14:41:49 GMT 2020&#xD;&#xA;method={http\://saxonica.com/ns/interactiveXSLT}replace-content&#xD;&#xA;'>
+               <resultDoc line='3544' global='#&#xD;&#xA;#Fri Mar 13 15:05:29 GMT 2020&#xD;&#xA;indent=no&#xD;&#xA;doctype-system=http\://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&#xD;&#xA;encoding=utf-8&#xD;&#xA;doctype-public=-//W3C//DTD XHTML 1.0 Transitional//EN&#xD;&#xA;omit-xml-declaration=no&#xD;&#xA;method=html&#xD;&#xA;' local='#&#xD;&#xA;#Fri Mar 13 15:05:29 GMT 2020&#xD;&#xA;method={http\://saxonica.com/ns/interactiveXSLT}replace-content&#xD;&#xA;'>
                 <fn role='href' name='concat'>
                  <str val='#'/>
                  <varRef name='Q{}this-key' slot='1'/>
@@ -3507,8 +3507,8 @@
   </template>
  </co>
  <co id='31' binds='46'>
-  <template name='Q{}xforms-focus' flags='os' line='4272' module='saxon-xforms.xsl' slots='5'>
-   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4273'>
+  <template name='Q{}xforms-focus' flags='os' line='4278' module='saxon-xforms.xsl' slots='5'>
+   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4279'>
     <param name='Q{}control' slot='0' flags='i' as='xs:string'>
      <treat role='conversion' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='8|0|XTTE0590|control'>
       <check card='1' diag='8|0|XTTE0590|control'>
@@ -3520,10 +3520,10 @@
       </check>
      </treat>
     </param>
-    <let line='4274' var='Q{}xforms-control' as='element()' slot='1' eval='16'>
+    <let line='4280' var='Q{}xforms-control' as='element()' slot='1' eval='16'>
      <check card='1' diag='3|0|XTTE0570|xforms-control'>
       <filter flags='b'>
-       <gVarRef name='Q{http://saxon.sf.net/generated-variable}gg1090039905' bSlot='0'/>
+       <gVarRef name='Q{http://saxon.sf.net/generated-variable}gg841391920' bSlot='0'/>
        <vc op='eq' onEmpty='0' comp='CCC'>
         <cast as='xs:string' emptiable='1'>
          <attVal name='Q{}id' chk='0'/>
@@ -3532,19 +3532,19 @@
        </vc>
       </filter>
      </check>
-     <choose line='4279'>
+     <choose line='4285'>
       <fn name='exists'>
        <slash simple='1'>
         <varRef name='Q{}xforms-control' slot='1'/>
         <axis name='ancestor' nodeTest='element(Q{http://www.w3.org/2002/xforms}repeat)' jsTest='var q=SaxonJS.U.nameOfNode(item); return item.nodeType===1 &amp;&amp; q.uri===&#39;http://www.w3.org/2002/xforms&#39;&amp;&amp;q.local===&#39;repeat&#39;;'/>
        </slash>
       </fn>
-      <let line='4283' var='Q{http://saxon.sf.net/generated-variable}v0' as='item()' slot='2' eval='13'>
+      <let line='4289' var='Q{http://saxon.sf.net/generated-variable}v0' as='item()' slot='2' eval='13'>
        <check card='1' diag='0|0||ixsl:call'>
         <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}window' type='item()?'/>
        </check>
-       <let line='4280' var='Q{}context-indexes' as='xs:double*' slot='3' eval='8'>
-        <convert line='4281' from='xs:anyAtomicType' to='xs:double' flags='p' diag='3|0|XTTE0570|context-indexes'>
+       <let line='4286' var='Q{}context-indexes' as='xs:double*' slot='3' eval='8'>
+        <convert line='4287' from='xs:anyAtomicType' to='xs:double' flags='p' diag='3|0|XTTE0570|context-indexes'>
          <cvUntyped to='xs:double' diag='3|0|XTTE0570|context-indexes'>
           <data>
            <forEach>
@@ -3555,7 +3555,7 @@
                <axis name='ancestor' nodeTest='element(Q{http://www.w3.org/2002/xforms}repeat)' jsTest='var q=SaxonJS.U.nameOfNode(item); return item.nodeType===1 &amp;&amp; q.uri===&#39;http://www.w3.org/2002/xforms&#39;&amp;&amp;q.local===&#39;repeat&#39;;'/>
               </fn>
              </slash>
-             <sortKey line='4282' comp='DESC|NC11'>
+             <sortKey line='4288' comp='DESC|NC11'>
               <fn role='select' name='position'/>
               <str role='order' val='descending'/>
               <str role='dataType' val='number'/>
@@ -3565,7 +3565,7 @@
               <str role='collation' val='http://www.w3.org/2005/xpath-functions/collation/codepoint'/>
              </sortKey>
             </sort>
-            <ifCall line='4283' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
+            <ifCall line='4289' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
              <varRef name='Q{http://saxon.sf.net/generated-variable}v0' slot='2'/>
              <str val='getRepeatIndex'/>
              <arrayBlock>
@@ -3578,12 +3578,12 @@
           </data>
          </cvUntyped>
         </convert>
-        <let line='4287' var='Q{}control-index' as='xs:string' slot='4' eval='8'>
+        <let line='4293' var='Q{}control-index' as='xs:string' slot='4' eval='8'>
          <fn name='string-join'>
           <varRef name='Q{}context-indexes' slot='3'/>
           <str val='.'/>
          </fn>
-         <sequence line='4288'>
+         <sequence line='4294'>
           <message>
            <sequence role='select'>
             <valueOf>
@@ -3601,7 +3601,7 @@
            <str role='terminate' val='no'/>
            <str role='error' val='Q{http://www.w3.org/2005/xqt-errors}XTMM9000'/>
           </message>
-          <ifCall line='4289' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
+          <ifCall line='4295' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
            <check card='1' diag='0|0||ixsl:call'>
             <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}window' type='item()?'/>
            </check>
@@ -3619,7 +3619,7 @@
        </let>
       </let>
       <true/>
-      <ifCall line='4292' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
+      <ifCall line='4298' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
        <check card='1' diag='0|0||ixsl:call'>
         <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}window' type='item()?'/>
        </check>
@@ -3919,7 +3919,7 @@
  </co>
  <co id='7' binds='1 2 3 3 19 35 42 49'>
   <template name='Q{}xforms-recalculate' flags='os' line='4132' module='saxon-xforms.xsl' slots='11'>
-   <let role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4179' var='Q{http://saxon.sf.net/generated-variable}v1' as='item()' slot='0' eval='13'>
+   <let role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4185' var='Q{http://saxon.sf.net/generated-variable}v1' as='item()' slot='0' eval='13'>
     <check card='1' diag='0|0||ixsl:call'>
      <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}window' type='item()?'/>
     </check>
@@ -3970,7 +3970,24 @@
             <check card='1' diag='0|0||map:entry'>
              <currentGroupingKey/>
             </check>
-            <currentGroup/>
+            <forEach line='4141'>
+             <currentGroup/>
+             <ifCall line='4143' name='Q{http://www.w3.org/2005/xpath-functions/map}merge' type='map(*)'>
+              <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}entry' type='map(*)'>
+               <dot type='xs:anyAtomicType'/>
+               <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}get' type='item()*'>
+                <varRef name='Q{}calculationMap' slot='2'/>
+                <dot type='xs:anyAtomicType'/>
+               </ifCall>
+              </ifCall>
+              <map size='2'>
+               <str val='duplicates'/>
+               <str val='reject'/>
+               <str val='duplicates-error-code'/>
+               <str val='XTDE3365'/>
+              </map>
+             </ifCall>
+            </forEach>
            </ifCall>
           </forEachGroup>
           <map size='2'>
@@ -3981,12 +3998,12 @@
           </map>
          </ifCall>
         </treat>
-        <sequence line='4145'>
+        <sequence line='4151'>
          <forEach>
           <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}keys' type='xs:anyAtomicType*'>
            <varRef name='Q{}instances-with-calculations' slot='3'/>
           </ifCall>
-          <let line='4146' var='Q{}instanceXML' as='element()' slot='4' eval='16'>
+          <let line='4152' var='Q{}instanceXML' as='element()' slot='4' eval='16'>
            <check card='1' diag='3|0|XTTE0570|instanceXML'>
             <ufCall name='Q{http://www.w3.org/2002/xforms}instance' tailCall='false' bSlot='1' eval='16'>
              <treat as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='0|0||xforms:instance'>
@@ -3996,26 +4013,26 @@
              </treat>
             </ufCall>
            </check>
-           <let line='4148' var='Q{}calculations' as='map(xs:string, xs:string)*' slot='5' eval='4'>
+           <let line='4154' var='Q{}calculations' as='map(xs:string, xs:string)*' slot='5' eval='4'>
             <treat as='map(xs:string, xs:string)' jsTest='function k(item) {return SaxonJS.U.Atomic.string.matches(item);};function v(item) {return SaxonJS.U.Atomic.string.matches(item);};function c(n) {return n==1;};return SaxonJS.U.isMap(item) &amp;&amp; item.conforms(k, v, c);' diag='3|0|XTTE0570|calculations'>
              <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}get' type='item()*'>
               <varRef name='Q{}instances-with-calculations' slot='3'/>
               <dot type='xs:anyAtomicType'/>
              </ifCall>
             </treat>
-            <let line='4162' var='Q{http://saxon.sf.net/generated-variable}v0' as='map(xs:string, xs:string)' slot='6' eval='13'>
+            <let line='4168' var='Q{http://saxon.sf.net/generated-variable}v0' as='map(xs:string, xs:string)' slot='6' eval='13'>
              <check card='1' diag='0|0||map:get'>
               <varRef name='Q{}calculations' slot='5'/>
              </check>
-             <let line='4151' var='Q{}calculated-nodes' as='node()*' slot='7' eval='8'>
-              <treat line='4152' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|calculated-nodes'>
+             <let line='4157' var='Q{}calculated-nodes' as='node()*' slot='7' eval='8'>
+              <treat line='4158' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|calculated-nodes'>
                <forEach>
                 <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}keys' type='xs:anyAtomicType*'>
                  <check card='1' diag='0|0||map:keys'>
                   <varRef name='Q{}calculations' slot='5'/>
                  </check>
                 </ifCall>
-                <evaluate line='4153' dxns=''>
+                <evaluate line='4159' dxns=''>
                  <ufCall role='xpath' name='Q{http://www.w3.org/2002/xforms}impose' tailCall='false' bSlot='2' eval='16'>
                   <treat as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='0|0||xforms:impose'>
                    <cvUntyped to='xs:string'>
@@ -4031,15 +4048,15 @@
                 </evaluate>
                </forEach>
               </treat>
-              <let line='4158' var='Q{}calculated-values' as='xs:string*' slot='8' eval='8'>
-               <forEach line='4159'>
+              <let line='4164' var='Q{}calculated-values' as='xs:string*' slot='8' eval='8'>
+               <forEach line='4165'>
                 <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}keys' type='xs:anyAtomicType*'>
                  <check card='1' diag='0|0||map:keys'>
                   <varRef name='Q{}calculations' slot='5'/>
                  </check>
                 </ifCall>
-                <let line='4161' var='Q{}value' as='xs:string?' slot='9' eval='7'>
-                 <treat line='4162' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|value'>
+                <let line='4167' var='Q{}value' as='xs:string?' slot='9' eval='7'>
+                 <treat line='4168' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|value'>
                   <check card='?' diag='3|0|XTTE0570|value'>
                    <cvUntyped to='xs:string' diag='3|0|XTTE0570|value'>
                     <data>
@@ -4062,7 +4079,7 @@
                    </cvUntyped>
                   </check>
                  </treat>
-                 <first line='4168'>
+                 <first line='4174'>
                   <sequence>
                    <varRef name='Q{}value' slot='9'/>
                    <str val=''/>
@@ -4070,21 +4087,21 @@
                  </first>
                 </let>
                </forEach>
-               <let line='4172' var='Q{}updatedInstanceXML' as='element()' slot='10' eval='16'>
-                <treat line='4173' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='3|0|XTTE0570|updatedInstanceXML'>
+               <let line='4178' var='Q{}updatedInstanceXML' as='element()' slot='10' eval='16'>
+                <treat line='4179' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='3|0|XTTE0570|updatedInstanceXML'>
                  <check card='1' diag='3|0|XTTE0570|updatedInstanceXML'>
                   <applyT mode='Q{}recalculate' bSlot='4'>
                    <varRef role='select' name='Q{}instanceXML' slot='4'/>
                    <withParam name='Q{}updated-nodes' as='node()*'>
-                    <varRef line='4174' name='Q{}calculated-nodes' slot='7'/>
+                    <varRef line='4180' name='Q{}calculated-nodes' slot='7'/>
                    </withParam>
                    <withParam name='Q{}updated-values' as='xs:string*'>
-                    <varRef line='4175' name='Q{}calculated-values' slot='8'/>
+                    <varRef line='4181' name='Q{}calculated-values' slot='8'/>
                    </withParam>
                   </applyT>
                  </check>
                 </treat>
-                <ifCall line='4179' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
+                <ifCall line='4185' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
                  <varRef name='Q{http://saxon.sf.net/generated-variable}v1' slot='0'/>
                  <str val='setInstance'/>
                  <arrayBlock>
@@ -4099,9 +4116,9 @@
            </let>
           </let>
          </forEach>
-         <callT line='4183' name='Q{}refreshOutputs-JS' bSlot='5'/>
-         <callT line='4184' name='Q{}refreshRepeats-JS' bSlot='6'/>
-         <callT line='4185' name='Q{}refreshElementsUsingIndexFunction-JS' bSlot='7' flags='t'/>
+         <callT line='4189' name='Q{}refreshOutputs-JS' bSlot='5'/>
+         <callT line='4190' name='Q{}refreshRepeats-JS' bSlot='6'/>
+         <callT line='4191' name='Q{}refreshElementsUsingIndexFunction-JS' bSlot='7' flags='t'/>
         </sequence>
        </let>
       </let>
@@ -4214,8 +4231,8 @@
   </function>
  </co>
  <co id='11' binds='2 1 3 15 19 52 3 53 20'>
-  <template name='Q{}xforms-submit' flags='os' line='4305' module='saxon-xforms.xsl' slots='20'>
-   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4306'>
+  <template name='Q{}xforms-submit' flags='os' line='4311' module='saxon-xforms.xsl' slots='20'>
+   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4312'>
     <param name='Q{}submission' slot='0' flags='i' as='xs:string'>
      <treat role='conversion' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='8|0|XTTE0590|submission'>
       <check card='1' diag='8|0|XTTE0590|submission'>
@@ -4227,7 +4244,7 @@
       </check>
      </treat>
     </param>
-    <let line='4308' var='Q{}submission-map' as='map(*)' slot='1' eval='16'>
+    <let line='4314' var='Q{}submission-map' as='map(*)' slot='1' eval='16'>
      <treat as='map(*)' jsTest='return SaxonJS.U.isMap(item)' diag='3|0|XTTE0570|submission-map'>
       <check card='1' diag='3|0|XTTE0570|submission-map'>
        <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
@@ -4241,7 +4258,7 @@
        </ifCall>
       </check>
      </treat>
-     <let line='4309' var='Q{}actions' as='map(*)?' slot='2' eval='7'>
+     <let line='4315' var='Q{}actions' as='map(*)?' slot='2' eval='7'>
       <treat as='map(*)' jsTest='return SaxonJS.U.isMap(item)' diag='3|0|XTTE0570|actions'>
        <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
         <check card='1' diag='0|0||ixsl:call'>
@@ -4253,7 +4270,7 @@
         </arrayBlock>
        </ifCall>
       </treat>
-      <let line='4313' var='Q{}refi' as='xs:string?' slot='3' eval='7'>
+      <let line='4319' var='Q{}refi' as='xs:string?' slot='3' eval='7'>
        <treat as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|refi'>
         <check card='?' diag='3|0|XTTE0570|refi'>
          <cvUntyped to='xs:string' diag='3|0|XTTE0570|refi'>
@@ -4266,13 +4283,13 @@
          </cvUntyped>
         </check>
        </treat>
-       <let line='4315' var='Q{}instance-id' as='xs:string' slot='4' eval='16'>
-        <choose line='4317'>
+       <let line='4321' var='Q{}instance-id' as='xs:string' slot='4' eval='16'>
+        <choose line='4323'>
          <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}get' type='item()*'>
           <varRef name='Q{}submission-map' slot='1'/>
           <str val='@instance'/>
          </ifCall>
-         <treat line='4318' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|instance-id'>
+         <treat line='4324' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|instance-id'>
           <check card='1' diag='3|0|XTTE0570|instance-id'>
            <cvUntyped to='xs:string' diag='3|0|XTTE0570|instance-id'>
             <data>
@@ -4287,13 +4304,13 @@
          <true/>
          <str val='saxon-forms-default'/>
         </choose>
-        <let line='4339' var='Q{}instanceXML' as='element()' slot='5' eval='16'>
+        <let line='4345' var='Q{}instanceXML' as='element()' slot='5' eval='16'>
          <check card='1' diag='3|0|XTTE0570|instanceXML'>
           <ufCall name='Q{http://www.w3.org/2002/xforms}instance' tailCall='false' bSlot='0' eval='6'>
            <varRef name='Q{}instance-id' slot='4'/>
           </ufCall>
          </check>
-         <let line='4340' var='Q{}data-fields' as='element()*' slot='6' eval='8'>
+         <let line='4346' var='Q{}data-fields' as='element()*' slot='6' eval='8'>
           <filter flags='b'>
            <filter flags='b'>
             <filter flags='b'>
@@ -4330,11 +4347,11 @@
             <varRef name='Q{}instance-id' slot='4'/>
            </vc>
           </filter>
-          <let line='4343' var='Q{}calculated-nodes' as='node()*' slot='7' eval='8'>
-           <treat line='4344' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|calculated-nodes'>
+          <let line='4349' var='Q{}calculated-nodes' as='node()*' slot='7' eval='8'>
+           <treat line='4350' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|calculated-nodes'>
             <forEach>
              <varRef name='Q{}data-fields' slot='6'/>
-             <evaluate line='4345' dxns=''>
+             <evaluate line='4351' dxns=''>
               <ufCall role='xpath' name='Q{http://www.w3.org/2002/xforms}impose' tailCall='false' bSlot='2' eval='16'>
                <fn name='string'>
                 <axis name='attribute' nodeTest='attribute(Q{}data-ref)' jsTest='return item.name===&#39;data-ref&#39;'/>
@@ -4348,11 +4365,11 @@
              </evaluate>
             </forEach>
            </treat>
-           <let line='4350' var='Q{}calculated-values' as='xs:string*' slot='8' eval='3'>
-            <forEach line='4351'>
+           <let line='4356' var='Q{}calculated-values' as='xs:string*' slot='8' eval='3'>
+            <forEach line='4357'>
              <varRef name='Q{}data-fields' slot='6'/>
-             <let line='4353' var='Q{}value' as='xs:string' slot='9' eval='8'>
-              <cvUntyped line='4355' to='xs:string' diag='3|0|XTTE0570|value'>
+             <let line='4359' var='Q{}value' as='xs:string' slot='9' eval='8'>
+              <cvUntyped line='4361' to='xs:string' diag='3|0|XTTE0570|value'>
                <cast as='xs:untypedAtomic' emptiable='0'>
                 <fn name='string-join'>
                  <convert from='xs:anyAtomicType' to='xs:string'>
@@ -4368,7 +4385,7 @@
                 </fn>
                </cast>
               </cvUntyped>
-              <first line='4362'>
+              <first line='4368'>
                <sequence>
                 <varRef name='Q{}value' slot='9'/>
                 <str val=''/>
@@ -4376,21 +4393,21 @@
               </first>
              </let>
             </forEach>
-            <let line='4366' var='Q{}updatedInstanceXML' as='element()' slot='10' eval='16'>
-             <treat line='4367' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='3|0|XTTE0570|updatedInstanceXML'>
+            <let line='4372' var='Q{}updatedInstanceXML' as='element()' slot='10' eval='16'>
+             <treat line='4373' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='3|0|XTTE0570|updatedInstanceXML'>
               <check card='1' diag='3|0|XTTE0570|updatedInstanceXML'>
                <applyT mode='Q{}recalculate' bSlot='4'>
                 <varRef role='select' name='Q{}instanceXML' slot='5'/>
                 <withParam name='Q{}updated-nodes' as='node()*'>
-                 <varRef line='4368' name='Q{}calculated-nodes' slot='7'/>
+                 <varRef line='4374' name='Q{}calculated-nodes' slot='7'/>
                 </withParam>
                 <withParam name='Q{}updated-values' as='xs:string*'>
-                 <varRef line='4369' name='Q{}calculated-values' slot='8'/>
+                 <varRef line='4375' name='Q{}calculated-values' slot='8'/>
                 </withParam>
                </applyT>
               </check>
              </treat>
-             <let line='4374' var='Q{}required-fieldsi' as='element()*' slot='11' eval='8'>
+             <let line='4380' var='Q{}required-fieldsi' as='element()*' slot='11' eval='8'>
               <filter flags='b'>
                <slash simple='1'>
                 <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}page' type='document-node()?'/>
@@ -4400,18 +4417,18 @@
                 <axis name='attribute' nodeTest='attribute(Q{}data-required)' jsTest='return item.name===&#39;data-required&#39;'/>
                </fn>
               </filter>
-              <let line='4376' var='Q{}required-fields-check' as='element()*' slot='12' eval='3'>
+              <let line='4382' var='Q{}required-fields-check' as='element()*' slot='12' eval='3'>
                <ufCall name='Q{http://www.w3.org/2002/xforms}check-required-fields' tailCall='false' bSlot='5' eval='6'>
                 <varRef name='Q{}updatedInstanceXML' slot='10'/>
                </ufCall>
-               <choose line='4382'>
+               <choose line='4388'>
                 <fn name='empty'>
                  <varRef name='Q{}required-fields-check' slot='12'/>
                 </fn>
-                <let line='4383' var='Q{}requestBody' as='node()' slot='13' eval='16'>
-                 <choose line='4385'>
+                <let line='4389' var='Q{}requestBody' as='node()' slot='13' eval='16'>
+                 <choose line='4391'>
                   <varRef name='Q{}refi' slot='3'/>
-                  <treat line='4386' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|requestBody'>
+                  <treat line='4392' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|requestBody'>
                    <check card='1' diag='3|0|XTTE0570|requestBody'>
                     <evaluate dxns=''>
                      <ufCall role='xpath' name='Q{http://www.w3.org/2002/xforms}impose' tailCall='false' bSlot='6' eval='16'>
@@ -4428,10 +4445,10 @@
                    </check>
                   </treat>
                   <true/>
-                  <varRef line='4389' name='Q{}instanceXML' slot='5'/>
+                  <varRef line='4395' name='Q{}instanceXML' slot='5'/>
                  </choose>
-                 <let line='4394' var='Q{}requestBodyDoc' as='document-node()?' slot='14' eval='7'>
-                  <choose line='4395'>
+                 <let line='4400' var='Q{}requestBodyDoc' as='document-node()?' slot='14' eval='7'>
+                  <choose line='4401'>
                    <fn name='exists'>
                     <filter flags='b'>
                      <varRef name='Q{}requestBody' slot='13'/>
@@ -4440,11 +4457,11 @@
                      </fn>
                     </filter>
                    </fn>
-                   <doc line='4396'>
-                    <varRef line='4397' name='Q{}requestBody' slot='13'/>
+                   <doc line='4402'>
+                    <varRef line='4403' name='Q{}requestBody' slot='13'/>
                    </doc>
                   </choose>
-                  <let line='4402' var='Q{}method' as='xs:string' slot='15' eval='16'>
+                  <let line='4408' var='Q{}method' as='xs:string' slot='15' eval='16'>
                    <treat as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|method'>
                     <check card='1' diag='3|0|XTTE0570|method'>
                      <cvUntyped to='xs:string' diag='3|0|XTTE0570|method'>
@@ -4457,7 +4474,7 @@
                      </cvUntyped>
                     </check>
                    </treat>
-                   <let line='4404' var='Q{}serialization' as='xs:string?' slot='16' eval='7'>
+                   <let line='4410' var='Q{}serialization' as='xs:string?' slot='16' eval='7'>
                     <treat as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|serialization'>
                      <check card='?' diag='3|0|XTTE0570|serialization'>
                       <cvUntyped to='xs:string' diag='3|0|XTTE0570|serialization'>
@@ -4470,8 +4487,8 @@
                       </cvUntyped>
                      </check>
                     </treat>
-                    <let line='4406' var='Q{}query-parameters' as='xs:string?' slot='17' eval='7'>
-                     <choose line='4407'>
+                    <let line='4412' var='Q{}query-parameters' as='xs:string?' slot='17' eval='7'>
+                     <choose line='4413'>
                       <and op='and'>
                        <fn name='exists'>
                         <varRef name='Q{}serialization' slot='16'/>
@@ -4481,17 +4498,17 @@
                         <str val='application/x-www-form-urlencoded'/>
                        </vc>
                       </and>
-                      <fn line='4425' name='string-join'>
-                       <choose line='4411'>
+                      <fn line='4431' name='string-join'>
+                       <choose line='4417'>
                         <fn name='exists'>
                          <varRef name='Q{}requestBodyDoc' slot='14'/>
                         </fn>
-                        <forEach line='4412'>
+                        <forEach line='4418'>
                          <slash simple='1'>
                           <varRef name='Q{}requestBody' slot='13'/>
                           <axis name='child' nodeTest='element()' jsTest='return item.nodeType===1;'/>
                          </slash>
-                         <fn line='4413' name='concat'>
+                         <fn line='4419' name='concat'>
                           <fn name='local-name'>
                            <dot type='element()'/>
                           </fn>
@@ -4505,7 +4522,7 @@
                        <str val='&amp;'/>
                       </fn>
                      </choose>
-                     <let line='4429' var='Q{}href-base' as='xs:string' slot='18' eval='16'>
+                     <let line='4435' var='Q{}href-base' as='xs:string' slot='18' eval='16'>
                       <treat as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|href-base'>
                        <check card='1' diag='3|0|XTTE0570|href-base'>
                         <cvUntyped to='xs:string' diag='3|0|XTTE0570|href-base'>
@@ -4518,16 +4535,16 @@
                         </cvUntyped>
                        </check>
                       </treat>
-                      <sequence line='4473'>
+                      <sequence line='4479'>
                        <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}schedule-action' type='item()*'>
                         <int val='0'/>
                         <empty/>
                         <callT name='Q{}HTTPsubmit' bSlot='7'>
                          <withParam name='Q{}instance-id' flags='c' as='xs:string'>
-                          <varRef line='4474' name='Q{}instance-id' slot='4'/>
+                          <varRef line='4480' name='Q{}instance-id' slot='4'/>
                          </withParam>
                          <withParam name='Q{}targetref' flags='c' as='xs:string?'>
-                          <treat line='4475' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='8|0|XTTE0590|targetref'>
+                          <treat line='4481' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='8|0|XTTE0590|targetref'>
                            <check card='?' diag='8|0|XTTE0590|targetref'>
                             <cvUntyped to='xs:string' diag='8|0|XTTE0590|targetref'>
                              <data>
@@ -4541,7 +4558,7 @@
                           </treat>
                          </withParam>
                          <withParam name='Q{}replace' flags='c' as='xs:string?'>
-                          <treat line='4476' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='8|0|XTTE0590|replace'>
+                          <treat line='4482' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='8|0|XTTE0590|replace'>
                            <check card='?' diag='8|0|XTTE0590|replace'>
                             <cvUntyped to='xs:string' diag='8|0|XTTE0590|replace'>
                              <data>
@@ -4555,7 +4572,7 @@
                           </treat>
                          </withParam>
                         </callT>
-                        <ifCall line='4450' name='Q{http://www.w3.org/2005/xpath-functions/map}merge' type='map(*)'>
+                        <ifCall line='4456' name='Q{http://www.w3.org/2005/xpath-functions/map}merge' type='map(*)'>
                          <sequence>
                           <choose>
                            <vc op='ne' onEmpty='1' comp='CCC'>
@@ -4564,37 +4581,37 @@
                             </fn>
                             <str val='GET'/>
                            </vc>
-                           <choose line='4452'>
+                           <choose line='4458'>
                             <fn name='exists'>
                              <varRef name='Q{}requestBodyDoc' slot='14'/>
                             </fn>
-                            <ifCall line='4453' name='Q{http://www.w3.org/2005/xpath-functions/map}entry' type='map(*)'>
+                            <ifCall line='4459' name='Q{http://www.w3.org/2005/xpath-functions/map}entry' type='map(*)'>
                              <str val='body'/>
                              <varRef name='Q{}requestBodyDoc' slot='14'/>
                             </ifCall>
                             <true/>
-                            <ifCall line='4456' name='Q{http://www.w3.org/2005/xpath-functions/map}entry' type='map(*)'>
+                            <ifCall line='4462' name='Q{http://www.w3.org/2005/xpath-functions/map}entry' type='map(*)'>
                              <str val='body'/>
                              <varRef name='Q{}requestBody' slot='13'/>
                             </ifCall>
                            </choose>
                           </choose>
-                          <ifCall line='4461' name='Q{http://www.w3.org/2005/xpath-functions/map}entry' type='map(*)'>
+                          <ifCall line='4467' name='Q{http://www.w3.org/2005/xpath-functions/map}entry' type='map(*)'>
                            <str val='method'/>
                            <varRef name='Q{}method' slot='15'/>
                           </ifCall>
-                          <ifCall line='4462' name='Q{http://www.w3.org/2005/xpath-functions/map}entry' type='map(*)'>
+                          <ifCall line='4468' name='Q{http://www.w3.org/2005/xpath-functions/map}entry' type='map(*)'>
                            <str val='href'/>
-                           <choose line='4433'>
+                           <choose line='4439'>
                             <fn name='exists'>
                              <varRef name='Q{}query-parameters' slot='17'/>
                             </fn>
-                            <fn line='4434' name='concat'>
+                            <fn line='4440' name='concat'>
                              <varRef name='Q{}href-base' slot='18'/>
                              <str val='?'/>
                              <varRef name='Q{}query-parameters' slot='17'/>
                             </fn>
-                            <fn line='4436' name='exists'>
+                            <fn line='4442' name='exists'>
                              <filter flags='b'>
                               <varRef name='Q{}requestBody' slot='13'/>
                               <fn name='exists'>
@@ -4602,7 +4619,7 @@
                               </fn>
                              </filter>
                             </fn>
-                            <fn line='4437' name='concat'>
+                            <fn line='4443' name='concat'>
                              <varRef name='Q{}href-base' slot='18'/>
                              <str val='/'/>
                              <data>
@@ -4610,12 +4627,12 @@
                              </data>
                             </fn>
                             <true/>
-                            <varRef line='4440' name='Q{}href-base' slot='18'/>
+                            <varRef line='4446' name='Q{}href-base' slot='18'/>
                            </choose>
                           </ifCall>
-                          <ifCall line='4463' name='Q{http://www.w3.org/2005/xpath-functions/map}entry' type='map(*)'>
+                          <ifCall line='4469' name='Q{http://www.w3.org/2005/xpath-functions/map}entry' type='map(*)'>
                            <str val='media-type'/>
-                           <treat line='4445' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|mediatype'>
+                           <treat line='4451' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|mediatype'>
                             <check card='1' diag='3|0|XTTE0570|mediatype'>
                              <cvUntyped to='xs:string' diag='3|0|XTTE0570|mediatype'>
                               <data>
@@ -4637,16 +4654,16 @@
                          </map>
                         </ifCall>
                        </ifCall>
-                       <forEach line='4480'>
+                       <forEach line='4486'>
                         <varRef name='Q{}actions' slot='2'/>
-                        <let line='4481' var='Q{}action-map' as='map(*)' slot='19' eval='16'>
+                        <let line='4487' var='Q{}action-map' as='map(*)' slot='19' eval='16'>
                          <dot type='map(*)'/>
-                         <choose line='4484'>
+                         <choose line='4490'>
                           <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}contains' type='xs:boolean'>
                            <varRef name='Q{}action-map' slot='19'/>
                            <str val='@event'/>
                           </ifCall>
-                          <choose line='4485'>
+                          <choose line='4491'>
                            <gc op='=' card='N:1' comp='GAC|http://www.w3.org/2005/xpath-functions/collation/codepoint'>
                             <data>
                              <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}get' type='item()*'>
@@ -4656,17 +4673,17 @@
                             </data>
                             <str val='xforms-submit-done'/>
                            </gc>
-                           <callT line='4486' name='Q{}applyActions' bSlot='8' flags='t'>
+                           <callT line='4492' name='Q{}applyActions' bSlot='8' flags='t'>
                             <withParam name='Q{}action-map' flags='t' as='item()'>
-                             <varRef line='4487' name='Q{}action-map' slot='19'/>
+                             <varRef line='4493' name='Q{}action-map' slot='19'/>
                             </withParam>
                             <withParam name='Q{}nodeset' flags='t' as='xs:string'>
-                             <check line='4488' card='1' diag='8|0|XTTE0590|nodeset'>
+                             <check line='4494' card='1' diag='8|0|XTTE0590|nodeset'>
                               <varRef name='Q{}refi' slot='3'/>
                              </check>
                             </withParam>
                             <withParam name='Q{}instanceXML' flags='t' as='element()'>
-                             <varRef line='4489' name='Q{}instanceXML' slot='5'/>
+                             <varRef line='4495' name='Q{}instanceXML' slot='5'/>
                             </withParam>
                            </callT>
                           </choose>
@@ -4681,23 +4698,23 @@
                  </let>
                 </let>
                 <true/>
-                <ifCall line='4502' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
+                <ifCall line='4508' name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
                  <check card='1' diag='0|0||ixsl:call'>
                   <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}window' type='item()?'/>
                  </check>
                  <str val='alert'/>
                  <arrayBlock>
                   <fn name='serialize'>
-                   <doc line='4497' flags='t' validation='preserve'>
+                   <doc line='4503' flags='t' validation='preserve'>
                     <forEach>
                      <varRef name='Q{}required-fields-check' slot='12'/>
-                     <valueOf line='4499' flags='l'>
+                     <valueOf line='4505' flags='l'>
                       <fn name='concat'>
                        <str val='Value error see: '/>
                        <fn name='serialize'>
-                        <slash line='4498' simple='1'>
+                        <slash line='4504' simple='1'>
                          <dot type='element()'/>
-                         <axis line='4499' name='attribute' nodeTest='attribute(Q{}data-ref)' jsTest='return item.name===&#39;data-ref&#39;'/>
+                         <axis line='4505' name='attribute' nodeTest='attribute(Q{}data-ref)' jsTest='return item.name===&#39;data-ref&#39;'/>
                         </slash>
                        </fn>
                        <str val='&#xA;'/>
@@ -4994,7 +5011,7 @@
               </data>
              </cvUntyped>
             </choose>
-            <resultDoc line='3648' global='#&#xD;&#xA;#Fri Mar 13 14:41:49 GMT 2020&#xD;&#xA;indent=no&#xD;&#xA;doctype-system=http\://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&#xD;&#xA;encoding=utf-8&#xD;&#xA;doctype-public=-//W3C//DTD XHTML 1.0 Transitional//EN&#xD;&#xA;omit-xml-declaration=no&#xD;&#xA;method=html&#xD;&#xA;' local='#&#xD;&#xA;#Fri Mar 13 14:41:49 GMT 2020&#xD;&#xA;method={http\://saxonica.com/ns/interactiveXSLT}replace-content&#xD;&#xA;'>
+            <resultDoc line='3648' global='#&#xD;&#xA;#Fri Mar 13 15:05:29 GMT 2020&#xD;&#xA;indent=no&#xD;&#xA;doctype-system=http\://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&#xD;&#xA;encoding=utf-8&#xD;&#xA;doctype-public=-//W3C//DTD XHTML 1.0 Transitional//EN&#xD;&#xA;omit-xml-declaration=no&#xD;&#xA;method=html&#xD;&#xA;' local='#&#xD;&#xA;#Fri Mar 13 15:05:29 GMT 2020&#xD;&#xA;method={http\://saxonica.com/ns/interactiveXSLT}replace-content&#xD;&#xA;'>
              <fn role='href' name='concat'>
               <str val='#'/>
               <varRef name='Q{}this-key' slot='3'/>
@@ -5135,6 +5152,14 @@
      <axis name='child' nodeTest='element(Q{}random)' jsTest='var q=SaxonJS.U.nameOfNode(item); return item.nodeType===1 &amp;&amp; q.uri===&#39;&#39;&amp;&amp;q.local===&#39;random&#39;;'/>
     </slash>
    </sequence>
+  </globalVariable>
+ </co>
+ <co id='46' binds='44'>
+  <globalVariable name='Q{http://saxon.sf.net/generated-variable}gg841391920' type='element()*' line='4280' module='saxon-xforms.xsl' visibility='PRIVATE' jsAcceptor='function test(item) {return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;};if (test(val)) {return val;} else {throw SaxonJS.XError(&#39;Conversion failed&#39;, &#39;XTTE0590&#39;);}' jsCardCheck='function c() {return true;};'>
+   <slash ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4280' simple='1'>
+    <gVarRef name='Q{}xforms-doc' bSlot='0'/>
+    <axis name='descendant' nodeTest='element()' jsTest='return item.nodeType===1;'/>
+   </slash>
   </globalVariable>
  </co>
  <co id='52' binds=''>
@@ -9780,14 +9805,6 @@
    <true/>
   </globalVariable>
  </co>
- <co id='46' binds='44'>
-  <globalVariable name='Q{http://saxon.sf.net/generated-variable}gg1090039905' type='element()*' line='4274' module='saxon-xforms.xsl' visibility='PRIVATE' jsAcceptor='function test(item) {return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;};if (test(val)) {return val;} else {throw SaxonJS.XError(&#39;Conversion failed&#39;, &#39;XTTE0590&#39;);}' jsCardCheck='function c() {return true;};'>
-   <slash ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4274' simple='1'>
-    <gVarRef name='Q{}xforms-doc' bSlot='0'/>
-    <axis name='descendant' nodeTest='element()' jsTest='return item.nodeType===1;'/>
-   </slash>
-  </globalVariable>
- </co>
  <co id='65' binds=''>
   <function name='Q{http://www.w3.org/2002/xforms}getWhileStatement' line='809' module='saxon-xforms.xsl' eval='7' flags='pU' as='xs:string?' slots='1'>
    <arg name='Q{}map' as='map(*)'/>
@@ -9831,8 +9848,8 @@
   </function>
  </co>
  <co id='66' binds='1 2 3 15 19 20'>
-  <template name='Q{}DOMActivate' flags='os' line='4515' module='saxon-xforms.xsl' slots='9'>
-   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4516'>
+  <template name='Q{}DOMActivate' flags='os' line='4521' module='saxon-xforms.xsl' slots='9'>
+   <sequence role='body' ns='xforms=http://www.w3.org/2002/xforms in=http://www.w3.org/2002/xforms-instance fn=~ js=~ saxon=~ xd=http://www.oxygenxml.com/ns/doc/xsl xf=http://www.w3.org/2002/xforms xhtml=http://www.w3.org/1999/xhtml xsl=~ ev=http://www.w3.org/2001/xml-events rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# array=~ sfl=http://saxonica.com/ns/forms-local ixsl=~ xs=~ math=~ sfp=http://saxon.sf.net/ns/packages map=~' line='4522'>
     <param name='Q{}form-control' slot='0' flags='i' as='node()'>
      <treat role='conversion' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='8|0|XTTE0590|form-control'>
       <check card='1' diag='8|0|XTTE0590|form-control'>
@@ -9840,7 +9857,7 @@
       </check>
      </treat>
     </param>
-    <let line='4518' var='Q{}actions' as='map(*)?' slot='1' eval='7'>
+    <let line='4524' var='Q{}actions' as='map(*)?' slot='1' eval='7'>
      <treat as='map(*)' jsTest='return SaxonJS.U.isMap(item)' diag='3|0|XTTE0570|actions'>
       <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}call' type='item()?'>
        <check card='1' diag='0|0||ixsl:call'>
@@ -9857,12 +9874,12 @@
        </arrayBlock>
       </ifCall>
      </treat>
-     <let line='4520' var='Q{}refi' as='attribute(Q{}data-ref)?' slot='2' eval='8'>
+     <let line='4526' var='Q{}refi' as='attribute(Q{}data-ref)?' slot='2' eval='8'>
       <slash simple='1'>
        <varRef name='Q{}form-control' slot='0'/>
        <axis name='attribute' nodeTest='attribute(Q{}data-ref)' jsTest='return item.name===&#39;data-ref&#39;'/>
       </slash>
-      <let line='4522' var='Q{}instance-id' as='xs:string' slot='3' eval='16'>
+      <let line='4528' var='Q{}instance-id' as='xs:string' slot='3' eval='16'>
        <ufCall name='Q{http://www.w3.org/2002/xforms}getInstanceId' tailCall='false' bSlot='0' eval='16'>
         <check card='1' diag='0|0||xforms:getInstanceId'>
          <cvUntyped to='xs:string'>
@@ -9872,12 +9889,12 @@
          </cvUntyped>
         </check>
        </ufCall>
-       <let line='4535' var='Q{}instanceXML' as='element()?' slot='4' eval='7'>
+       <let line='4541' var='Q{}instanceXML' as='element()?' slot='4' eval='7'>
         <ufCall name='Q{http://www.w3.org/2002/xforms}instance' tailCall='false' bSlot='1' eval='6'>
          <varRef name='Q{}instance-id' slot='3'/>
         </ufCall>
-        <let line='4537' var='Q{}updatedInstanceXML' as='element()?' slot='5' eval='7'>
-         <choose line='4539'>
+        <let line='4543' var='Q{}updatedInstanceXML' as='element()?' slot='5' eval='7'>
+         <choose line='4545'>
           <and op='and'>
            <fn name='exists'>
             <varRef name='Q{}refi' slot='2'/>
@@ -9886,8 +9903,8 @@
             <varRef name='Q{}instanceXML' slot='4'/>
            </fn>
           </and>
-          <let line='4540' var='Q{}updatedNode' as='node()' slot='6' eval='16'>
-           <treat line='4541' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|updatedNode'>
+          <let line='4546' var='Q{}updatedNode' as='node()' slot='6' eval='16'>
+           <treat line='4547' as='node()' jsTest='return SaxonJS.U.isNode(item);' diag='3|0|XTTE0570|updatedNode'>
             <check card='1' diag='3|0|XTTE0570|updatedNode'>
              <evaluate dxns=''>
               <ufCall role='xpath' name='Q{http://www.w3.org/2002/xforms}impose' tailCall='false' bSlot='2' eval='16'>
@@ -9909,8 +9926,8 @@
              </evaluate>
             </check>
            </treat>
-           <let line='4543' var='Q{}new-value' as='xs:string' slot='7' eval='16'>
-            <treat line='4544' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|new-value'>
+           <let line='4549' var='Q{}new-value' as='xs:string' slot='7' eval='16'>
+            <treat line='4550' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='3|0|XTTE0570|new-value'>
              <check card='1' diag='3|0|XTTE0570|new-value'>
               <cvUntyped to='xs:string' diag='3|0|XTTE0570|new-value'>
                <data>
@@ -9921,18 +9938,18 @@
               </cvUntyped>
              </check>
             </treat>
-            <treat line='4546' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='3|0|XTTE0570|updatedInstanceXML'>
+            <treat line='4552' as='element()' jsTest='return SaxonJS.U.isNode(item) &amp;&amp; item.nodeType===1;' diag='3|0|XTTE0570|updatedInstanceXML'>
              <check card='?' diag='3|0|XTTE0570|updatedInstanceXML'>
               <applyT mode='Q{}recalculate' bSlot='4'>
                <varRef role='select' name='Q{}instanceXML' slot='4'/>
                <withParam name='Q{}instance-id' as='xs:string'>
-                <varRef line='4547' name='Q{}instance-id' slot='3'/>
+                <varRef line='4553' name='Q{}instance-id' slot='3'/>
                </withParam>
                <withParam name='Q{}updated-nodes' flags='t' as='node()'>
-                <varRef line='4548' name='Q{}updatedNode' slot='6'/>
+                <varRef line='4554' name='Q{}updatedNode' slot='6'/>
                </withParam>
                <withParam name='Q{}updated-values' flags='t' as='xs:string'>
-                <varRef line='4549' name='Q{}new-value' slot='7'/>
+                <varRef line='4555' name='Q{}new-value' slot='7'/>
                </withParam>
               </applyT>
              </check>
@@ -9940,18 +9957,18 @@
            </let>
           </let>
           <true/>
-          <varRef line='4553' name='Q{}instanceXML' slot='4'/>
+          <varRef line='4559' name='Q{}instanceXML' slot='4'/>
          </choose>
-         <forEach line='4560'>
+         <forEach line='4566'>
           <varRef name='Q{}actions' slot='1'/>
-          <let line='4561' var='Q{}action-map' as='map(*)' slot='8' eval='16'>
+          <let line='4567' var='Q{}action-map' as='map(*)' slot='8' eval='16'>
            <dot type='map(*)'/>
-           <choose line='4564'>
+           <choose line='4570'>
             <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}contains' type='xs:boolean'>
              <varRef name='Q{}action-map' slot='8'/>
              <str val='@event'/>
             </ifCall>
-            <choose line='4565'>
+            <choose line='4571'>
              <gc op='=' card='N:1' comp='GAC|http://www.w3.org/2005/xpath-functions/collation/codepoint'>
               <data>
                <ifCall name='Q{http://www.w3.org/2005/xpath-functions/map}get' type='item()*'>
@@ -9961,12 +9978,12 @@
               </data>
               <str val='DOMActivate'/>
              </gc>
-             <callT line='4566' name='Q{}applyActions' bSlot='5' flags='t'>
+             <callT line='4572' name='Q{}applyActions' bSlot='5' flags='t'>
               <withParam name='Q{}action-map' flags='t' as='item()'>
-               <varRef line='4567' name='Q{}action-map' slot='8'/>
+               <varRef line='4573' name='Q{}action-map' slot='8'/>
               </withParam>
               <withParam name='Q{}instanceXML' flags='t' as='element()?'>
-               <varRef line='4568' name='Q{}updatedInstanceXML' slot='5'/>
+               <varRef line='4574' name='Q{}updatedInstanceXML' slot='5'/>
               </withParam>
              </callT>
             </choose>
@@ -11497,8 +11514,20 @@
                 </map>
                </ifCall>
               </treat>
-              <sequence line='270'>
-               <choose>
+              <sequence line='264'>
+               <message>
+                <sequence role='select'>
+                 <valueOf>
+                  <str val='[xformsjs-main] CalculationBindings = '/>
+                 </valueOf>
+                 <fn name='serialize'>
+                  <varRef name='Q{}CalculationBindings' slot='18'/>
+                 </fn>
+                </sequence>
+                <str role='terminate' val='no'/>
+                <str role='error' val='Q{http://www.w3.org/2005/xqt-errors}XTMM9000'/>
+               </message>
+               <choose line='270'>
                 <gc op='=' card='M:N' comp='GAC|http://www.w3.org/2005/xpath-functions/collation/codepoint'>
                  <data>
                   <slash simple='2'>
@@ -11567,7 +11596,7 @@
                    <ifCall name='Q{http://saxonica.com/ns/interactiveXSLT}page' type='document-node()?'/>
                    <axis name='descendant' nodeTest='element(Q{}head)' jsTest='var q=SaxonJS.U.nameOfNode(item); return item.nodeType===1 &amp;&amp; q.uri===&#39;&#39;&amp;&amp;q.local===&#39;head&#39;;'/>
                   </slash>
-                  <resultDoc line='295' global='#&#xD;&#xA;#Fri Mar 13 14:41:49 GMT 2020&#xD;&#xA;indent=no&#xD;&#xA;doctype-system=http\://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&#xD;&#xA;encoding=utf-8&#xD;&#xA;doctype-public=-//W3C//DTD XHTML 1.0 Transitional//EN&#xD;&#xA;omit-xml-declaration=no&#xD;&#xA;method=html&#xD;&#xA;' local='#&#xD;&#xA;#Fri Mar 13 14:41:49 GMT 2020&#xD;&#xA;'>
+                  <resultDoc line='295' global='#&#xD;&#xA;#Fri Mar 13 15:05:29 GMT 2020&#xD;&#xA;indent=no&#xD;&#xA;doctype-system=http\://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&#xD;&#xA;encoding=utf-8&#xD;&#xA;doctype-public=-//W3C//DTD XHTML 1.0 Transitional//EN&#xD;&#xA;omit-xml-declaration=no&#xD;&#xA;method=html&#xD;&#xA;' local='#&#xD;&#xA;#Fri Mar 13 15:05:29 GMT 2020&#xD;&#xA;'>
                    <str role='href' val='?.'/>
                    <elem role='content' line='296' name='script' nsuri='' namespaces='xd rdf xhtml js sfp in fn map array ev'>
                     <sequence>
@@ -11766,7 +11795,7 @@
                    </arrayBlock>
                   </ifCall>
                  </forEach>
-                 <resultDoc line='619' global='#&#xD;&#xA;#Fri Mar 13 14:41:49 GMT 2020&#xD;&#xA;indent=no&#xD;&#xA;doctype-system=http\://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&#xD;&#xA;encoding=utf-8&#xD;&#xA;doctype-public=-//W3C//DTD XHTML 1.0 Transitional//EN&#xD;&#xA;omit-xml-declaration=no&#xD;&#xA;method=html&#xD;&#xA;' local='#&#xD;&#xA;#Fri Mar 13 14:41:49 GMT 2020&#xD;&#xA;method={http\://saxonica.com/ns/interactiveXSLT}replace-content&#xD;&#xA;'>
+                 <resultDoc line='619' global='#&#xD;&#xA;#Fri Mar 13 15:05:29 GMT 2020&#xD;&#xA;indent=no&#xD;&#xA;doctype-system=http\://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&#xD;&#xA;encoding=utf-8&#xD;&#xA;doctype-public=-//W3C//DTD XHTML 1.0 Transitional//EN&#xD;&#xA;omit-xml-declaration=no&#xD;&#xA;method=html&#xD;&#xA;' local='#&#xD;&#xA;#Fri Mar 13 15:05:29 GMT 2020&#xD;&#xA;method={http\://saxonica.com/ns/interactiveXSLT}replace-content&#xD;&#xA;'>
                   <fn role='href' name='concat'>
                    <str val='#'/>
                    <varRef name='Q{}xFormsId' slot='4'/>
@@ -13116,4 +13145,4 @@
  </output>
  <decimalFormat/>
 </package>
-<?Σ 238b9aac?>
+<?Σ 775d27e1?>
