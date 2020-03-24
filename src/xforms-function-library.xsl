@@ -50,6 +50,7 @@
         
         <xsl:variable name="input2" as="xs:string" select="string-join($parts)"/>
         
+        <!-- unnecessary? MD 2020-03-24 -->
         <xsl:variable name="parts2" as="xs:string*">
             <!-- 
                 Strip out start of XPath from root of instance "document" 
@@ -66,7 +67,7 @@
             </xsl:analyze-string>
         </xsl:variable>
         
-        <xsl:sequence select="string-join($parts2)" />
+        <xsl:sequence select="string-join($parts)" />
     </xsl:function>
     
     <xsl:function name="xforms:resolve-index" as="xs:string">

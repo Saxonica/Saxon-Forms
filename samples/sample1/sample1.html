@@ -2,21 +2,21 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
    <head>
-      <title>Booking Form</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+         <title>Booking Form</title>
       <link rel="stylesheet" href="style.css" type="text/css" />
-      <script src="Saxon-JS-1.0.0/SaxonJS.js"></script>
+      <script src="../../Saxon-JS-1.1.0/SaxonJS.js"></script>
 
       <script>
       window.onload = function() {
         SaxonJS.transform({
-           "stylesheetLocation":"saxon-xforms.sef.xml",
+           "stylesheetLocation":"../../sef/saxon-xforms.sef.xml",
            "sourceLocation":"sampleBookingForm.xml",
-           "stylesheetParams": {"xforms-file":"sampleBookingForm.xml"}
            })
       }     
       </script>
       <script src="saxonRequests.js"></script>
-      <script type="application/json" id="xforms-jinstance"></script>
+<!--      <script type="application/json" id="xforms-jinstance"></script>-->
    </head>
 
    <body>

@@ -40,7 +40,7 @@
         
         <!-- <xf:bind nodeset="EventTime" type="xf:time"/>-->
 <!--        <xf:submission ref="submit_model_records" action="http://dunn.local/Saxon-Forms/samples/sample3/php/test.php" />-->
-        <xf:submission ref="submit_model_records" action="php/test.php" />
+        <xf:submission id="submit_model_records" ref="instance('event')" mediatype="application/xml" resource="php/test.php" method="GET"/>
     </xf:model>
     
     
@@ -207,7 +207,7 @@
     </xf:input>
     <br/>-->
     
-    <xf:submit id="submit_model_records">
+    <xf:submit submission="submit_model_records">
         <xf:label>Submit Booking</xf:label>
     </xf:submit>
     
