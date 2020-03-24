@@ -17,7 +17,7 @@
     exclude-result-prefixes="xs math xforms"
     extension-element-prefixes="ixsl" version="3.0">
     
-    <xsl:variable name="xform-functions" select="'instance', 'index', 'avg', 'foo', 'current-date', random"/>
+    <xsl:variable name="xform-functions" select="'instance', 'index', 'avg', 'foo', 'current-date', 'random'"/>
     
     <xsl:function name="xforms:impose" as="xs:string">
         <xsl:param name="input" as="xs:string" />
@@ -50,6 +50,7 @@
         
         <xsl:variable name="input2" as="xs:string" select="string-join($parts)"/>
         
+        <!-- unnecessary? MD 2020-03-24 -->
         <xsl:variable name="parts2" as="xs:string*">
             <!-- 
                 Strip out start of XPath from root of instance "document" 
@@ -66,7 +67,7 @@
             </xsl:analyze-string>
         </xsl:variable>
         
-        <xsl:sequence select="string-join($parts2)" />
+        <xsl:sequence select="string-join($parts)" />
     </xsl:function>
     
     <xsl:function name="xforms:resolve-index" as="xs:string">

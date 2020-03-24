@@ -74,7 +74,7 @@
     
     <xsl:param name="xforms-file" as="xs:string?"/>
     
-    <xsl:variable name="xforms-doc" as="document-node()?" select="if (exists($xforms-file) and fn:doc-available($xforms-file)) then fn:doc($xforms-file) else ()"/>
+    <xsl:variable name="xforms-doc" as="document-node()?" select="if (exists($xforms-file) and fn:doc-available($xforms-file)) then fn:doc($xforms-file) else (if (namespace-uri(/*) = 'http://www.w3.org/2002/xforms') then (/) else ())"/>
 
     <xsl:variable static="yes" name="debugMode" select="true()"/>
     <xsl:variable static="yes" name="debugTiming" select="false()"/>
@@ -108,14 +108,14 @@
             <xd:p>Sets instances in Javascript variables and as a map.</xd:p>
             <xd:p>Registers bindings and submissions as maps.</xd:p>
         </xd:desc>
-        <xd:param name="xforms-doc">Complete XForms document.</xd:param>
-        <xd:param name="xforms-file">File path to XForms document.</xd:param>
+<!--        <xd:param name="xforms-doc-local">Complete XForms document.</xd:param>-->
+<!--        <xd:param name="xforms-file-local">File path to XForms document.</xd:param>-->
         <xd:param name="instance-docs">All instances in the XForms document. (When completely refreshing the form from JS set parameters)</xd:param>
         <xd:param name="xFormsId">The @id of an HTML div on the page into which the XForm will be rendered.</xd:param>
     </xd:doc>
     <xsl:template name="xformsjs-main">
-        <xsl:param name="xforms-doc" as="document-node()?" select="()"/>
-        <xsl:param name="xforms-file" as="xs:string?"/>
+<!--        <xsl:param name="xforms-doc-local" as="document-node()?" select="()"/>-->
+<!--        <xsl:param name="xforms-file-local" as="xs:string?"/>-->
         <xsl:param name="instance-docs" as="map(*)?"/>
         
         <xsl:param name="xFormsId" select="$xform-html-id" as="xs:string"/>
@@ -123,15 +123,19 @@
         <xsl:message use-when="$debugMode">[xformsjs-main] START</xsl:message>
         <xsl:sequence select="sfp:logInfo('[xformsjs-main] START')"/>
        
-        <xsl:variable name="xforms-doci" select="if (empty($xforms-doc)) then doc($xforms-file) else $xforms-doc" as="document-node()?"/>
+<!--        <xsl:variable name="xforms-doci" select="if (empty($xforms-doc)) then fn:doc($xforms-file) else $xforms-doc" as="document-node()?"/>-->
         
-        <xsl:variable name="xform" as="element(xforms:xform)" select="xforms:addNamespaceDeclarations($xforms-doci/*)"/>        
+        <xsl:if test="empty($xforms-doc)">
+            <xsl:sequence select="sfp:logFatal('[xformsjs-main] Unable to load XForm!')"/>
+        </xsl:if>
+        
+        <xsl:variable name="xform" as="element(xforms:xform)" select="xforms:addNamespaceDeclarations($xforms-doc/*)"/>        
 
         <!-- all xforms:instance elements in the XForm -->
         <xsl:variable name="xforms-instances" as="map(xs:string, element())">
             <xsl:choose>
                 <xsl:when test="empty($instance-docs)">
-                    <xsl:variable name="instances" as="element(xforms:instance)*" select="$xforms-doci/xforms:xform/xforms:model/xforms:instance"/>
+                    <xsl:variable name="instances" as="element(xforms:instance)*" select="$xforms-doc/xforms:xform/xforms:model/xforms:instance"/>
                     <xsl:if test="count($instances[not(@id)]) gt 1">
                         <xsl:variable name="message" as="xs:string" select="'[xformsjs-main] FATAL ERROR: The XForm contains more than one instance with no ID. At most one instance may have no ID.'"/>
                         <xsl:message terminate="yes" select="$message"/>
@@ -165,11 +169,11 @@
             <xsl:choose>
                 <xsl:when test="empty($instance-docs)">
                     <xsl:choose>
-                        <xsl:when test="$xforms-doci/xforms:xform/xforms:model/xforms:instance[not(@id)]">
-                            <xsl:sequence select="$xforms-doci/xforms:xform/xforms:model/xforms:instance[not(@id)][1]/*"/>
+                        <xsl:when test="$xforms-doc/xforms:xform/xforms:model/xforms:instance[not(@id)]">
+                            <xsl:sequence select="$xforms-doc/xforms:xform/xforms:model/xforms:instance[not(@id)][1]/*"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:sequence select="$xforms-doci/xforms:xform/xforms:model/xforms:instance[1]/*"/>
+                            <xsl:sequence select="$xforms-doc/xforms:xform/xforms:model/xforms:instance[1]/*"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:when>
@@ -183,7 +187,7 @@
         <!-- register all bindings in model as a map -->
         <xsl:variable name="bindings" as="map(xs:string, node())">
             <xsl:map>
-                <xsl:for-each select="$xforms-doci/xforms:xform/xforms:model/xforms:bind">
+                <xsl:for-each select="$xforms-doc/xforms:xform/xforms:model/xforms:bind">
                     <!-- [exists(@type)] -->
                     <xsl:map-entry
                         key="xs:string(
@@ -199,7 +203,7 @@
         <!-- $orig-instance-doc (for an xforms-reset event?) -->
         <xsl:variable name="orig-instance-doc">
             <wrapper>
-                <xsl:sequence select="$xforms-doci/xforms:xform/xforms:model/xforms:instance/*"/>
+                <xsl:sequence select="$xforms-doc/xforms:xform/xforms:model/xforms:instance/*"/>
             </wrapper>
         </xsl:variable>
         
@@ -243,7 +247,7 @@
         <xsl:choose>
             <!-- when Javascript section already exists... (i.e. page is being re-rendered? REDUNDANT?) -->
             <xsl:when test="ixsl:page()//script/@id = $xforms-cache-id">
-                <xsl:sequence select="js:setXFormsDoc($xforms-doci)"/>
+                <xsl:sequence select="js:setXFormsDoc($xforms-doc)"/>
                 <xsl:sequence select="js:setXForm($xform)"/>
                 <xsl:sequence select="js:setXFormsID($xFormsId)"/>
                 <xsl:sequence select="js:setRelevantMap($RelevantBindings)" />
@@ -558,7 +562,7 @@
         <!-- register submissions in a map -->
         <xsl:variable name="submissions" as="map(xs:string, map(*))">
             <xsl:map>
-                <xsl:for-each select="$xforms-doci/xforms:xform/xforms:model/xforms:submission">
+                <xsl:for-each select="$xforms-doc/xforms:xform/xforms:model/xforms:submission">
                     <xsl:variable name="map-key" as="xs:string" select="
                         if (@id) then xs:string(@id)
                         else $default-submission-id
@@ -590,7 +594,7 @@
         
         <!-- Write HTML to placeholder <div id="xForm"> -->
         <xsl:result-document href="#{$xFormsId}" method="ixsl:replace-content">
-            <xsl:apply-templates select="$xforms-doci/xforms:xform">
+            <xsl:apply-templates select="$xforms-doc/xforms:xform">
                 <xsl:with-param name="instances" select="$xforms-instances" as="map(xs:string, element())" tunnel="yes"/>
                 <xsl:with-param name="bindings" select="$bindings" as="map(xs:string, node())" tunnel="yes"/>
                 <xsl:with-param name="submissions" select="$submissions" as="map(xs:string, map(*))" tunnel="yes"/>
@@ -1069,7 +1073,7 @@
     </xd:doc>
     <xsl:template match="/">
         <xsl:call-template name="xformsjs-main" >
-            <xsl:with-param name="xforms-doc" select="." />
+<!--            <xsl:with-param name="xforms-doc-local" select="." />-->
             <xsl:with-param name="xFormsId" select="$xform-html-id" />
         </xsl:call-template>
     </xsl:template>
@@ -3612,7 +3616,7 @@
         </xsl:variable>
         
         <xsl:call-template name="xformsjs-main">
-            <xsl:with-param name="xforms-file" select="$xforms-file"/>
+<!--            <xsl:with-param name="xforms-file-local" select="$xforms-file"/>-->
             <xsl:with-param name="instance-docs" select="$instanceDocs"/>
         </xsl:call-template>
                 
@@ -3712,6 +3716,8 @@
                 <xsl:with-param name="instance-id" select="$instance-id"/>
             </xsl:apply-templates>
         </xsl:variable>-->
+        
+        <xsl:sequence select="sfp:logInfo(concat('[xforms-value-changed] Evaluating data ref: ', $refi))"/>
         
         <!-- MD 2020-02-22 -->
         <xsl:variable name="instanceXML" as="element()" select="xforms:instance($instance-id)"/>

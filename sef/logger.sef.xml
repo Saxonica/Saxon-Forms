@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<package xmlns='http://ns.saxonica.com/xslt/export' xmlns:fn='http://www.w3.org/2005/xpath-functions' xmlns:xs='http://www.w3.org/2001/XMLSchema' xmlns:vv='http://saxon.sf.net/generated-variable' xmlns:java-type='http://saxon.sf.net/java-type' when='2020-03-14T10:24:10.083Z' id='0' name='http://saxon.sf.net/packages/logger.xsl' version='30' declaredModes='1' packageVersion='1' saxonVersion='9.9.1.5' target='JS' targetVersion='1' relocatable='true' implicit='false'>
+<package xmlns='http://ns.saxonica.com/xslt/export' xmlns:fn='http://www.w3.org/2005/xpath-functions' xmlns:xs='http://www.w3.org/2001/XMLSchema' xmlns:vv='http://saxon.sf.net/generated-variable' xmlns:java-type='http://saxon.sf.net/java-type' when='2020-03-24T21:48:02.667Z' id='0' name='http://saxon.sf.net/packages/logger.xsl' version='30' declaredModes='1' packageVersion='1' saxonVersion='9.9.1.5' target='JS' targetVersion='1' relocatable='true' implicit='false'>
  <co id='0' vis='PUBLIC' binds='1'>
   <globalVariable name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL' type='xs:integer' line='73' module='logger.xsl' visibility='PUBLIC' jsAcceptor='return SaxonJS.U.Atomic.integer.cast(val);' jsCardCheck='function c(n) {return n==1;};'>
    <gVarRef ns='xsl=~ xs=~ xd=http://www.oxygenxml.com/ns/doc/xsl sfp=http://saxon.sf.net/ns/packages' line='73' name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_NOTSET' bSlot='0'/>
@@ -384,4 +384,4 @@
  </output>
  <decimalFormat/>
 </package>
-<?Σ 9cdcacbb?>
+<?Σ 9cdc0c8b?>
