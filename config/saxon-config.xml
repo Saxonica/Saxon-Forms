@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration xmlns="http://saxon.sf.net/ns/configuration" edition="EE" label="Configuration options for compiling Saxon-Forms">
+    
+    <xsltPackages> 
+        <package name="http://saxon.sf.net/packages/logger.xsl" version="1.0" sourceLocation="../src/packages/logger.xsl" exportLocation="../sef/logger.sef.xml"/> 
+    </xsltPackages> 
+    
+</configuration>

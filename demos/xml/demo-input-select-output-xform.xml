@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xf:xform xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xs="http://www.w3.org/2001/XMLSchema"  >
+<xf:xform 
+    xmlns:xf="http://www.w3.org/2002/xforms" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    >
  
     <xf:model>
         <xf:instance id="hello">
@@ -12,11 +16,12 @@
                 <demo:FedTodayStatement></demo:FedTodayStatement>
             </demo:data>
         </xf:instance>
+        
         <xf:bind nodeset="instance('hello')/demo:FeedingTime" type="xs:time" />
         <xf:bind nodeset="instance('hello')/demo:FedToday" type="xs:boolean" />
         <xf:bind nodeset="instance('hello')/demo:FedTodayStatement" calculate="
             if ( 
-            xs:boolean( instance('hello')/demo:FedToday ) = false() 
+              instance('hello')/demo:FedToday  = '' 
              )
             then 'not'
             else ''
@@ -72,6 +77,13 @@
     <xf:output value="concat('I feed my ', instance('hello')/demo:PetType, ' at ', instance('hello')/demo:FeedingTime)" class="block demo-output"/>
     
     <xf:output value="concat('My ', instance('hello')/demo:PetType, ' has ', instance('hello')/demo:FedTodayStatement , ' been fed today.')" class="block demo-output"/>
+    
+    <xf:trigger>
+        <xf:label>Demo message</xf:label>
+        <xf:action ev:event="DOMActivate">
+            <xf:message level="ephemeral">Here is your message</xf:message>
+        </xf:action>
+    </xf:trigger>
     
         
     

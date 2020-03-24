@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns='http://ns.saxonica.com/xslt/export' xmlns:fn='http://www.w3.org/2005/xpath-functions' xmlns:xs='http://www.w3.org/2001/XMLSchema' xmlns:vv='http://saxon.sf.net/generated-variable' xmlns:java-type='http://saxon.sf.net/java-type' when='2020-03-14T10:24:10.083Z' id='0' name='http://saxon.sf.net/packages/logger.xsl' version='30' declaredModes='1' packageVersion='1' saxonVersion='9.9.1.5' target='JS' targetVersion='1' relocatable='true' implicit='false'>
+ <co id='0' vis='PUBLIC' binds='1'>
+  <globalVariable name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL' type='xs:integer' line='73' module='logger.xsl' visibility='PUBLIC' jsAcceptor='return SaxonJS.U.Atomic.integer.cast(val);' jsCardCheck='function c(n) {return n==1;};'>
+   <gVarRef ns='xsl=~ xs=~ xd=http://www.oxygenxml.com/ns/doc/xsl sfp=http://saxon.sf.net/ns/packages' line='73' name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_NOTSET' bSlot='0'/>
+  </globalVariable>
+ </co>
+ <co id='2' vis='PUBLIC' binds='3 4'>
+  <function name='Q{http://saxon.sf.net/ns/packages}logSevere' line='227' module='logger.xsl' eval='7' flags='pU' as='empty-sequence()' slots='1'>
+   <arg name='Q{}message' as='xs:string'/>
+   <tailCallLoop role='body' ns='xsl=~ xs=~ xd=http://www.oxygenxml.com/ns/doc/xsl sfp=http://saxon.sf.net/ns/packages' line='229'>
+    <ufCall name='Q{http://saxon.sf.net/ns/packages}log' tailCall='foreign' bSlot='0' eval='6 6'>
+     <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_SEVERE' bSlot='1'/>
+     <varRef name='Q{}message' slot='0'/>
+    </ufCall>
+   </tailCallLoop>
+  </function>
+ </co>
+ <co id='5' vis='PRIVATE' binds='0 1 0 6'>
+  <template name='Q{http://saxon.sf.net/ns/packages}logWarning' flags='os' line='119' module='logger.xsl' slots='1'>
+   <sequence role='body' ns='xsl=~ xs=~ xd=http://www.oxygenxml.com/ns/doc/xsl sfp=http://saxon.sf.net/ns/packages' line='120'>
+    <param name='Q{}message' slot='0' flags='r' as='xs:string'>
+     <treat role='conversion' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='8|0|XTTE0590|message'>
+      <check card='1' diag='8|0|XTTE0590|message'>
+       <cvUntyped to='xs:string' diag='8|0|XTTE0590|message'>
+        <data>
+         <supplied slot='0'/>
+        </data>
+       </cvUntyped>
+      </check>
+     </treat>
+    </param>
+    <choose line='121'>
+     <vc op='eq' onEmpty='0' comp='CAVC'>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL' bSlot='0'/>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_NOTSET' bSlot='1'/>
+     </vc>
+     <message line='122'>
+      <valueOf role='select'>
+       <str val='WARNING: sfp:LOGLEVEL not set.'/>
+      </valueOf>
+      <str role='terminate' val='no'/>
+      <str role='error' val='Q{http://www.w3.org/2005/xqt-errors}XTMM9000'/>
+     </message>
+    </choose>
+    <choose line='124'>
+     <vc op='ge' onEmpty='0' comp='CAVC'>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL' bSlot='2'/>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_WARNING' bSlot='3'/>
+     </vc>
+     <message line='126'>
+      <fn role='select' name='concat'>
+       <str val='*** WARNING *** '/>
+       <varRef name='Q{}message' slot='0'/>
+      </fn>
+      <str role='terminate' val='no'/>
+      <str role='error' val='Q{http://www.w3.org/2005/xqt-errors}XTMM9000'/>
+     </message>
+    </choose>
+   </sequence>
+  </template>
+ </co>
+ <co id='1' vis='PUBLIC' binds=''>
+  <globalVariable name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_NOTSET' type='xs:integer' line='71' module='logger.xsl' visibility='PUBLIC' jsAcceptor='return SaxonJS.U.Atomic.integer.cast(val);' jsCardCheck='function c(n) {return n==1;};'>
+   <int val='100'/>
+  </globalVariable>
+ </co>
+ <co id='4' vis='PUBLIC' binds=''>
+  <globalVariable name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_SEVERE' type='xs:integer' line='67' module='logger.xsl' visibility='PUBLIC' jsAcceptor='return SaxonJS.U.Atomic.integer.cast(val);' jsCardCheck='function c(n) {return n==1;};'>
+   <int val='20'/>
+  </globalVariable>
+ </co>
+ <co id='7' vis='PUBLIC' binds=''>
+  <globalVariable name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_INFO' type='xs:integer' line='69' module='logger.xsl' visibility='PUBLIC' jsAcceptor='return SaxonJS.U.Atomic.integer.cast(val);' jsCardCheck='function c(n) {return n==1;};'>
+   <int val='40'/>
+  </globalVariable>
+ </co>
+ <co id='8' vis='PRIVATE' binds='0 1 0 7'>
+  <template name='Q{http://saxon.sf.net/ns/packages}logInfo' flags='os' line='100' module='logger.xsl' slots='1'>
+   <sequence role='body' ns='xsl=~ xs=~ xd=http://www.oxygenxml.com/ns/doc/xsl sfp=http://saxon.sf.net/ns/packages' line='101'>
+    <param name='Q{}message' slot='0' flags='r' as='xs:string'>
+     <treat role='conversion' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='8|0|XTTE0590|message'>
+      <check card='1' diag='8|0|XTTE0590|message'>
+       <cvUntyped to='xs:string' diag='8|0|XTTE0590|message'>
+        <data>
+         <supplied slot='0'/>
+        </data>
+       </cvUntyped>
+      </check>
+     </treat>
+    </param>
+    <choose line='102'>
+     <vc op='eq' onEmpty='0' comp='CAVC'>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL' bSlot='0'/>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_NOTSET' bSlot='1'/>
+     </vc>
+     <message line='103'>
+      <valueOf role='select'>
+       <str val='WARNING: sfp:LOGLEVEL not set.'/>
+      </valueOf>
+      <str role='terminate' val='no'/>
+      <str role='error' val='Q{http://www.w3.org/2005/xqt-errors}XTMM9000'/>
+     </message>
+    </choose>
+    <choose line='105'>
+     <vc op='ge' onEmpty='0' comp='CAVC'>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL' bSlot='2'/>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_INFO' bSlot='3'/>
+     </vc>
+     <message line='107'>
+      <fn role='select' name='concat'>
+       <str val='*** INFO *** '/>
+       <varRef name='Q{}message' slot='0'/>
+      </fn>
+      <str role='terminate' val='no'/>
+      <str role='error' val='Q{http://www.w3.org/2005/xqt-errors}XTMM9000'/>
+     </message>
+    </choose>
+   </sequence>
+  </template>
+ </co>
+ <co id='9' vis='PUBLIC' binds=''>
+  <globalVariable name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_ALL' type='xs:integer' line='70' module='logger.xsl' visibility='PUBLIC' jsAcceptor='return SaxonJS.U.Atomic.integer.cast(val);' jsCardCheck='function c(n) {return n==1;};'>
+   <int val='50'/>
+  </globalVariable>
+ </co>
+ <co id='10' vis='PUBLIC' binds=''>
+  <globalVariable name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_FATAL' type='xs:integer' line='66' module='logger.xsl' visibility='PUBLIC' jsAcceptor='return SaxonJS.U.Atomic.integer.cast(val);' jsCardCheck='function c(n) {return n==1;};'>
+   <int val='10'/>
+  </globalVariable>
+ </co>
+ <co id='11' vis='PUBLIC' binds=''>
+  <globalVariable name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_OFF' type='xs:integer' line='65' module='logger.xsl' visibility='PUBLIC' jsAcceptor='return SaxonJS.U.Atomic.integer.cast(val);' jsCardCheck='function c(n) {return n==1;};'>
+   <int val='0'/>
+  </globalVariable>
+ </co>
+ <co id='12' vis='PRIVATE' binds='0 1 0 10'>
+  <template name='Q{http://saxon.sf.net/ns/packages}logFatal' flags='os' line='158' module='logger.xsl' slots='1'>
+   <sequence role='body' ns='xsl=~ xs=~ xd=http://www.oxygenxml.com/ns/doc/xsl sfp=http://saxon.sf.net/ns/packages' line='159'>
+    <param name='Q{}message' slot='0' flags='r' as='xs:string'>
+     <treat role='conversion' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='8|0|XTTE0590|message'>
+      <check card='1' diag='8|0|XTTE0590|message'>
+       <cvUntyped to='xs:string' diag='8|0|XTTE0590|message'>
+        <data>
+         <supplied slot='0'/>
+        </data>
+       </cvUntyped>
+      </check>
+     </treat>
+    </param>
+    <choose line='160'>
+     <vc op='eq' onEmpty='0' comp='CAVC'>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL' bSlot='0'/>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_NOTSET' bSlot='1'/>
+     </vc>
+     <message line='161'>
+      <valueOf role='select'>
+       <str val='WARNING: sfp:LOGLEVEL not set.'/>
+      </valueOf>
+      <str role='terminate' val='no'/>
+      <str role='error' val='Q{http://www.w3.org/2005/xqt-errors}XTMM9000'/>
+     </message>
+    </choose>
+    <choose line='163'>
+     <vc op='ge' onEmpty='0' comp='CAVC'>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL' bSlot='2'/>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_FATAL' bSlot='3'/>
+     </vc>
+     <message line='165'>
+      <fn role='select' name='concat'>
+       <str val='*** FATAL *** '/>
+       <varRef name='Q{}message' slot='0'/>
+      </fn>
+      <str role='terminate' val='yes'/>
+      <str role='error' val='Q{http://www.w3.org/2005/xqt-errors}XTMM9000'/>
+     </message>
+    </choose>
+   </sequence>
+  </template>
+ </co>
+ <co id='13' vis='PUBLIC' binds='3 9'>
+  <function name='Q{http://saxon.sf.net/ns/packages}logAll' line='260' module='logger.xsl' eval='7' flags='pU' as='empty-sequence()' slots='1'>
+   <arg name='Q{}message' as='xs:string'/>
+   <tailCallLoop role='body' ns='xsl=~ xs=~ xd=http://www.oxygenxml.com/ns/doc/xsl sfp=http://saxon.sf.net/ns/packages' line='262'>
+    <ufCall name='Q{http://saxon.sf.net/ns/packages}log' tailCall='foreign' bSlot='0' eval='6 6'>
+     <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_ALL' bSlot='1'/>
+     <varRef name='Q{}message' slot='0'/>
+    </ufCall>
+   </tailCallLoop>
+  </function>
+ </co>
+ <co id='3' vis='PRIVATE' binds='10 12 4 14 6 5 7 8 15'>
+  <function name='Q{http://saxon.sf.net/ns/packages}log' line='178' module='logger.xsl' eval='7' flags='pU' as='empty-sequence()' slots='2'>
+   <arg name='Q{}loglevel' as='xs:integer'/>
+   <arg name='Q{}message' as='xs:string'/>
+   <choose role='body' ns='xsl=~ xs=~ xd=http://www.oxygenxml.com/ns/doc/xsl sfp=http://saxon.sf.net/ns/packages' line='182'>
+    <vc op='le' onEmpty='0' comp='CAVC'>
+     <varRef name='Q{}loglevel' slot='0'/>
+     <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_FATAL' bSlot='0'/>
+    </vc>
+    <check line='183' card='°' diag='5|0|XTTE0780|sfp:log#2'>
+     <callT name='Q{http://saxon.sf.net/ns/packages}logFatal' bSlot='1'>
+      <withParam name='Q{}message' flags='c' as='xs:string'>
+       <varRef line='184' name='Q{}message' slot='1'/>
+      </withParam>
+     </callT>
+    </check>
+    <vc line='187' op='le' onEmpty='0' comp='CAVC'>
+     <varRef name='Q{}loglevel' slot='0'/>
+     <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_SEVERE' bSlot='2'/>
+    </vc>
+    <check line='188' card='°' diag='5|0|XTTE0780|sfp:log#2'>
+     <callT name='Q{http://saxon.sf.net/ns/packages}logSevere' bSlot='3'>
+      <withParam name='Q{}message' flags='c' as='xs:string'>
+       <varRef line='189' name='Q{}message' slot='1'/>
+      </withParam>
+     </callT>
+    </check>
+    <vc line='192' op='le' onEmpty='0' comp='CAVC'>
+     <varRef name='Q{}loglevel' slot='0'/>
+     <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_WARNING' bSlot='4'/>
+    </vc>
+    <check line='193' card='°' diag='5|0|XTTE0780|sfp:log#2'>
+     <callT name='Q{http://saxon.sf.net/ns/packages}logWarning' bSlot='5'>
+      <withParam name='Q{}message' flags='c' as='xs:string'>
+       <varRef line='194' name='Q{}message' slot='1'/>
+      </withParam>
+     </callT>
+    </check>
+    <vc line='197' op='le' onEmpty='0' comp='CAVC'>
+     <varRef name='Q{}loglevel' slot='0'/>
+     <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_INFO' bSlot='6'/>
+    </vc>
+    <check line='198' card='°' diag='5|0|XTTE0780|sfp:log#2'>
+     <callT name='Q{http://saxon.sf.net/ns/packages}logInfo' bSlot='7'>
+      <withParam name='Q{}message' flags='c' as='xs:string'>
+       <varRef line='199' name='Q{}message' slot='1'/>
+      </withParam>
+     </callT>
+    </check>
+    <true/>
+    <check line='203' card='°' diag='5|0|XTTE0780|sfp:log#2'>
+     <callT name='Q{http://saxon.sf.net/ns/packages}logAll' bSlot='8'>
+      <withParam name='Q{}message' flags='c' as='xs:string'>
+       <varRef line='204' name='Q{}message' slot='1'/>
+      </withParam>
+     </callT>
+    </check>
+   </choose>
+  </function>
+ </co>
+ <co id='16' vis='PUBLIC' binds='3 6'>
+  <function name='Q{http://saxon.sf.net/ns/packages}logWarning' line='238' module='logger.xsl' eval='7' flags='pU' as='empty-sequence()' slots='1'>
+   <arg name='Q{}message' as='xs:string'/>
+   <tailCallLoop role='body' ns='xsl=~ xs=~ xd=http://www.oxygenxml.com/ns/doc/xsl sfp=http://saxon.sf.net/ns/packages' line='240'>
+    <ufCall name='Q{http://saxon.sf.net/ns/packages}log' tailCall='foreign' bSlot='0' eval='6 6'>
+     <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_WARNING' bSlot='1'/>
+     <varRef name='Q{}message' slot='0'/>
+    </ufCall>
+   </tailCallLoop>
+  </function>
+ </co>
+ <co id='14' vis='PRIVATE' binds='0 1 0 4'>
+  <template name='Q{http://saxon.sf.net/ns/packages}logSevere' flags='os' line='138' module='logger.xsl' slots='1'>
+   <sequence role='body' ns='xsl=~ xs=~ xd=http://www.oxygenxml.com/ns/doc/xsl sfp=http://saxon.sf.net/ns/packages' line='139'>
+    <param name='Q{}message' slot='0' flags='r' as='xs:string'>
+     <treat role='conversion' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='8|0|XTTE0590|message'>
+      <check card='1' diag='8|0|XTTE0590|message'>
+       <cvUntyped to='xs:string' diag='8|0|XTTE0590|message'>
+        <data>
+         <supplied slot='0'/>
+        </data>
+       </cvUntyped>
+      </check>
+     </treat>
+    </param>
+    <choose line='140'>
+     <vc op='eq' onEmpty='0' comp='CAVC'>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL' bSlot='0'/>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_NOTSET' bSlot='1'/>
+     </vc>
+     <message line='141'>
+      <valueOf role='select'>
+       <str val='WARNING: sfp:LOGLEVEL not set.'/>
+      </valueOf>
+      <str role='terminate' val='no'/>
+      <str role='error' val='Q{http://www.w3.org/2005/xqt-errors}XTMM9000'/>
+     </message>
+    </choose>
+    <choose line='143'>
+     <vc op='ge' onEmpty='0' comp='CAVC'>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL' bSlot='2'/>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_SEVERE' bSlot='3'/>
+     </vc>
+     <message line='145'>
+      <fn role='select' name='concat'>
+       <str val='*** SEVERE *** '/>
+       <varRef name='Q{}message' slot='0'/>
+      </fn>
+      <str role='terminate' val='no'/>
+      <str role='error' val='Q{http://www.w3.org/2005/xqt-errors}XTMM9000'/>
+     </message>
+    </choose>
+   </sequence>
+  </template>
+ </co>
+ <co id='6' vis='PUBLIC' binds=''>
+  <globalVariable name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_WARNING' type='xs:integer' line='68' module='logger.xsl' visibility='PUBLIC' jsAcceptor='return SaxonJS.U.Atomic.integer.cast(val);' jsCardCheck='function c(n) {return n==1;};'>
+   <int val='30'/>
+  </globalVariable>
+ </co>
+ <co id='15' vis='PRIVATE' binds='0 1 0 9'>
+  <template name='Q{http://saxon.sf.net/ns/packages}logAll' flags='os' line='82' module='logger.xsl' slots='1'>
+   <sequence role='body' ns='xsl=~ xs=~ xd=http://www.oxygenxml.com/ns/doc/xsl sfp=http://saxon.sf.net/ns/packages' line='83'>
+    <param name='Q{}message' slot='0' flags='r' as='xs:string'>
+     <treat role='conversion' as='xs:string' jsTest='return SaxonJS.U.Atomic.string.matches(item);' diag='8|0|XTTE0590|message'>
+      <check card='1' diag='8|0|XTTE0590|message'>
+       <cvUntyped to='xs:string' diag='8|0|XTTE0590|message'>
+        <data>
+         <supplied slot='0'/>
+        </data>
+       </cvUntyped>
+      </check>
+     </treat>
+    </param>
+    <choose line='84'>
+     <vc op='eq' onEmpty='0' comp='CAVC'>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL' bSlot='0'/>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_NOTSET' bSlot='1'/>
+     </vc>
+     <message line='85'>
+      <valueOf role='select'>
+       <str val='WARNING: sfp:LOGLEVEL not set.'/>
+      </valueOf>
+      <str role='terminate' val='no'/>
+      <str role='error' val='Q{http://www.w3.org/2005/xqt-errors}XTMM9000'/>
+     </message>
+    </choose>
+    <choose line='87'>
+     <vc op='ge' onEmpty='0' comp='CAVC'>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL' bSlot='2'/>
+      <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_ALL' bSlot='3'/>
+     </vc>
+     <message line='89'>
+      <fn role='select' name='concat'>
+       <str val='*** INFO *** '/>
+       <varRef name='Q{}message' slot='0'/>
+      </fn>
+      <str role='terminate' val='no'/>
+      <str role='error' val='Q{http://www.w3.org/2005/xqt-errors}XTMM9000'/>
+     </message>
+    </choose>
+   </sequence>
+  </template>
+ </co>
+ <co id='17' vis='PUBLIC' binds='3 10'>
+  <function name='Q{http://saxon.sf.net/ns/packages}logFatal' line='216' module='logger.xsl' eval='7' flags='pU' as='empty-sequence()' slots='1'>
+   <arg name='Q{}message' as='xs:string'/>
+   <tailCallLoop role='body' ns='xsl=~ xs=~ xd=http://www.oxygenxml.com/ns/doc/xsl sfp=http://saxon.sf.net/ns/packages' line='218'>
+    <ufCall name='Q{http://saxon.sf.net/ns/packages}log' tailCall='foreign' bSlot='0' eval='6 6'>
+     <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_FATAL' bSlot='1'/>
+     <varRef name='Q{}message' slot='0'/>
+    </ufCall>
+   </tailCallLoop>
+  </function>
+ </co>
+ <co id='18' vis='PUBLIC' binds='3 7'>
+  <function name='Q{http://saxon.sf.net/ns/packages}logInfo' line='249' module='logger.xsl' eval='7' flags='pU' as='empty-sequence()' slots='1'>
+   <arg name='Q{}message' as='xs:string'/>
+   <tailCallLoop role='body' ns='xsl=~ xs=~ xd=http://www.oxygenxml.com/ns/doc/xsl sfp=http://saxon.sf.net/ns/packages' line='251'>
+    <ufCall name='Q{http://saxon.sf.net/ns/packages}log' tailCall='foreign' bSlot='0' eval='6 6'>
+     <gVarRef name='Q{http://saxon.sf.net/ns/packages}LOGLEVEL_INFO' bSlot='1'/>
+     <varRef name='Q{}message' slot='0'/>
+    </ufCall>
+   </tailCallLoop>
+  </function>
+ </co>
+ <co id='19' binds=''>
+  <mode onNo='TC' flags='dWe' patternSlots='0'/>
+ </co>
+ <overridden/>
+ <output>
+  <property name='{http://saxon.sf.net/}stylesheet-version' value='30'/>
+ </output>
+ <decimalFormat/>
+</package>
+<?Σ 9cdcacbb?>

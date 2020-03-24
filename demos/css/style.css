@@ -22,6 +22,26 @@ span.selected {
     background-color: #e4eef0;
 }
 
+
+.message-error {
+    background-color: #ffcccc;
+    border: 2px solid #ff0000;
+    color: #000000;   
+    padding: 0.5em;
+}
+
+.message-warning {
+    background-color: #ffe0b3;
+    border: 2px solid #cc7a00;
+    color: #000000;   
+    padding: 0.5em;
+}
+.message-info {
+    background-color: #ccffcc;
+    color: #000000;   
+    padding: 0.5em;
+}
+
 /* 
 Text blue: #3D5B96
 Dark blue: #c1cede
