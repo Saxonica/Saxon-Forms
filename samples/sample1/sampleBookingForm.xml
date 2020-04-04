@@ -38,7 +38,7 @@
         
         <!-- <xf:bind nodeset="EventTime" type="xf:time"/>-->
         <xf:submission ref="submit_model_records" 
-            action="http://localhost/bookSubmit.php" />
+            resource="http://localhost/bookSubmit.php" />
     </xf:model>
  
     
