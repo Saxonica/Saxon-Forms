@@ -13,11 +13,11 @@
    version="3.0"
    >
    
-   <xsl:import href="saxon-xforms.xsl"/>
+   <xsl:import href="../../src/saxon-xforms.xsl"/>
    
    
    <!-- The $bookingForm document contains the main form, in XForms format -->
-   <xsl:variable name="bookingForm" as="xs:string" select="resolve-uri('sampleBookingForm.xml', ixsl:location())"/>
+   <xsl:variable name="bookingForm" as="xs:string" select="resolve-uri('../sample1/sampleBookingForm.xml', ixsl:location())"/>
    
    <xsl:template name="main">
       <!-- Use ixsl:schedule-action so that a subsequent doc() call on the document specified in

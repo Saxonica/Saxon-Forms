@@ -27,6 +27,10 @@
             else ''
             "/>
             "/>
+        <xf:bind nodeset="instance('hello')/demo:PetType" constraint="text() != 'pet'" />
+        
+        <xf:submission id="test" resource="none" instance="hello"/>
+        
     </xf:model>
     
     <xf:input ref="instance('hello')/demo:PersonGivenName" incremental="true" class="demo-input">
@@ -85,7 +89,9 @@
         </xf:action>
     </xf:trigger>
     
-        
+    <xf:submit ref="test">
+        <xf:label>Submit</xf:label>
+    </xf:submit>
     
 
     
