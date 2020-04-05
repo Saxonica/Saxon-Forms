@@ -281,7 +281,7 @@
                 
                 <!-- clear deferred update flags only if we're building from scratch -->
                 <xsl:if test="empty($instance-docs)">
-                    <xsl:sequence select="js:setDeferredUpdateFlags(('rebuild','recalculate','revalidate','refresh'))" />    
+                    <xsl:sequence select="js:clearDeferredUpdateFlags()" />    
                 </xsl:if>
                 
             </xsl:when>
@@ -575,7 +575,7 @@
                 <xsl:sequence select="js:setCalculationMap($CalculationBindings)" />
                 <!-- clear deferred update flags only if we're building from scratch -->
                 <xsl:if test="empty($instance-docs)">
-                    <xsl:sequence select="js:setDeferredUpdateFlags(('rebuild','recalculate','revalidate','refresh'))" />    
+                    <xsl:sequence select="js:clearDeferredUpdateFlags()" />    
                 </xsl:if>
                 
             </xsl:otherwise>
@@ -646,10 +646,10 @@
         <xd:desc>Handle incremental change to HTML input</xd:desc>
     </xd:doc>
     <xsl:template match="*:input[xforms:hasClass(.,'incremental')]" mode="ixsl:onkeyup">
-        
         <xsl:call-template name="action-setvalue-form-control">
             <xsl:with-param name="form-control" select="."/>
         </xsl:call-template>
+        <xsl:call-template name="outermost-action-handler"/>
     </xsl:template>
 
 
@@ -660,6 +660,7 @@
         <xsl:call-template name="action-setvalue-form-control">
             <xsl:with-param name="form-control" select="."/>
         </xsl:call-template>
+        <xsl:call-template name="outermost-action-handler"/>
     </xsl:template>
     
   
@@ -670,6 +671,7 @@
         <xsl:call-template name="action-setvalue-form-control">
             <xsl:with-param name="form-control" select="."/>
         </xsl:call-template>
+        <xsl:call-template name="outermost-action-handler"/>
     </xsl:template>
     
     
@@ -2720,7 +2722,7 @@
         <xd:desc>Update HTML display elements corresponding to xforms:output elements</xd:desc>
     </xd:doc>
     <xsl:template name="refreshOutputs-JS">
-<!--        <xsl:message use-when="$debugMode">[refreshOutputs-JS] START refreshOutputs</xsl:message>-->
+        <xsl:message use-when="$debugMode">[refreshOutputs-JS] START</xsl:message>
         
         <!-- get all registered outputs -->
         <!-- MD 2018-06-30 : want to use as="xs:string*" but get a cardinality error!? 
@@ -2732,7 +2734,7 @@
             <xsl:variable name="this-key" as="xs:string" select="."/>
             <xsl:variable name="this-output" as="map(*)" select="js:getOutput($this-key)"/>
             
-            <xsl:message use-when="$debugMode">[refreshOutputs-JS] Refreshing output ID = '<xsl:sequence select="$this-key"/>'</xsl:message>
+<!--            <xsl:message use-when="$debugMode">[refreshOutputs-JS] Refreshing output ID = '<xsl:sequence select="$this-key"/>'</xsl:message>-->
             
             
             <xsl:variable name="xpath" as="xs:string">
@@ -2751,7 +2753,7 @@
             </xsl:variable>
             <xsl:variable name="xpath-mod" as="xs:string" select="xforms:impose($xpath)"/>
             
-            <xsl:message use-when="$debugMode">[refreshOutputs-JS] $xpath-mod = '<xsl:sequence select="$xpath-mod"/>'</xsl:message>
+<!--            <xsl:message use-when="$debugMode">[refreshOutputs-JS] $xpath-mod = '<xsl:sequence select="$xpath-mod"/>'</xsl:message>-->
             
             <xsl:variable name="instance-map" as="map(xs:string,xs:string)">
                 <xsl:choose>
@@ -2798,11 +2800,9 @@
     <xd:doc scope="component">
         <xd:desc>Update HTML display elements corresponding to xforms:repeat elements</xd:desc>
     </xd:doc>
-    <xsl:template name="refreshRepeats-JS">
-                
-        <xsl:message use-when="$debugMode">[refreshRepeats-JS] START refreshRepeats</xsl:message>
-        
-        
+    <xsl:template name="refreshRepeats-JS">               
+        <xsl:message use-when="$debugMode">[refreshRepeats-JS] START</xsl:message>
+              
         <xsl:variable name="repeat-keys" select="js:getRepeatKeys()" as="item()*"/>
         
         <xsl:for-each select="$repeat-keys">
@@ -2864,6 +2864,7 @@
     </xd:doc>
     <xsl:template name="refreshRelevantFields-JS">
         <xsl:message use-when="$debugMode">[refreshRelevantFields-JS] START</xsl:message>
+        
         <!-- go through all form controls where @data-relevant has been set -->
         <xsl:for-each select="ixsl:page()//*[@data-relevant]">
             <xsl:variable name="instanceXML" select="xforms:getInstance-JS(string(@data-ref))" as="element()"/>
@@ -2895,6 +2896,7 @@
     </xd:doc>
     <xsl:template name="refreshElementsUsingIndexFunction-JS">
         <xsl:message use-when="$debugMode">[refreshElementsUsingIndexFunction-JS] START</xsl:message>
+        
         <xsl:variable name="ElementsUsingIndexFunction-keys" select="js:getElementsUsingIndexFunctionKeys()" as="item()*"/>
         
         <xsl:variable name="instance-keys" as="item()*" select="js:getInstanceKeys()"/>
@@ -3933,6 +3935,8 @@
             </xsl:choose>
         </xsl:variable>
         
+<!--        <xsl:message use-when="$debugMode">[action-setvalue] Applying action '<xsl:sequence select="serialize($action-map)"/>'</xsl:message>-->
+        
         
         <!-- TODO: use ifVari and WhileVari -->
         <xsl:if test="exists($refz)">
@@ -3943,9 +3947,27 @@
             <xsl:variable name="updated-value" as="xs:string">
                 <xsl:choose>
                     <xsl:when test="map:contains($action-map,'@value')">
-                        <xsl:sequence>
-                            <xsl:evaluate xpath="xs:string( xforms:impose(map:get($action-map,'@value')) )" context-item="$updated-node" namespace-context="$updated-node" />
-                        </xsl:sequence>
+                        <xsl:variable name="updated-item" as="item()">
+                            <xsl:evaluate xpath="xforms:impose(map:get($action-map,'@value'))" context-item="$updated-node" namespace-context="$updated-node" />
+                        </xsl:variable>
+<!--                        <xsl:message use-when="$debugMode">[action-setvalue] updated item '<xsl:sequence select="serialize($updated-item)"/>'</xsl:message>-->
+                        <xsl:choose>
+                            <!-- 
+                                Handle case where @value evaluates to a boolean.
+                                Logic mirrors that in template for HTML input (mode="get-field")
+                                
+                                TO DO: handle other possible data types of @value?
+                            -->
+                            <xsl:when test="$updated-item = true()">
+                                <xsl:sequence select="'true'"/>
+                            </xsl:when>
+                            <xsl:when test="$updated-item = false()">
+                                <xsl:sequence select="''"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:sequence select="xs:string($updated-item)"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </xsl:when>
                     <xsl:when test="map:contains(.,'value')">
                         <xsl:sequence select="map:get($action-map,'value')"/>
@@ -3955,6 +3977,7 @@
                     </xsl:otherwise>
                 </xsl:choose>                
             </xsl:variable>
+<!--            <xsl:message use-when="$debugMode">[action-setvalue] updated value '<xsl:sequence select="serialize($updated-value)"/>'</xsl:message>-->
             
             
             <xsl:variable name="updatedInstanceXML" as="element()">
@@ -3963,6 +3986,8 @@
                     <xsl:with-param name="updated-values" select="$updated-value" tunnel="yes"/>
                 </xsl:apply-templates>
             </xsl:variable>
+            
+<!--            <xsl:message use-when="$debugMode">[action-setvalue] updated instance <xsl:sequence select="serialize($updatedInstanceXML)"/></xsl:message>-->
             
             <xsl:sequence select="js:setInstance($instance-id,$updatedInstanceXML)"/>
             
@@ -4018,9 +4043,9 @@
             <xsl:with-param name="when-value-changed" select="$actions[map:get(.,'@event') = 'xforms-value-changed']" tunnel="yes"/>
         </xsl:call-template>
         
-        <xsl:call-template name="xforms-recalculate"/>
+<!--        <xsl:call-template name="xforms-recalculate"/>
         <xsl:call-template name="xforms-refresh"/>
-        
+-->        
     </xsl:template>
     
     

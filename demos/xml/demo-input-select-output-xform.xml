@@ -21,7 +21,7 @@
         <xf:bind nodeset="instance('hello')/demo:FedToday" type="xs:boolean" />
         <xf:bind nodeset="instance('hello')/demo:FedTodayStatement" calculate="
             if ( 
-              instance('hello')/demo:FedToday  = '' 
+              xs:string(instance('hello')/demo:FedToday)  = '' 
              )
             then 'not'
             else ''
@@ -71,6 +71,7 @@
     
     <xf:input ref="instance('hello')/demo:FeedingTime" class="demo-input">
         <xf:label>Enter pet's feeding time: </xf:label>
+        <xf:setvalue ref="../demo:FedToday" ev:event="xforms-value-changed" value="xs:time(concat(../demo:FeedingTime/text(),':00')) &lt; current-time()"/>
     </xf:input>
     
     <xf:input ref="instance('hello')/demo:FedToday" class="demo-input">
