@@ -815,6 +815,10 @@
                             <xsl:when test="(count($slashes) >= $parentCallCount) and ($parentCallCount>0)">
                                 <xsl:sequence select="$slashes[last() - ($parentCallCount - 1)]" />
                             </xsl:when>
+                          <xsl:when test="(count($slashes) = ($parentCallCount - 1)) and ($parentCallCount>0)">
+                                <!--OND Fix on Apr 2020:  Here we are at the context node -->
+                                <xsl:sequence select="0" />
+                            </xsl:when>
                             <xsl:otherwise>
                                 <xsl:sequence select="$slashes[last()]" />
                             </xsl:otherwise>
@@ -835,8 +839,18 @@
                     <xsl:choose>
                         <xsl:when test="$parentCallCount gt 0">
                             <!-- TODO - need to resolve path. This does not work properly -->
+                            <!-- OND Apr 2020: This fix is an attempt to complex paths not resolving properly 
+                              We now have the second when clause to handle going back up to the root and down
+                              some other part of the tree. -->
                             <xsl:sequence
                                 select="concat(substring($base, 1, $parentSlash), replace($relative, '\.\./', ''))"
+                            />
+                        </xsl:when>
+                        <xsl:when test="$parentCallCount eq 0">
+                          <!-- OND apr 2020: In addition to the above comment, this fix allows us to go back up the root 
+                            and navigate soem other branch without giving some incorrect path. -->
+                            <xsl:sequence
+                                select="replace($relative, '\.\./', '')"
                             />
                         </xsl:when>
                         <xsl:otherwise>
@@ -3920,7 +3934,9 @@
         
         <xsl:variable name="ifVari" select="xforms:getIfStatement($action-map)"/>
         <xsl:variable name="whileVari" select="xforms:getWhileStatement($action-map)"/>
-        <xsl:variable name="refz" select="xforms:resolveXPathStrings($nodeset,map:get($action-map,'@ref'))"/>
+        
+        <!--OND Apr 2020: The $nodeset path should have already been resolved. Therefore just set $refz to the $nodeset-->
+        <xsl:variable name="refz" select="if ($nodeset = '') then map:get($action-map,'@ref') else $nodeset"/>
         
         <xsl:variable name="instance-id" as="xs:string" select="xforms:getInstanceId($refz)"/>
         <!-- override tunnel variable $instanceXML if $refz refers to a different instance -->
