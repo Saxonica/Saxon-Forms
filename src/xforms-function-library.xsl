@@ -50,24 +50,24 @@
         
         <xsl:variable name="input2" as="xs:string" select="string-join($parts)"/>
         
-        <!-- unnecessary? MD 2020-03-24 -->
-        <xsl:variable name="parts2" as="xs:string*">
-            <!-- 
-                Strip out start of XPath from root of instance "document" 
-                Assume no predicate on root element name
-            -->
-            <xsl:analyze-string select="$input2" regex="(^\s*|[^\i\c\]])/\i\c*(/)">
-                <xsl:matching-substring>
-                    <xsl:sequence select="regex-group(1)"/>
-                    <xsl:sequence select="regex-group(2)"/>
-                </xsl:matching-substring>
-                <xsl:non-matching-substring>
-                    <xsl:sequence select="." />
-                </xsl:non-matching-substring>
-            </xsl:analyze-string>
+        <!-- handle case where XPath starts "/" (i.e. root node of default instance) -->
+        <xsl:variable name="input3" as="xs:string">
+            <xsl:choose>
+                <xsl:when test="matches($input2,'^\s*/')">
+                    <xsl:sequence select="replace($input2, '^\s/[^/]+', '.')"/>
+                </xsl:when>
+                <!-- TEST - can we remove instance() at start of expression? -->
+                <xsl:when test="matches($input2,'^\s*xforms:instance\s*\(\s*''[^'']+''\s*\)')">
+                    <xsl:sequence select="replace($input2, '^\s*xforms:instance\s*\(\s*''[^'']+''\s*\)', '.')"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:sequence select="$input2"/>
+                </xsl:otherwise>
+            </xsl:choose>
         </xsl:variable>
+
         
-        <xsl:sequence select="string-join($parts)" />
+        <xsl:sequence select="$input3" />
     </xsl:function>
     
     <xsl:function name="xforms:resolve-index" as="xs:string">

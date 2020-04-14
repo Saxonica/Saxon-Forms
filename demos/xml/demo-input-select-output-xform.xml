@@ -29,7 +29,7 @@
             "/>
         <xf:bind nodeset="instance('hello')/demo:PetType" constraint="text() != 'pet'" />
         
-        <xf:bind nodeset="instance('hello')/demo:CatName" relevant="text() = 'Blanket'"/>
+        <xf:bind id="test-relevant" nodeset="instance('hello')/demo:CatName" relevant="text() = 'Blanket'"/>
         
         <xf:submission id="test" resource="none" instance="hello"/>
         
@@ -86,7 +86,7 @@
     
     <xf:output value="concat('My ', instance('hello')/demo:PetType, ' has ', instance('hello')/demo:FedTodayStatement , ' been fed today.')" class="block demo-output"/>
     
-    <xf:output bind="instance('hello')/demo:CatName" value="'Display this sentence only when pet name is ''Blanket''.'" class="block demo-output"/>
+    <xf:output bind="test-relevant" value="'Display this sentence only when pet name is ''Blanket''.'" class="block demo-output"/>
     
     <xf:trigger>
         <xf:label>Demo message</xf:label>
