@@ -796,7 +796,7 @@
                                 <xsl:sequence select="$slashes[last() - ($parentCallCount - 1)]" />
                             </xsl:when>
                           <xsl:when test="(count($slashes) = ($parentCallCount - 1)) and ($parentCallCount>0)">
-                                <!-\-OND Fix on Apr 2020:  Here we are at the context node -\->
+                                <!--OND Fix on Apr 2020:  Here we are at the context node -->
                                 <xsl:sequence select="0" />
                             </xsl:when>
                             <xsl:otherwise>
