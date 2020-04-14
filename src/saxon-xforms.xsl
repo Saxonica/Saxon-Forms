@@ -796,7 +796,7 @@
                                 <xsl:sequence select="$slashes[last() - ($parentCallCount - 1)]" />
                             </xsl:when>
                           <xsl:when test="(count($slashes) = ($parentCallCount - 1)) and ($parentCallCount>0)">
-                                <!--OND Fix on Apr 2020:  Here we are at the context node -->
+                                <!-\-OND Fix on Apr 2020:  Here we are at the context node -\->
                                 <xsl:sequence select="0" />
                             </xsl:when>
                             <xsl:otherwise>
@@ -828,8 +828,8 @@
                             />
                         </xsl:when>
                         <xsl:when test="$parentCallCount eq 0">
-                          <!-- OND apr 2020: In addition to the above comment, this fix allows us to go back up the root 
-                            and navigate soem other branch without giving some incorrect path. -->
+                          <!-\- OND apr 2020: In addition to the above comment, this fix allows us to go back up the root 
+                            and navigate soem other branch without giving some incorrect path. -\->
                             <xsl:sequence
                                 select="replace($relative, '\.\./', '')"
                             />
@@ -3432,7 +3432,7 @@
 
         
         <!--OND Apr 2020: The $nodeset path should have already been resolved. Therefore just set $refz to the $nodeset-->
-        <xsl:variable name="refz" select="if ($nodeset = '') then map:get($action-map,'@ref') else $nodeset"/>
+        <xsl:variable name="refz" select="map:get($action-map,'@ref')"/>
 
         
         <xsl:variable name="instanceXML2" as="element()" select="js:getInstance($instance-context)"/>
