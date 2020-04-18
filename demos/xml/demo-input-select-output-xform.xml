@@ -10,6 +10,7 @@
             <demo:data xmlns:demo="urn:saxon-xforms:demo">
                 <demo:PersonGivenName>Mark</demo:PersonGivenName>
                 <demo:PetType>pet</demo:PetType>
+                <demo:PetDescription/>
                 <demo:CatName></demo:CatName>
                 <demo:FeedingTime>08:00</demo:FeedingTime>
                 <demo:FedToday>1</demo:FedToday>
@@ -44,6 +45,7 @@
     
     <xf:select1 ref="instance('hello')/demo:PetType" incremental="true" class="demo-select">
         <xf:label>Type of pet: </xf:label>
+        <xf:hint>Choose "Cat"!</xf:hint>
         <xf:item>
             <xf:label>[Pet]</xf:label>
             <xf:value>pet</xf:value> 
@@ -69,6 +71,10 @@
         <xf:hint>Or any old string</xf:hint>
     </xf:input>
     
+    <xf:textarea ref="instance('hello')/demo:PetDescription" class="demo-input">
+        <xf:label>Enter a description of your pet</xf:label>
+    </xf:textarea>
+    
     <xf:input ref="instance('hello')/demo:FeedingTime" class="demo-input">
         <xf:label>Enter pet's feeding time: </xf:label>
         <xf:setvalue ref="../demo:FedToday" ev:event="xforms-value-changed" value="xs:time(concat(../demo:FeedingTime/text(),':00')) &lt; current-time()"/>
@@ -86,7 +92,7 @@
     
     <xf:output value="concat('My ', instance('hello')/demo:PetType, ' has ', instance('hello')/demo:FedTodayStatement , ' been fed today.')" class="block demo-output"/>
     
-    <xf:output bind="test-relevant" value="'Display this sentence only when pet name is ''Blanket''.'" class="block demo-output"/>
+    <xf:output bind="test-relevant" value="concat('Display the description only when pet name is ''Blanket'': ', instance('hello')/demo:PetDescription)" class="block demo-output"/>
     
     <xf:trigger>
         <xf:label>Demo message</xf:label>
