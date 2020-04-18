@@ -1372,43 +1372,46 @@
         
         <xsl:variable name="hints" select="xforms:hint/text()"/>
         
-        <textarea>
-            <xsl:sequence select="xforms:getClass(.)"/>
-            <xsl:attribute name="id" select="$id"/>
-            
-            <xsl:attribute name="instance-context" select="$instance-context" />
-            <xsl:attribute name="data-ref" select="$nodeset"/>
-            
-            <xsl:if test="exists($binding) and exists($binding/@constraint)">
-                <xsl:attribute name="data-constraint" select="$binding/@constraint"/>
-            </xsl:if>
-            <xsl:if test="exists($binding) and exists($binding/@relevant)">
-                <xsl:attribute name="data-relevant" select="$binding/@relevant"/>
-            </xsl:if>
-            <xsl:if test="exists($binding) and exists($binding/@required)">
-                <xsl:attribute name="data-required" select="$binding/@required"/>
-            </xsl:if>
-            
-            <xsl:if test="exists($actions)">
-                <xsl:attribute name="data-action" select="$id"/>
-            </xsl:if>
-            
-            <xsl:if test="exists($hints)">
-                <xsl:attribute name="title" select="$hints"/>
-            </xsl:if>
-            
-            <xsl:if test="exists(@size)">
-                <xsl:attribute name="size" select="@size"/>
-            </xsl:if>
-            
-            <xsl:choose>
-                <xsl:when test="exists($instanceField)">
-                    <xsl:value-of select="$instanceField"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:text/>&#xA0; </xsl:otherwise>
-            </xsl:choose>
-         </textarea>       
+        <div class="xforms-textarea">
+            <xsl:apply-templates select="xforms:label"/>
+            <textarea>
+                <xsl:sequence select="xforms:getClass(.)"/>
+                <xsl:attribute name="id" select="$id"/>
+                
+                <xsl:attribute name="instance-context" select="$instance-context" />
+                <xsl:attribute name="data-ref" select="$nodeset"/>
+                
+                <xsl:if test="exists($binding) and exists($binding/@constraint)">
+                    <xsl:attribute name="data-constraint" select="$binding/@constraint"/>
+                </xsl:if>
+                <xsl:if test="exists($binding) and exists($binding/@relevant)">
+                    <xsl:attribute name="data-relevant" select="$binding/@relevant"/>
+                </xsl:if>
+                <xsl:if test="exists($binding) and exists($binding/@required)">
+                    <xsl:attribute name="data-required" select="$binding/@required"/>
+                </xsl:if>
+                
+                <xsl:if test="exists($actions)">
+                    <xsl:attribute name="data-action" select="$id"/>
+                </xsl:if>
+                
+                <xsl:if test="exists($hints)">
+                    <xsl:attribute name="title" select="$hints"/>
+                </xsl:if>
+                
+                <xsl:if test="exists(@size)">
+                    <xsl:attribute name="size" select="@size"/>
+                </xsl:if>
+                
+                <xsl:choose>
+                    <xsl:when test="exists($instanceField)">
+                        <xsl:value-of select="$instanceField"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:text/>&#xA0; </xsl:otherwise>
+                </xsl:choose>
+            </textarea>       
+        </div>
     </xsl:template>
 
 
