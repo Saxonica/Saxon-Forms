@@ -498,6 +498,11 @@
                         <xsl:call-template name="xforms-binding-exception">
                             <xsl:with-param name="message" select="concat('No binding found with ID ', $bind)"/>
                         </xsl:call-template>
+                        <!-- 
+                            TO DO: xforms-binding-exception
+                            
+                            https://www.w3.org/TR/xforms11/#evt-bindingException
+                        -->
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:when>
@@ -589,10 +594,6 @@
             <xsl:if test="exists(@value)">
                 <xsl:map-entry key="'@value'" select="string(@value)" />                          
             </xsl:if>
-            
-            <!-- TO DO: handle case where message content is a mix of text and output, e.g.
-                <xf:message level="ephemeral">Here is your message (iteration #<xf:output ref="instance('hello')/demo:Counter/text()"/>)</xf:message>
-            -->
             <xsl:if test="empty(@value) and exists(./text())">
                 <xsl:map-entry key="'value'" select="string(.)" />                         
             </xsl:if>
@@ -667,7 +668,7 @@
                 <xsl:map-entry key="'nested-actions'">
                     <xsl:variable name="array" as="map(*)*">
                         <xsl:for-each select="child::*">
-                            <xsl:apply-templates select="." mode="set-action">
+                            <xsl:apply-templates select="." mode="#default">
                                 <xsl:with-param name="handler-status" select="'inner'" tunnel="yes"/>
                             </xsl:apply-templates>
                         </xsl:for-each>
@@ -740,7 +741,7 @@
                 <xsl:sequence select="map:get($map, '@while')"/>
             </xsl:when>
             <xsl:otherwise>
-<!--                <xsl:sequence select="map:get($map?*, '@while')"/>-->
+                <xsl:sequence select="map:get($map?*, '@while')"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
@@ -1376,46 +1377,43 @@
         
         <xsl:variable name="hints" select="xforms:hint/text()"/>
         
-        <div class="xforms-textarea">
-            <xsl:apply-templates select="xforms:label"/>
-            <textarea>
-                <xsl:sequence select="xforms:getClass(.)"/>
-                <xsl:attribute name="id" select="$id"/>
-                
-                <xsl:attribute name="instance-context" select="$instance-context" />
-                <xsl:attribute name="data-ref" select="$nodeset"/>
-                
-                <xsl:if test="exists($binding) and exists($binding/@constraint)">
-                    <xsl:attribute name="data-constraint" select="$binding/@constraint"/>
-                </xsl:if>
-                <xsl:if test="exists($binding) and exists($binding/@relevant)">
-                    <xsl:attribute name="data-relevant" select="$binding/@relevant"/>
-                </xsl:if>
-                <xsl:if test="exists($binding) and exists($binding/@required)">
-                    <xsl:attribute name="data-required" select="$binding/@required"/>
-                </xsl:if>
-                
-                <xsl:if test="exists($actions)">
-                    <xsl:attribute name="data-action" select="$id"/>
-                </xsl:if>
-                
-                <xsl:if test="exists($hints)">
-                    <xsl:attribute name="title" select="$hints"/>
-                </xsl:if>
-                
-                <xsl:if test="exists(@size)">
-                    <xsl:attribute name="size" select="@size"/>
-                </xsl:if>
-                
-                <xsl:choose>
-                    <xsl:when test="exists($instanceField)">
-                        <xsl:value-of select="$instanceField"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:text/>&#xA0; </xsl:otherwise>
-                </xsl:choose>
-            </textarea>       
-        </div>
+        <textarea>
+            <xsl:sequence select="xforms:getClass(.)"/>
+            <xsl:attribute name="id" select="$id"/>
+            
+            <xsl:attribute name="instance-context" select="$instance-context" />
+            <xsl:attribute name="data-ref" select="$nodeset"/>
+            
+            <xsl:if test="exists($binding) and exists($binding/@constraint)">
+                <xsl:attribute name="data-constraint" select="$binding/@constraint"/>
+            </xsl:if>
+            <xsl:if test="exists($binding) and exists($binding/@relevant)">
+                <xsl:attribute name="data-relevant" select="$binding/@relevant"/>
+            </xsl:if>
+            <xsl:if test="exists($binding) and exists($binding/@required)">
+                <xsl:attribute name="data-required" select="$binding/@required"/>
+            </xsl:if>
+            
+            <xsl:if test="exists($actions)">
+                <xsl:attribute name="data-action" select="$id"/>
+            </xsl:if>
+            
+            <xsl:if test="exists($hints)">
+                <xsl:attribute name="title" select="$hints"/>
+            </xsl:if>
+            
+            <xsl:if test="exists(@size)">
+                <xsl:attribute name="size" select="@size"/>
+            </xsl:if>
+            
+            <xsl:choose>
+                <xsl:when test="exists($instanceField)">
+                    <xsl:value-of select="$instanceField"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text/>&#xA0; </xsl:otherwise>
+            </xsl:choose>
+         </textarea>       
     </xsl:template>
 
 
@@ -2490,19 +2488,9 @@
             </xsl:choose>                    
         </xsl:variable>
         
-        <xsl:variable name="isWhileTrue" as="xs:boolean">
-            <xsl:choose>
-                <xsl:when test="exists($whileVar) and exists($context)">
-                    <xsl:evaluate xpath="xforms:impose($whileVar)" context-item="$context" namespace-context="$instanceXML2"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:sequence select="true()" />
-                </xsl:otherwise>
-            </xsl:choose>                    
-        </xsl:variable>
         
         <!-- https://www.w3.org/TR/xforms11/#action -->
-        <xsl:if test="$ifExecuted and $isWhileTrue">
+        <xsl:if test="$ifExecuted">
             <xsl:variable name="action-name" as="xs:string" select="map:get($action-map,'name')"/>
             
             <xsl:choose>
@@ -2569,26 +2557,6 @@
                     <xsl:with-param name="action-map" select="." tunnel="yes"/>
                 </xsl:call-template>
             </xsl:for-each>
-            
-            <xsl:variable name="isWhileStillTrue" as="xs:boolean">
-                <xsl:choose>
-                    <xsl:when test="exists($whileVar) and exists($context)">
-                        <xsl:evaluate xpath="xforms:impose($whileVar)" context-item="$context" namespace-context="$instanceXML2"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <!-- 
-                            don't go back round the loop unless there is a @while
-                            and it is still true
-                        -->
-                        <xsl:sequence select="false()" />
-                    </xsl:otherwise>
-                </xsl:choose>                    
-            </xsl:variable>
-            
-            <!-- TO DO: mitigate risk of recursion if possible -->
-            <xsl:if test="$isWhileStillTrue">
-                <xsl:call-template name="applyActions"/>
-            </xsl:if>
             
             <xsl:if test="$handler-status = 'outermost'">
                 <xsl:call-template name="outermost-action-handler"/>
@@ -3333,6 +3301,9 @@
         <xsl:message use-when="$debugMode">[action-setvalue] START</xsl:message>
         
         <xsl:variable name="instance-context" select="map:get($action-map, 'instance-context')" as="xs:string"/>
+        <xsl:variable name="ifVari" select="xforms:getIfStatement($action-map)"/>
+        <xsl:variable name="whileVari" select="xforms:getWhileStatement($action-map)"/>
+
         
         <!--OND Apr 2020: The $nodeset path should have already been resolved. Therefore just set $refz to the $nodeset-->
         <xsl:variable name="refz" select="map:get($action-map,'@ref')"/>
@@ -3343,6 +3314,7 @@
 <!--        <xsl:message use-when="$debugMode">[action-setvalue] Applying action '<xsl:sequence select="serialize($action-map)"/>'</xsl:message>-->
         
         
+        <!-- TODO: use ifVari and WhileVari -->
         <xsl:if test="exists($refz)">
             <xsl:variable name="updated-node" as="node()">
                 <xsl:evaluate xpath="xforms:impose($refz)" context-item="$instanceXML2" namespace-context="$instanceXML2" as="node()" />
@@ -3362,10 +3334,10 @@
                                 
                                 TO DO: handle other possible data types of @value?
                             -->
-                            <xsl:when test="xs:string($updated-item) = 'true'">
+                            <xsl:when test="$updated-item = true()">
                                 <xsl:sequence select="'true'"/>
                             </xsl:when>
-                            <xsl:when test="xs:string($updated-item) = 'false' and not($updated-item = 'false')">
+                            <xsl:when test="$updated-item = false()">
                                 <xsl:sequence select="''"/>
                             </xsl:when>
                             <xsl:otherwise>
@@ -3587,6 +3559,9 @@
         
         <xsl:variable name="instanceXML2" as="element()" select="js:getInstance($instance-context)"/>
         
+        <xsl:variable name="ifVar" select="xforms:getIfStatement($action-map)"/>
+        <xsl:variable name="whileVar" select="xforms:getWhileStatement($action-map)"/>
+         
         <xsl:variable name="delete-node" as="node()*">
             <xsl:choose>
                 <xsl:when test="exists($ref-qualified) and not($ref-qualified = '')">
@@ -3595,6 +3570,18 @@
             </xsl:choose>
         </xsl:variable>
                 
+        <xsl:variable name="ifExecuted" as="xs:boolean">
+            <xsl:choose>
+                <xsl:when test="exists($ifVar)">
+                    <xsl:evaluate xpath="xforms:impose($ifVar)" context-item="$delete-node" namespace-context="$delete-node"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:sequence select="true()" />
+                </xsl:otherwise>
+            </xsl:choose>                    
+        </xsl:variable>
+                       
+        <xsl:if test="$ifExecuted">
             <xsl:variable name="instance-with-delete" as="element()">
                 <xsl:apply-templates select="$instanceXML2" mode="delete-node">
                     <xsl:with-param name="delete-node" select="$delete-node" tunnel="yes"/>
@@ -3634,6 +3621,7 @@
             <xsl:if test="$handler-status = 'inner'">
                 <xsl:sequence select="js:setDeferredUpdateFlags(('rebuild','recalculate','revalidate','refresh'))"/>
             </xsl:if>
+        </xsl:if>
         
     </xsl:template>
     
