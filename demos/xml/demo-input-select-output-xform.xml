@@ -99,8 +99,7 @@
         <xf:label>Demo message</xf:label>
         <xf:action ev:event="DOMActivate" while="number(instance('hello')/demo:Counter) &lt; 3">
             <xf:setvalue ref="instance('hello')/demo:Counter" value="number(instance('hello')/demo:Counter) + 1"/>
-<!--            <xf:message level="ephemeral">Here is your message (iteration #<xf:output ref="instance('hello')/demo:Counter/text()"/>)</xf:message>-->
-            <xf:message level="ephemeral">Here is your message (generated 3 times because of @while)</xf:message>
+            <xf:message level="ephemeral">Here is your message (iteration #<xf:output ref="instance('hello')/demo:Counter/text()"/>)</xf:message>
         </xf:action>
     </xf:trigger>
     
