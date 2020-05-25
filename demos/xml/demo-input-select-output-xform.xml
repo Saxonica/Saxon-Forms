@@ -15,6 +15,7 @@
                 <demo:FeedingTime>08:00</demo:FeedingTime>
                 <demo:FedToday>1</demo:FedToday>
                 <demo:FedTodayStatement></demo:FedTodayStatement>
+                <demo:Counter>0</demo:Counter>
             </demo:data>
         </xf:instance>
         
@@ -96,8 +97,9 @@
     
     <xf:trigger>
         <xf:label>Demo message</xf:label>
-        <xf:action ev:event="DOMActivate">
-            <xf:message level="ephemeral">Here is your message</xf:message>
+        <xf:action ev:event="DOMActivate" while="number(instance('hello')/demo:Counter) &lt; 3">
+            <xf:setvalue ref="instance('hello')/demo:Counter" value="number(instance('hello')/demo:Counter) + 1"/>
+            <xf:message level="ephemeral">Here is your message (iteration #<xf:output ref="instance('hello')/demo:Counter/text()"/>)</xf:message>
         </xf:action>
     </xf:trigger>
     

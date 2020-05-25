@@ -446,13 +446,10 @@
                 <xsl:when test="$nodeset != ''">
                     <xsl:sequence select="xforms:getInstanceId($nodeset)"/>
                 </xsl:when>
-                <xsl:otherwise>
-                    <xsl:sequence select="$default-instance-id"/>
-                </xsl:otherwise>
+                <xsl:otherwise/>
            </xsl:choose>
         </xsl:variable>
         
-<!--        <xsl:message use-when="$debugMode">[get-context-instance-id mode for <xsl:sequence select="name()"/>] ID derived from nodeset = <xsl:sequence select="$referenced-instance-id"/></xsl:message>-->
         <xsl:choose>
             <xsl:when test="exists($referenced-instance-id)">
                 <xsl:sequence select="$referenced-instance-id"/>
@@ -589,7 +586,11 @@
             <xsl:if test="exists(@value)">
                 <xsl:map-entry key="'@value'" select="string(@value)" />                          
             </xsl:if>
-            <xsl:if test="empty(@value) and exists(./text())">
+            
+            <!-- TO DO: handle case where message content is a mix of text and output, e.g.
+                <xf:message level="ephemeral">Here is your message (iteration #<xf:output ref="instance('hello')/demo:Counter/text()"/>)</xf:message>
+            -->
+            <xsl:if test="empty(@value) and exists(./text()) and not(self::xforms:message)">
                 <xsl:map-entry key="'value'" select="string(.)" />                         
             </xsl:if>
             
@@ -659,11 +660,11 @@
             </xsl:if>
             
             <!-- need to apply nested actions in order! -->            
-            <xsl:if test="child::*">
+            <xsl:if test="child::* or (self::xforms:message and child::text())">
                 <xsl:map-entry key="'nested-actions'">
                     <xsl:variable name="array" as="map(*)*">
-                        <xsl:for-each select="child::*">
-                            <xsl:apply-templates select="." mode="#default">
+                        <xsl:for-each select="child::node()[self::* or self::text()[parent::xforms:message]]">
+                            <xsl:apply-templates select="." mode="set-action">
                                 <xsl:with-param name="handler-status" select="'inner'" tunnel="yes"/>
                             </xsl:apply-templates>
                         </xsl:for-each>
@@ -676,6 +677,20 @@
         
     </xsl:template>
     
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Turn a text node (inside xforms:message) into an action.</xd:p>
+            <xd:p>Enables handling of mixed text() and xforms:output children of xforms:message.</xd:p>
+        </xd:desc>
+    </xd:doc>
+    <xsl:template match="text()" mode="set-action">
+        <xsl:map>
+            <xsl:map-entry key="'name'" select="'text'"/>    
+            <xsl:map-entry key="'instance-context'" select="$global-default-instance-id"/>    
+            <xsl:map-entry key="'handler-status'" select="'inner'"/>    
+            <xsl:map-entry key="'@value'" select="string(.)" />
+        </xsl:map>
+    </xsl:template>
     
     
     
@@ -736,7 +751,7 @@
                 <xsl:sequence select="map:get($map, '@while')"/>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:sequence select="map:get($map?*, '@while')"/>
+<!--                <xsl:sequence select="map:get($map?*, '@while')"/>-->
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
@@ -1686,7 +1701,7 @@
            
         <!-- Write HTML -->   
         <xsl:choose>
-            <xsl:when test="$refreshRepeats">
+            <xsl:when test="$refreshRepeats and not(ancestor::xforms:repeat)">
                 <xsl:sequence select="$repeat-items"/>
             </xsl:when>
             <xsl:otherwise>
@@ -1701,7 +1716,6 @@
                 </div>
             </xsl:otherwise>
         </xsl:choose>
-       
         
         
         <!-- register repeats (top-level only and not when recalculating) -->
@@ -2332,8 +2346,7 @@
             <xsl:variable name="this-key" as="xs:string" select="."/>
             <xsl:variable name="this-repeat" as="element()" select="js:getRepeat($this-key)"/>
             <xsl:variable name="this-repeat-nodeset" as="xs:string" select="js:getRepeatContext($this-key)"/>
-            
-                        
+                                   
             <xsl:variable name="page-element" select="ixsl:page()//*[@id = $this-key]" as="node()?"/>
             
             <xsl:choose>
@@ -2486,9 +2499,19 @@
             </xsl:choose>                    
         </xsl:variable>
         
+        <xsl:variable name="isWhileTrue" as="xs:boolean">
+            <xsl:choose>
+                <xsl:when test="exists($whileVar) and exists($context)">
+                    <xsl:evaluate xpath="xforms:impose($whileVar)" context-item="$context" namespace-context="$instanceXML2"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:sequence select="true()" />
+                </xsl:otherwise>
+            </xsl:choose>                    
+        </xsl:variable>
         
         <!-- https://www.w3.org/TR/xforms11/#action -->
-        <xsl:if test="$ifExecuted">
+        <xsl:if test="$ifExecuted and $isWhileTrue">
             <xsl:variable name="action-name" as="xs:string" select="map:get($action-map,'name')"/>
             
             <xsl:choose>
@@ -2540,6 +2563,13 @@
                 <xsl:when test="$action-name = 'message'">
                     <xsl:call-template name="action-message"/>
                 </xsl:when>
+                <xsl:when test="$action-name = 'output'">
+                    <xsl:call-template name="action-output"/>
+                </xsl:when>
+                <!-- special action for text content of xforms:message -->
+                <xsl:when test="$action-name = 'text'">
+                    <xsl:call-template name="action-text"/>
+                </xsl:when>
                 <xsl:otherwise>
                     <xsl:message use-when="$debugMode">[applyActions] action '<xsl:value-of select="$action-name"/>' not yet handled!</xsl:message>
                 </xsl:otherwise>
@@ -2550,11 +2580,42 @@
             <xsl:variable name="nested-actions" as="item()*">
                 <xsl:sequence select="array:flatten($nested-actions-array)"/>
             </xsl:variable>
-            <xsl:for-each select="$nested-actions">
-                <xsl:call-template name="applyActions">
-                    <xsl:with-param name="action-map" select="." tunnel="yes"/>
-                </xsl:call-template>
-            </xsl:for-each>
+            
+            <xsl:choose>
+                <xsl:when test="$action-name = 'message'">
+                    <!-- 
+                        ignoring nested actions of xforms:message here - they are dealt with under action-message
+                    -->
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:for-each select="$nested-actions">
+                        <xsl:call-template name="applyActions">
+                            <xsl:with-param name="action-map" select="." tunnel="yes"/>
+                        </xsl:call-template>
+                    </xsl:for-each>
+                </xsl:otherwise>
+            </xsl:choose>
+            
+            
+            <xsl:variable name="isWhileStillTrue" as="xs:boolean">
+                <xsl:choose>
+                    <xsl:when test="exists($whileVar) and exists($context)">
+                        <xsl:evaluate xpath="xforms:impose($whileVar)" context-item="$context" namespace-context="$instanceXML2"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <!-- 
+                            don't go back round the loop unless there is a @while
+                            and it is still true
+                        -->
+                        <xsl:sequence select="false()" />
+                    </xsl:otherwise>
+                </xsl:choose>                    
+            </xsl:variable>
+            
+            <!-- TO DO: mitigate risk of recursion if possible -->
+            <xsl:if test="$isWhileStillTrue">
+                <xsl:call-template name="applyActions"/>
+            </xsl:if>
             
             <xsl:if test="$handler-status = 'outermost'">
                 <xsl:call-template name="outermost-action-handler"/>
@@ -3299,9 +3360,6 @@
         <xsl:message use-when="$debugMode">[action-setvalue] START</xsl:message>
         
         <xsl:variable name="instance-context" select="map:get($action-map, 'instance-context')" as="xs:string"/>
-        <xsl:variable name="ifVari" select="xforms:getIfStatement($action-map)"/>
-        <xsl:variable name="whileVari" select="xforms:getWhileStatement($action-map)"/>
-
         
         <!--OND Apr 2020: The $nodeset path should have already been resolved. Therefore just set $refz to the $nodeset-->
         <xsl:variable name="refz" select="map:get($action-map,'@ref')"/>
@@ -3312,7 +3370,6 @@
 <!--        <xsl:message use-when="$debugMode">[action-setvalue] Applying action '<xsl:sequence select="serialize($action-map)"/>'</xsl:message>-->
         
         
-        <!-- TODO: use ifVari and WhileVari -->
         <xsl:if test="exists($refz)">
             <xsl:variable name="updated-node" as="node()">
                 <xsl:evaluate xpath="xforms:impose($refz)" context-item="$instanceXML2" namespace-context="$instanceXML2" as="node()" />
@@ -3332,10 +3389,10 @@
                                 
                                 TO DO: handle other possible data types of @value?
                             -->
-                            <xsl:when test="$updated-item = true()">
+                            <xsl:when test="xs:string($updated-item) = 'true'">
                                 <xsl:sequence select="'true'"/>
                             </xsl:when>
-                            <xsl:when test="$updated-item = false()">
+                            <xsl:when test="xs:string($updated-item) = 'false' and not($updated-item = 'false')">
                                 <xsl:sequence select="''"/>
                             </xsl:when>
                             <xsl:otherwise>
@@ -3557,9 +3614,6 @@
         
         <xsl:variable name="instanceXML2" as="element()" select="js:getInstance($instance-context)"/>
         
-        <xsl:variable name="ifVar" select="xforms:getIfStatement($action-map)"/>
-        <xsl:variable name="whileVar" select="xforms:getWhileStatement($action-map)"/>
-         
         <xsl:variable name="delete-node" as="node()*">
             <xsl:choose>
                 <xsl:when test="exists($ref-qualified) and not($ref-qualified = '')">
@@ -3568,18 +3622,6 @@
             </xsl:choose>
         </xsl:variable>
                 
-        <xsl:variable name="ifExecuted" as="xs:boolean">
-            <xsl:choose>
-                <xsl:when test="exists($ifVar)">
-                    <xsl:evaluate xpath="xforms:impose($ifVar)" context-item="$delete-node" namespace-context="$delete-node"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:sequence select="true()" />
-                </xsl:otherwise>
-            </xsl:choose>                    
-        </xsl:variable>
-                       
-        <xsl:if test="$ifExecuted">
             <xsl:variable name="instance-with-delete" as="element()">
                 <xsl:apply-templates select="$instanceXML2" mode="delete-node">
                     <xsl:with-param name="delete-node" select="$delete-node" tunnel="yes"/>
@@ -3619,7 +3661,6 @@
             <xsl:if test="$handler-status = 'inner'">
                 <xsl:sequence select="js:setDeferredUpdateFlags(('rebuild','recalculate','revalidate','refresh'))"/>
             </xsl:if>
-        </xsl:if>
         
     </xsl:template>
     
@@ -3634,11 +3675,27 @@
     <xsl:template name="action-message">
         <xsl:param name="action-map" required="yes" as="map(*)" tunnel="yes"/>
         
-        <xsl:variable name="message-value" as="xs:string" select="map:get($action-map,'value')"/>
+        <xsl:variable name="nested-actions-array" select="map:get($action-map, 'nested-actions')" as="array(map(*))?"/>
+        <xsl:variable name="nested-actions" as="item()*">
+            <xsl:sequence select="array:flatten($nested-actions-array)"/>
+        </xsl:variable>
+        
+        <xsl:variable name="message-components" as="xs:string*">
+            <!--<xsl:variable name="message-value" as="xs:string" select="map:get($action-map,'value')">
+            -->
+            <xsl:for-each select="$nested-actions">
+                <xsl:call-template name="applyActions">
+                    <xsl:with-param name="action-map" select="." tunnel="yes"/>
+                </xsl:call-template>
+            </xsl:for-each>
+        </xsl:variable>
+        
+        <xsl:variable name="message-value" as="xs:string" select="string-join($message-components)"/>
+        
         <!-- XForms 1.1 spec: The default is "modal" if the attribute is not specified -->
         <xsl:variable name="message-level" as="xs:string" select="(map:get($action-map,'@level'), 'modal')[1]"/>
         
-        <xsl:message use-when="$debugMode">[action-message] Message (level '<xsl:value-of select="$message-level"/>') reads "<xsl:value-of select="$message-value"/>"</xsl:message>
+<!--        <xsl:message use-when="$debugMode">[action-message] Message (level '<xsl:value-of select="$message-level"/>') reads "<xsl:value-of select="$message-value"/>"</xsl:message>-->
         
         <!-- TO DO: implement remainder of this action -->
         <xsl:choose>
@@ -3652,7 +3709,52 @@
             <xsl:otherwise/>
         </xsl:choose>
     </xsl:template>
- 
+    
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Template for applying output action (i.e. return a string value)</xd:p>
+        </xd:desc>
+        <xd:param name="action-map">Action map</xd:param>
+    </xd:doc>
+    <xsl:template name="action-output">
+        <xsl:param name="action-map" required="yes" as="map(*)" tunnel="yes"/>
+        
+        <xsl:variable name="instance-id" as="xs:string" select="map:get($action-map,'instance-context')"/>
+        <xsl:variable name="instanceXML" as="element()" select="js:getInstance($instance-id)"/>
+        
+        <xsl:variable name="ref" as="xs:string?">
+            <xsl:choose>
+                <xsl:when test="map:get($action-map,'@value')">
+                    <xsl:sequence select="map:get($action-map,'@value')"/>
+                </xsl:when>
+                <xsl:when test="map:get($action-map,'@ref')">
+                    <xsl:sequence select="map:get($action-map,'@ref')"/>
+                </xsl:when>
+            </xsl:choose>
+        </xsl:variable>
+        
+        <xsl:choose>
+            <xsl:when test="exists($ref)">
+                <xsl:evaluate xpath="xforms:impose($ref)" context-item="$instanceXML" namespace-context="$instanceXML" as="xs:string"/>
+            </xsl:when>
+            <xsl:otherwise/>
+        </xsl:choose>
+        
+        
+    </xsl:template>
+    
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Template for applying 'text' action (i.e. return a string value)</xd:p>
+        </xd:desc>
+        <xd:param name="action-map">Action map</xd:param>
+    </xd:doc>
+    <xsl:template name="action-text">
+        <xsl:param name="action-map" required="yes" as="map(*)" tunnel="yes"/>
+        <xsl:sequence select="map:get($action-map,'@value')"/>        
+    </xsl:template>
+    
+
     <xd:doc scope="component">
         <xd:desc>
             <xd:p>Template for applying setfocus action</xd:p>
