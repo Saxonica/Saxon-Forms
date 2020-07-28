@@ -2800,7 +2800,6 @@
                 <xsl:apply-templates select="./*" mode="namespace-fix"/>
             </xsl:variable>
             <xsl:variable name="instance-key" as="xs:string" select="if (exists(@id)) then xs:string(@id) else $global-default-instance-id"/>
-            <xsl:map-entry key="$instance-key" select="$instance-with-explicit-namespaces"/>
             <xsl:sequence select="js:setInstance($instance-key,$instance-with-explicit-namespaces)"/>
             <xsl:if test="position() = 1">
                 <xsl:sequence select="js:setDefaultInstance($instance-with-explicit-namespaces)"/>
