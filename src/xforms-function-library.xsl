@@ -19,7 +19,7 @@
     
     <xsl:variable name="xform-functions" select="'instance', 'index', 'avg', 'foo', 'current-date', 'random'"/>
     
-    <xsl:function name="xforms:impose" as="xs:string">
+    <xsl:function name="xforms:impose" as="xs:string" visibility="public">
         <xsl:param name="input" as="xs:string" />
         <xsl:variable name="parts" as="xs:string*" >
             <!-- 
@@ -70,7 +70,7 @@
         <xsl:sequence select="$input3" />
     </xsl:function>
     
-    <xsl:function name="xforms:resolve-index" as="xs:string">
+    <xsl:function name="xforms:resolve-index" as="xs:string" visibility="public">
         <xsl:param name="input" as="xs:string" />
         <xsl:variable name="parts" as="xs:string*">
             <xsl:analyze-string select="$input" regex="index\s*\(\s*&apos;([^&apos;]+)&apos;\s*\)">
@@ -88,14 +88,14 @@
         <xsl:sequence select="string-join($parts)" />
     </xsl:function>
     
-    <xsl:function name="xforms:foo" as="xs:boolean">
+    <xsl:function name="xforms:foo" as="xs:boolean" visibility="public">
         <xsl:param name="num" as="xs:integer" />
         
         <xsl:sequence select="$num lt 5" />
         
     </xsl:function>
     
-    <xsl:function name="xforms:index" as="xs:integer">
+    <xsl:function name="xforms:index" as="xs:integer" visibility="public">
         <xsl:param name="repeatID" as="xs:string" />
                 
         <!-- call to js:getRepeatIndex doesn't work on first pass for some reason -->
@@ -106,7 +106,7 @@
         
     </xsl:function>
     
-    <xsl:function name="xforms:random" as="xs:double">
+    <xsl:function name="xforms:random" as="xs:double" visibility="public">
         <xsl:variable name="randomNumber" select="js:Math.random()" as="xs:double"/>
         
         
@@ -116,7 +116,7 @@
     
     <!-- This is almost an implementation of xforms:local-date(), but not quite, since TZ is missing
         It is actually equivalent to: substring(xforms:local-date(), 1, 10) -->
-    <xsl:function name="sfl:current-date" as="xs:string">
+    <xsl:function name="sfl:current-date" as="xs:string" visibility="public">
         <xsl:variable name="today" select="js:getCurrentDate()" as="xs:string"/>
         
         <xsl:sequence select="$today"/>
@@ -124,7 +124,7 @@
     </xsl:function>
     
     <!-- implement XForms instance() function -->
-    <xsl:function name="xforms:instance" as="element()?">
+    <xsl:function name="xforms:instance" as="element()?" visibility="public">
         <xsl:param name="instance-id" as="xs:string"/>
         <xsl:sequence select="js:getInstance($instance-id)"/> 
     </xsl:function>
