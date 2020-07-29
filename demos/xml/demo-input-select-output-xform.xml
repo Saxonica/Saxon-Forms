@@ -28,7 +28,6 @@
             then 'not'
             else ''
             "/>
-            "/>
         <xf:bind nodeset="instance('hello')/demo:PetType" constraint="text() != 'pet'" />
         
         <xf:bind id="test-relevant" nodeset="instance('hello')/demo:CatName" relevant="text() = 'Blanket'"/>
