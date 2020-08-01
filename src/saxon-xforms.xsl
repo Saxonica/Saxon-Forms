@@ -1996,7 +1996,7 @@
         <xsl:variable name="new-name" as="xs:QName" select="QName($current-namespace, name())"/>
         <xsl:element name="{$new-name}" namespace="{$current-namespace}">
             <xsl:namespace name="xforms" select="'http://www.w3.org/2002/xforms'"/>
-            
+            <xsl:copy-of select="namespace::*"/>
             <xsl:apply-templates select="@*,node()" mode="namespace-fix"/>
         </xsl:element>
     </xsl:template>
@@ -3131,8 +3131,7 @@
                                             <xsl:for-each select="$requestBody/*">
                                                 <xsl:variable name="query-part" as="xs:string" select="concat(local-name(),'=',string())"/>
                                                 <xsl:sequence select="$query-part"/>
-                                                <!--                                        <xsl:message use-when="$debugMode">[xforms-submit] Query part: <xsl:value-of select="$query-part"/></xsl:message>-->
-                                                
+<!--                                                <xsl:message use-when="$debugMode">[xforms-submit] Query part: <xsl:value-of select="$query-part"/></xsl:message>-->
                                             </xsl:for-each>
                                         </xsl:when>
                                         <xsl:otherwise/>
@@ -3462,7 +3461,7 @@
             </xsl:apply-templates>
         </xsl:variable>
         
-        <!--        <xsl:message use-when="$debugMode">[xforms-value-changed] Updated XML: <xsl:sequence select="serialize($updatedInstanceXML)"/></xsl:message>-->
+<!--        <xsl:message use-when="$debugMode">[xforms-value-changed] Updated XML: <xsl:sequence select="serialize($updatedInstanceXML)"/></xsl:message>-->
         
         <xsl:sequence select="js:setInstance($instance-id,$updatedInstanceXML)"/>
 
