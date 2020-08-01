@@ -2793,6 +2793,8 @@
         
         <xsl:variable name="model-key" as="xs:string" select="if (exists($model/@id)) then xs:string($model/@id) else $global-default-model-id"/>
         
+<!--        <xsl:sequence select="js:setModel($model-key,$model)"/>-->
+        
         <xsl:variable name="instances" as="element(xforms:instance)*" select="$model/xforms:instance"/>       
         
         <xsl:for-each select="$instances">
@@ -3100,8 +3102,16 @@
                         <xsl:variable name="requestBody" as="node()?">
                             <xsl:choose>
                                 <xsl:when test="$refi">
-                                    <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceXML" namespace-context="$instanceXML"/>
-                                </xsl:when>
+                                    <xsl:analyze-string select="$refi" regex="^\s*instance\s*\(\s*&apos;([^&apos;]*)&apos;\s*\)\s*$">
+                                        <xsl:matching-substring>
+                                            <xsl:variable name="instance-id" select="regex-group(1)"/>
+                                            <xsl:sequence select="js:getInstance($instance-id)"/>
+                                        </xsl:matching-substring>
+                                        <xsl:non-matching-substring>
+                                            <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                                        </xsl:non-matching-substring>
+                                    </xsl:analyze-string>
+                                 </xsl:when>
                                 <xsl:otherwise>
                                     <xsl:sequence select="$updatedInstanceXML"/>
                                 </xsl:otherwise>

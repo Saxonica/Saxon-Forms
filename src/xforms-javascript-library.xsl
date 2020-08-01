@@ -8,6 +8,7 @@
         var XForm = null;
         var defaultInstance = null;
         
+        var models = {}
         var instances = {};
         var bindings = [];
         var actions = {};
@@ -34,7 +35,15 @@
             today = yyyy + '-' + mm + '-' + dd;
             return today;
         }
-                
+        
+        var setModel = function(name, value) {
+            models[name] = value;
+        }
+        var getModel = function(name) {
+            return models[name];
+        }
+        
+        
         var setModelInstances = function(name, value) {
             modelInstanceMap[name] = value;
         } 
