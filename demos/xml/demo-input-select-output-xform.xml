@@ -32,7 +32,7 @@
         
         <xf:bind id="test-relevant" nodeset="instance('hello')/demo:CatName" relevant="text() = 'Blanket'"/>
         
-        <xf:submission id="test" resource="none" instance="hello"/>
+        <xf:submission id="test" resource="none" ref="instance('hello')" instance="hello"/>
         
         
     </xf:model>
