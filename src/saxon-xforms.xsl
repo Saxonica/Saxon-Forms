@@ -1996,7 +1996,7 @@
         <xsl:variable name="new-name" as="xs:QName" select="QName($current-namespace, name())"/>
         <xsl:element name="{$new-name}" namespace="{$current-namespace}">
             <xsl:namespace name="xforms" select="'http://www.w3.org/2002/xforms'"/>
-            
+            <xsl:copy-of select="namespace::*"/>
             <xsl:apply-templates select="@*,node()" mode="namespace-fix"/>
         </xsl:element>
     </xsl:template>
@@ -2793,6 +2793,8 @@
         
         <xsl:variable name="model-key" as="xs:string" select="if (exists($model/@id)) then xs:string($model/@id) else $global-default-model-id"/>
         
+<!--        <xsl:sequence select="js:setModel($model-key,$model)"/>-->
+        
         <xsl:variable name="instances" as="element(xforms:instance)*" select="$model/xforms:instance"/>       
         
         <xsl:for-each select="$instances">
@@ -3100,8 +3102,16 @@
                         <xsl:variable name="requestBody" as="node()?">
                             <xsl:choose>
                                 <xsl:when test="$refi">
-                                    <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceXML" namespace-context="$instanceXML"/>
-                                </xsl:when>
+                                    <xsl:analyze-string select="$refi" regex="^\s*instance\s*\(\s*&apos;([^&apos;]*)&apos;\s*\)\s*$">
+                                        <xsl:matching-substring>
+                                            <xsl:variable name="instance-id" select="regex-group(1)"/>
+                                            <xsl:sequence select="js:getInstance($instance-id)"/>
+                                        </xsl:matching-substring>
+                                        <xsl:non-matching-substring>
+                                            <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                                        </xsl:non-matching-substring>
+                                    </xsl:analyze-string>
+                                 </xsl:when>
                                 <xsl:otherwise>
                                     <xsl:sequence select="$updatedInstanceXML"/>
                                 </xsl:otherwise>
@@ -3131,8 +3141,7 @@
                                             <xsl:for-each select="$requestBody/*">
                                                 <xsl:variable name="query-part" as="xs:string" select="concat(local-name(),'=',string())"/>
                                                 <xsl:sequence select="$query-part"/>
-                                                <!--                                        <xsl:message use-when="$debugMode">[xforms-submit] Query part: <xsl:value-of select="$query-part"/></xsl:message>-->
-                                                
+<!--                                                <xsl:message use-when="$debugMode">[xforms-submit] Query part: <xsl:value-of select="$query-part"/></xsl:message>-->
                                             </xsl:for-each>
                                         </xsl:when>
                                         <xsl:otherwise/>
@@ -3462,7 +3471,7 @@
             </xsl:apply-templates>
         </xsl:variable>
         
-        <!--        <xsl:message use-when="$debugMode">[xforms-value-changed] Updated XML: <xsl:sequence select="serialize($updatedInstanceXML)"/></xsl:message>-->
+<!--        <xsl:message use-when="$debugMode">[xforms-value-changed] Updated XML: <xsl:sequence select="serialize($updatedInstanceXML)"/></xsl:message>-->
         
         <xsl:sequence select="js:setInstance($instance-id,$updatedInstanceXML)"/>
 
