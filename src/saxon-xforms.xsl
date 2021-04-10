@@ -1936,12 +1936,12 @@
             <xd:p>Template for updating element within instance XML based on new value in binding calculation (xforms:bind/@calculate)</xd:p>
         </xd:desc>
         <xd:param name="updated-nodes">Nodes within instance that are affected by binding calculations</xd:param>
-        <xd:param name="updated-values">Values of those nodes</xd:param>
+        <xd:param name="updated-value">Value of those nodes</xd:param>
     </xd:doc>
 
     <xsl:template match="*" mode="recalculate">
         <xsl:param name="updated-nodes" as="node()*" tunnel="yes"/>
-        <xsl:param name="updated-values" as="xs:string*" tunnel="yes"/>
+        <xsl:param name="updated-value" as="xs:string?" tunnel="yes"/>
         
         <xsl:variable name="updated-node" as="element()?" select="$updated-nodes[. is fn:current()]"/>
         
@@ -1951,9 +1951,7 @@
             
             <xsl:choose>
                 <xsl:when test="exists($updated-node)">
-                    <xsl:variable name="updated-node-position" as="xs:integer" select="$updated-nodes[. is fn:current()]/position()"/>
-<!--                    <xsl:message use-when="$debugMode">[recalculate mode] setting new value <xsl:sequence select="$updated-values[$updated-node-position]"/></xsl:message>-->
-                    <xsl:sequence select="$updated-values[$updated-node-position]"/>
+                    <xsl:sequence select="$updated-value"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:apply-templates select="child::node()" mode="recalculate"/>
@@ -1967,18 +1965,17 @@
             <xd:p>Template for updating attribute within instance XML based on new value in binding calculation (xforms:bind/@calculate)</xd:p>
         </xd:desc>
         <xd:param name="updated-nodes">Nodes within instance that are affected by binding calculations</xd:param>
-        <xd:param name="updated-values">Values of those nodes</xd:param>
+        <xd:param name="updated-value">Value of those nodes</xd:param>
     </xd:doc>
     <xsl:template match="@*" mode="recalculate">
         <xsl:param name="updated-nodes" as="node()*" tunnel="yes"/>
-        <xsl:param name="updated-values" as="xs:string*" tunnel="yes"/>
+        <xsl:param name="updated-value" as="xs:string?" tunnel="yes"/>
         
         <xsl:variable name="updated-node" as="attribute()?" select="$updated-nodes[. is fn:current()]"/>
         
         <xsl:choose>
             <xsl:when test="exists($updated-node)">
-                <xsl:variable name="updated-node-position" as="xs:integer" select="$updated-nodes[. is fn:current()]/position()"/>
-                <xsl:attribute name="{name(.)}" select="$updated-values[$updated-node-position]"/>
+                <xsl:attribute name="{name(.)}" select="$updated-value"/>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:copy-of select="."/>
@@ -2899,43 +2896,61 @@
             <xsl:variable name="instance-id" as="xs:string" select="."/>
             <xsl:variable name="instanceXML" select="js:getInstance(.)"/>
             <xsl:variable name="instance-calculation-bindings" as="element(xforms:bind)*" select="$bindings[@instance-context = $instance-id][exists(@calculate)]"/>
-            
-<!--            <xsl:message use-when="$debugMode">[xforms-recalculate] Calculation bindings relevant to model instance '<xsl:sequence select="$instance-id"/>': <xsl:sequence select="fn:serialize($instance-calculation-bindings)"/></xsl:message>-->
-            
-            <!-- sequence of nodes affected by calculations -->
-            <xsl:variable name="calculated-nodes" as="node()*">
-                <xsl:for-each select="$instance-calculation-bindings">
-                    <xsl:evaluate xpath="xforms:impose(@nodeset)" context-item="$instanceXML" namespace-context="$instanceXML"/>    
-                </xsl:for-each>
-            </xsl:variable>
-            
-            <!-- sequence of new values for those nodes -->
-            <xsl:variable name="calculated-values" as="xs:string*">
-                <xsl:for-each select="$instance-calculation-bindings">
-                    <!-- handle possibility that evaluation will return null -->
-                    <xsl:variable name="value" as="xs:string?">
-                        <xsl:evaluate xpath="xforms:impose(@calculate)" context-item="$instanceXML" namespace-context="$instanceXML"/>
-                    </xsl:variable>
-                    <!-- 
-                        return at least an empty string
-                        need to preserve sequence in step with calculated-nodes
-                        
-                        TO DO: what if a calculation binding references a set of nodes, not just a single node?
-                    -->
-                    <xsl:sequence select="($value,'')[1]"/>
-                </xsl:for-each>
-            </xsl:variable>
-            
+
             <xsl:variable name="updatedInstanceXML" as="element()">
-                <xsl:apply-templates select="$instanceXML" mode="recalculate">
-                    <xsl:with-param name="updated-nodes" select="$calculated-nodes" tunnel="yes"/>
-                    <xsl:with-param name="updated-values" select="$calculated-values" tunnel="yes"/>
-                </xsl:apply-templates>
+                <xsl:call-template name="xforms-recalculate-binding">
+                    <xsl:with-param name="instanceXML" as="element()" select="$instanceXML"/>
+                    <xsl:with-param name="calculation-bindings" as="element(xforms:bind)*" select="$instance-calculation-bindings" tunnel="yes"/>
+                    <xsl:with-param name="counter" as="xs:integer" select="1"/>
+                </xsl:call-template>
             </xsl:variable>
             
             <xsl:sequence select="js:setInstance($instance-id,$updatedInstanceXML)"/>
+            
         </xsl:for-each>
 
+       
+    
+    </xsl:template>
+    
+    
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Update instance with one calculated binding, and move on to the next</xd:p>
+        </xd:desc>
+        <xd:param name="instanceXML">XForms instance to be updated</xd:param>
+        <xd:param name="calculation-bindings">xforms:bind elem,ents with @calculate that are relevant to this instance</xd:param>
+        <xd:param name="counter">Integer identifying the binding to process in this iteration</xd:param>
+    </xd:doc>
+    <xsl:template name="xforms-recalculate-binding">
+        <xsl:param name="instanceXML" as="element()" required="yes"/>
+        <xsl:param name="calculation-bindings" as="element(xforms:bind)*" tunnel="yes"/>
+        <xsl:param name="counter" as="xs:integer" required="yes"/>
+        <xsl:variable name="this-binding" as="element(xforms:bind)?" select="$calculation-bindings[$counter]"/>
+        <xsl:choose>
+            <xsl:when test="exists($this-binding)">
+                <xsl:variable name="calculated-nodes" as="node()*">
+                    <xsl:evaluate xpath="xforms:impose($this-binding/@nodeset)" context-item="$instanceXML" namespace-context="$instanceXML"/>    
+                </xsl:variable>
+                <xsl:variable name="value" as="xs:string?">
+                    <xsl:evaluate xpath="xforms:impose($this-binding/@calculate)" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                </xsl:variable>
+                <xsl:variable name="updatedInstanceXML" as="element()">
+                    <xsl:apply-templates select="$instanceXML" mode="recalculate">
+                        <xsl:with-param name="updated-nodes" select="$calculated-nodes" tunnel="yes"/>
+                        <xsl:with-param name="updated-value" select="$value" tunnel="yes"/>
+                    </xsl:apply-templates>
+                </xsl:variable>
+                <!-- move on to next calculation -->
+                <xsl:call-template name="xforms-recalculate-binding">
+                    <xsl:with-param name="instanceXML" select="$updatedInstanceXML"/>
+                    <xsl:with-param name="counter" select="$counter + 1"/>
+                </xsl:call-template>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:sequence select="$instanceXML"/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
     
     <xd:doc scope="component">
@@ -3265,7 +3280,7 @@
                     <xsl:apply-templates select="$instanceXML" mode="recalculate">
                         <xsl:with-param name="instance-id" select="$instance-id"/>
                         <xsl:with-param name="updated-nodes" select="$updatedNode" tunnel="yes"/>
-                        <xsl:with-param name="updated-values" select="$new-value" tunnel="yes"/>
+                        <xsl:with-param name="updated-value" select="$new-value" tunnel="yes"/>
                     </xsl:apply-templates>
                 </xsl:when>
                 <xsl:otherwise>
@@ -3311,7 +3326,7 @@
         
         <xsl:variable name="instanceXML2" as="element()" select="js:getInstance($instance-context)"/>
         
-<!--        <xsl:message use-when="$debugMode">[action-setvalue] Applying action '<xsl:sequence select="serialize($action-map)"/>'</xsl:message>-->
+        <xsl:message use-when="$debugMode">[action-setvalue] Applying action '<xsl:sequence select="serialize($action-map)"/>'</xsl:message>
         
         
         <xsl:if test="exists($refz)">
@@ -3325,7 +3340,8 @@
                         <xsl:variable name="updated-item" as="item()">
                             <xsl:evaluate xpath="xforms:impose(map:get($action-map,'@value'))" context-item="$updated-node" namespace-context="$updated-node" />
                         </xsl:variable>
-<!--                        <xsl:message use-when="$debugMode">[action-setvalue] updated item '<xsl:sequence select="serialize($updated-item)"/>'</xsl:message>-->
+                        <!--<xsl:message use-when="$debugMode">[action-setvalue] evaluating @value '<xsl:sequence select="map:get($action-map,'@value')"/>'</xsl:message>
+                        <xsl:message use-when="$debugMode">[action-setvalue] updated item '<xsl:sequence select="serialize($updated-item)"/>'</xsl:message>-->
                         <xsl:choose>
                             <!-- 
                                 Handle case where @value evaluates to a boolean.
@@ -3336,7 +3352,8 @@
                             <xsl:when test="xs:string($updated-item) = 'true'">
                                 <xsl:sequence select="'true'"/>
                             </xsl:when>
-                            <xsl:when test="xs:string($updated-item) = 'false' and not($updated-item = 'false')">
+                            <!-- handle boolean false() value-->
+                            <xsl:when test="xs:string($updated-item) = 'false' and not($updated-item)">
                                 <xsl:sequence select="''"/>
                             </xsl:when>
                             <xsl:otherwise>
@@ -3358,7 +3375,7 @@
             <xsl:variable name="updatedInstanceXML" as="element()">
                 <xsl:apply-templates select="$instanceXML2" mode="recalculate">
                     <xsl:with-param name="updated-nodes" select="$updated-node" tunnel="yes"/>
-                    <xsl:with-param name="updated-values" select="$updated-value" tunnel="yes"/>
+                    <xsl:with-param name="updated-value" select="$updated-value" tunnel="yes"/>
                 </xsl:apply-templates>
             </xsl:variable>
             
@@ -3403,7 +3420,7 @@
             <xsl:apply-templates select="$instanceXML" mode="recalculate">
                 <xsl:with-param name="instance-id" select="$instance-id"/>
                 <xsl:with-param name="updated-nodes" select="$updatedNode" tunnel="yes"/>
-                <xsl:with-param name="updated-values" select="$new-value" tunnel="yes"/>
+                <xsl:with-param name="updated-value" select="$new-value" tunnel="yes"/>
             </xsl:apply-templates>
         </xsl:variable>
         
