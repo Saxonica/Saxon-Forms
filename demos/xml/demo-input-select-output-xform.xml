@@ -12,6 +12,7 @@
                 <demo:PetType>pet</demo:PetType>
                 <demo:PetDescription/>
                 <demo:CatName></demo:CatName>
+                <demo:CatNameForDisplayCheck></demo:CatNameForDisplayCheck>
                 <demo:FeedingTime>08:00</demo:FeedingTime>
                 <demo:FedToday>1</demo:FedToday>
                 <demo:FedTodayStatement></demo:FedTodayStatement>
@@ -21,18 +22,19 @@
         
         <xf:bind nodeset="instance('hello')/demo:FeedingTime" type="xs:time" />
         <xf:bind nodeset="instance('hello')/demo:FedToday" type="xs:boolean" />
+        <xf:bind nodeset="instance('hello')/demo:CatNameForDisplayCheck" calculate="instance('hello')/demo:CatName/text()"/>
         <xf:bind nodeset="instance('hello')/demo:FedTodayStatement" calculate="
             if ( 
-              xs:string(instance('hello')/demo:FedToday)  = '' 
-             )
+            xs:string(instance('hello')/demo:FedToday)  = '' 
+            )
             then 'not'
             else ''
             "/>
         <xf:bind nodeset="instance('hello')/demo:PetType" constraint="text() != 'pet'" />
         
-        <xf:bind id="test-relevant" nodeset="instance('hello')/demo:CatName" relevant="text() = 'Blanket'"/>
+        <xf:bind id="test-relevant" nodeset="instance('hello')/demo:CatNameForDisplayCheck" relevant="text() = 'Blanket'"/>
         
-        <xf:submission id="test" resource="none" ref="instance('hello')" instance="hello"/>
+        <xf:submission id="test" ref="instance('hello')" instance="hello"/>
         
         
     </xf:model>
