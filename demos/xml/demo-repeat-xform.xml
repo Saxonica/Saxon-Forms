@@ -45,6 +45,8 @@
             <demo:ingredient/>
         </xf:instance>
         
+       
+        
     </xf:model>
     
     
@@ -125,7 +127,7 @@
                      tried position() instead of index('edit-ingredient-repeat') but didn't work
                      possibly because focus was on a different row from where 'Down' was clicked
                      -->
-                <xf:action ev:event="DOMActivate" if="index('edit-ingredient-repeat') != count(ingredients/ingredient)">
+                <xf:action ev:event="DOMActivate" if="index('edit-ingredient-repeat') != count(demo:ingredients/demo:ingredient)">
                     <!-- insert changes "focus" index to the newly inserted node -->
                     <xf:insert context="." nodeset="demo:ingredients/demo:ingredient" at="index('edit-ingredient-repeat') + 1" position="after" origin="demo:ingredients/demo:ingredient[index('edit-ingredient-repeat')]"/>
                     <!-- original node is now at index() - 2 -->
