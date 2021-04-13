@@ -201,14 +201,13 @@
         
         <!-- populate Javascript variables -->
         <xsl:sequence select="js:setXFormsDoc($xforms-doci)"/>
+        
         <xsl:sequence select="js:setXForm($xform)"/>
         <!-- clear deferred update flags only if we're building from scratch -->
         <xsl:if test="empty($instance-docs)">
             <xsl:sequence select="js:clearDeferredUpdateFlags()" />    
         </xsl:if>
         
-        
-
         <!-- register submissions in a map -->
         <xsl:variable name="submissions" as="map(xs:string, map(*))">
             <xsl:map>
@@ -377,7 +376,18 @@
                 <xsl:variable name="nodeset-mod" as="xs:string" select="xforms:impose($nodeset)"/>
                 <xsl:variable name="instanceXML" as="element()" select="js:getInstance($instance-id)"/>
                 <xsl:variable name="context-node" as="node()*">
-                    <xsl:evaluate xpath="$nodeset-mod" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                    <xsl:try>
+                        <xsl:evaluate xpath="$nodeset-mod" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                        <xsl:catch>
+                            <xsl:variable name="instanceDoc" as="document-node()">
+                                <xsl:document>
+                                    <xsl:sequence select="$instanceXML"/>
+                                </xsl:document>
+                            </xsl:variable>
+                            <xsl:evaluate xpath="xforms:impose($nodeset-mod)" context-item="$instanceDoc" namespace-context="$instanceDoc"/> 
+                        </xsl:catch>
+                    </xsl:try>
+                    
                 </xsl:variable>
                
 <!--                <xsl:message use-when="$debugMode">[get-binding mode for <xsl:value-of select="name(.)"/>] context node: <xsl:sequence select="fn:serialize($context-node)"/></xsl:message>-->
@@ -389,7 +399,18 @@
                         <xsl:variable name="binding-nodeset-mod" as="xs:string" select="xforms:impose(xs:string(@nodeset))"/>
                         
                         <xsl:variable name="binding-context-node" as="node()*">
-                            <xsl:evaluate xpath="$binding-nodeset-mod" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                            <xsl:try>
+                                <xsl:evaluate xpath="$binding-nodeset-mod" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                                <xsl:catch>
+                                    <xsl:variable name="instanceDoc" as="document-node()">
+                                        <xsl:document>
+                                            <xsl:sequence select="$instanceXML"/>
+                                        </xsl:document>
+                                    </xsl:variable>
+                                    <xsl:evaluate xpath="xforms:impose($binding-nodeset-mod)" context-item="$instanceDoc" namespace-context="$instanceDoc"/> 
+                                </xsl:catch>
+                            </xsl:try>
+                            
                         </xsl:variable>
                                                 
                         <xsl:if test="some $n in $binding-context-node satisfies $n is $context-node">
@@ -770,6 +791,15 @@
             <xsl:choose>
                 <xsl:when test="starts-with($relative,'/')">
                     <xsl:sequence select="$relative"/>
+                   <!-- <!-\- remove root element from XPath -\->
+                    <xsl:analyze-string select="$relative" regex="^/[^/]+/(.*)$">
+                        <xsl:matching-substring>
+                            <xsl:sequence select="regex-group(1)"/>
+                        </xsl:matching-substring>
+                        <xsl:non-matching-substring>
+                            <xsl:message>[xforms:resolveXPathStrings] Invalid XPath: '<xsl:value-of select="$relative"/>'</xsl:message>
+                        </xsl:non-matching-substring>
+                    </xsl:analyze-string>-->
                 </xsl:when>
                 <xsl:when test="starts-with($relative,'instance(')">
                     <xsl:sequence select="$relative"/>
@@ -781,70 +811,7 @@
                     <xsl:sequence select="$base"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:sequence select="concat($base,'/',$relative)"/>
-                    
-                    <!-- MD 2020-04-11 REDUNDANT? if we're not comparing strings but nodes -->
-                   <!-- <xsl:variable name="parentCallCount" select="if(contains($relative, '/')) then count(tokenize($relative, '/')[. ='..']) else if(contains($relative, '..')) then 1 else 0"/>
-                    <xsl:variable name="slashes"
-                        select="if(contains($base, '/')) then index-of(string-to-codepoints($base), string-to-codepoints('/')) else 0"
-                        as="xs:integer*"/>
-                    
-                    <!-\-                <xsl:message use-when="$debugMode">resolveXPathString base =<xsl:value-of select="$base"/> 
-                    relative <xsl:value-of select="$relative"/>
-                    parentCallCount = <xsl:value-of select="$parentCallCount"/>
-                    slashes = <xsl:value-of select="$slashes"/>
-                </xsl:message>
--\->                
-                    <xsl:variable name="parentSlash"
-                        as="xs:integer">
-                        <xsl:choose>
-                            <xsl:when test="(count($slashes) >= $parentCallCount) and ($parentCallCount>0)">
-                                <xsl:sequence select="$slashes[last() - ($parentCallCount - 1)]" />
-                            </xsl:when>
-                          <xsl:when test="(count($slashes) = ($parentCallCount - 1)) and ($parentCallCount>0)">
-                                <!-\-OND Fix on Apr 2020:  Here we are at the context node -\->
-                                <xsl:sequence select="0" />
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:sequence select="$slashes[last()]" />
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:variable>
-                    
-                    <!-\- <xsl:message use-when="$debugMode">[xforms:resolveXPathStrings] base =<xsl:value-of select="$base"/> 
-                    lastSlash = <xsl:value-of select="$parentSlash"/> 
-                    relative = <xsl:value-of select="$relative"/> 
-                    countparent = <xsl:value-of select="$parentCallCount"/>
-                    <xsl:if test="$parentCallCount > 0">
-                        base without parent nodes = <xsl:value-of select="substring($base, 1, $parentSlash)" />
-                        relativeCut = <xsl:value-of select="replace($relative, '\.\./', '')"/>
-                    </xsl:if>
-                    
-                </xsl:message>-\->
-                    
-                    <xsl:choose>
-                        <xsl:when test="$parentCallCount gt 0">
-
-                          <!-\- TODO - need to resolve path. This does not work properly -\->  
-                          <!-\- OND Apr 2020: This fix is an attempt to complex paths not resolving properly 
-                              We now have the second when clause to handle going back up to the root and down
-                              some other part of the tree. -\->
-                            <xsl:sequence
-                                select="concat(substring($base, 1, $parentSlash), replace($relative, '\.\./', ''))"
-                            />
-                        </xsl:when>
-                        <xsl:when test="$parentCallCount eq 0">
-                          <!-\- OND apr 2020: In addition to the above comment, this fix allows us to go back up the root 
-                            and navigate soem other branch without giving some incorrect path. -\->
-                            <xsl:sequence
-                                select="replace($relative, '\.\./', '')"
-                            />
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:sequence select="concat($base, '/', $relative)"/>
-                        </xsl:otherwise>
-                    </xsl:choose>-->
-                    
+                    <xsl:sequence select="concat($base,'/',$relative)"/>                    
                 </xsl:otherwise>
             </xsl:choose>            
         </xsl:variable>
@@ -892,17 +859,31 @@
     </xd:doc>
     <xsl:function name="xforms:check-constraints-on-fields" as="item()*">
         <xsl:param name="instanceXML" as="element()"/>
-        
+        <xsl:variable name="instanceDoc" as="document-node()">
+            <xsl:document>
+                <xsl:sequence select="$instanceXML"/>
+            </xsl:document>
+        </xsl:variable>
         <xsl:variable name="constraint-fieldsi" select="ixsl:page()//*[@data-constraint]" as="item()*"/>
         
         <xsl:for-each select="$constraint-fieldsi">
             <xsl:variable name="contexti" as="node()">
-                <xsl:evaluate xpath="xforms:impose(@data-ref)" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                <xsl:try>
+                    <xsl:evaluate xpath="xforms:impose(@data-ref)" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                    <xsl:catch>
+                        <xsl:evaluate xpath="xforms:impose(@data-ref)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>    
+                    </xsl:catch>
+                </xsl:try>
             </xsl:variable>
             <xsl:message use-when="$debugMode">[xforms:check-constraints-on-fields] Evaluating XPath: <xsl:value-of select="@data-ref"/></xsl:message>
             
             <xsl:variable name="resulti" as="xs:boolean">
-                <xsl:evaluate xpath="xforms:impose(@data-constraint)" context-item="$contexti" namespace-context="$instanceXML"/>
+                <xsl:try>
+                    <xsl:evaluate xpath="xforms:impose(@data-constraint)" context-item="$contexti" namespace-context="$instanceXML"/>
+                    <xsl:catch>
+                        <xsl:evaluate xpath="xforms:impose(@data-constraint)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>    
+                    </xsl:catch>
+                </xsl:try>
             </xsl:variable>
             <xsl:sequence select="if (not($resulti)) then . else ()"/>
         </xsl:for-each>
@@ -1054,11 +1035,14 @@
             <xsl:apply-templates select="." mode="get-data-ref"/>
         </xsl:variable>
         
+         
         <xsl:variable name="this-instance-id" as="xs:string">
             <xsl:apply-templates select="." mode="get-context-instance-id">
                 <xsl:with-param name="nodeset" select="$refi"/>
             </xsl:apply-templates>
         </xsl:variable>
+        
+        
         
         <xsl:variable name="bindingi" as="element(xforms:bind)*">
             <xsl:apply-templates select="." mode="get-binding">
@@ -1110,11 +1094,22 @@
         <xsl:param name="instance-context" as="xs:string"/>
         <xsl:param name="binding" as="element(xforms:bind)*" tunnel="yes"/>
         
+        <xsl:variable name="instanceXML" as="element()" select="js:getInstance($instance-context)"/>   
+        <xsl:variable name="instanceDoc" as="document-node()">
+            <xsl:document>
+                <xsl:sequence select="$instanceXML"/>
+            </xsl:document>
+        </xsl:variable>
+        
         <xsl:variable name="instanceField" as="node()?">
             <xsl:choose>
                 <xsl:when test="$nodeset != ''">
-                    <xsl:variable name="instanceXML" as="element()" select="js:getInstance($instance-context)"/>            
-                    <xsl:evaluate xpath="xforms:impose($nodeset)" context-item="$instanceXML" namespace-context="$instanceXML"/>     
+                    <xsl:try>
+                        <xsl:evaluate xpath="xforms:impose($nodeset)" context-item="$instanceXML" namespace-context="$instanceXML"/> 
+                        <xsl:catch>
+                            <xsl:evaluate xpath="xforms:impose($nodeset)" context-item="$instanceDoc" namespace-context="$instanceDoc"/> 
+                        </xsl:catch>
+                    </xsl:try>
                 </xsl:when>
                 <xsl:when test="exists($binding)">
                     <xsl:sequence select="js:getInstance(xs:string($binding/@instance-context))"/>
@@ -1136,7 +1131,12 @@
         <xsl:variable name="valueExecuted" as="xs:string">
             <xsl:choose>
                 <xsl:when test="exists(@value)">
-                   <xsl:evaluate xpath="xforms:impose(@value)" context-item="$instanceField" namespace-context="$namespace-context-item" as="xs:string" /> 
+                    <xsl:try>
+                        <xsl:evaluate xpath="xforms:impose(@value)" context-item="$instanceField" namespace-context="$namespace-context-item"/> 
+                        <xsl:catch>
+                            <xsl:evaluate xpath="xforms:impose(@value)" context-item="$instanceDoc" namespace-context="$instanceDoc"/> 
+                        </xsl:catch>
+                    </xsl:try>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="$instanceField"/>
@@ -1226,8 +1226,19 @@
         
         <xsl:variable name="instanceField" as="node()?">
             <xsl:if test="$nodeset != ''">
-                <xsl:variable name="instanceXML" as="element()" select="js:getInstance($instance-context)"/>            
-                <xsl:evaluate xpath="xforms:impose($nodeset)" context-item="$instanceXML" namespace-context="$instanceXML"/>                
+                <xsl:variable name="instanceXML" as="element()" select="js:getInstance($instance-context)"/>  
+                <xsl:try>
+                    <xsl:evaluate xpath="xforms:impose($nodeset)" context-item="$instanceXML" namespace-context="$instanceXML"/>              
+                    <xsl:catch>
+                        <xsl:variable name="instanceDoc" as="document-node()">
+                            <xsl:document>
+                                <xsl:sequence select="$instanceXML"/>
+                            </xsl:document>
+                        </xsl:variable>
+                        <xsl:evaluate xpath="xforms:impose($nodeset)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>              
+                    </xsl:catch>
+                </xsl:try>
+                  
             </xsl:if>
         </xsl:variable>
                             
@@ -1372,7 +1383,17 @@
         <xsl:variable name="instanceField" as="node()?">
             <xsl:if test="$nodeset != ''">
                 <xsl:variable name="instanceXML" as="element()" select="js:getInstance($instance-context)"/>            
-                <xsl:evaluate xpath="xforms:impose($nodeset)" context-item="$instanceXML" namespace-context="$instanceXML"/>                
+                <xsl:try>
+                    <xsl:evaluate xpath="xforms:impose($nodeset)" context-item="$instanceXML" namespace-context="$instanceXML"/>              
+                    <xsl:catch>
+                        <xsl:variable name="instanceDoc" as="document-node()">
+                            <xsl:document>
+                                <xsl:sequence select="$instanceXML"/>
+                            </xsl:document>
+                        </xsl:variable>
+                        <xsl:evaluate xpath="xforms:impose($nodeset)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>              
+                    </xsl:catch>
+                </xsl:try>
             </xsl:if>
         </xsl:variable>
         
@@ -1466,7 +1487,17 @@
         <xsl:variable name="instanceField" as="node()?">
             <xsl:if test="$nodeset != ''">
                 <xsl:variable name="instanceXML" as="element()" select="js:getInstance($instance-context)"/>            
-                <xsl:evaluate xpath="xforms:impose($nodeset)" context-item="$instanceXML" namespace-context="$instanceXML"/>                
+                <xsl:try>
+                    <xsl:evaluate xpath="xforms:impose($nodeset)" context-item="$instanceXML" namespace-context="$instanceXML"/>              
+                    <xsl:catch>
+                        <xsl:variable name="instanceDoc" as="document-node()">
+                            <xsl:document>
+                                <xsl:sequence select="$instanceXML"/>
+                            </xsl:document>
+                        </xsl:variable>
+                        <xsl:evaluate xpath="xforms:impose($nodeset)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>              
+                    </xsl:catch>
+                </xsl:try>
             </xsl:if>
         </xsl:variable>                
         
@@ -1677,7 +1708,7 @@
                             <xsl:value-of select="number(@startindex)"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <!--<xsl:message>[xforms:repeat] value of @startindex ('<xsl:value-of select="@startindex"/>') is not a number. Setting the index to '1'</xsl:message>-->
+<!--                            <xsl:message>[xforms:repeat] value of @startindex ('<xsl:value-of select="@startindex"/>') is not a number. Setting the index to '1'</xsl:message>-->
                             <xsl:value-of select="1"/>
                         </xsl:otherwise>
                     </xsl:choose>
@@ -1693,7 +1724,17 @@
         <xsl:variable name="selectedRepeatVar" as="element()*">
             <xsl:sequence use-when="$debugTiming" select="js:startTime(concat('XForms-repeat-evaluate', $time-id))" />
             <xsl:variable name="instanceXML" as="element()" select="js:getInstance($this-instance-id)"/>            
-            <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceXML" namespace-context="$instanceXML"/>
+            <xsl:try>
+                <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceXML" namespace-context="$instanceXML"/>              
+                <xsl:catch>
+                    <xsl:variable name="instanceDoc" as="document-node()">
+                        <xsl:document>
+                            <xsl:sequence select="$instanceXML"/>
+                        </xsl:document>
+                    </xsl:variable>
+                    <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>              
+                </xsl:catch>
+            </xsl:try>
             <xsl:sequence use-when="$debugTiming" select="js:endTime(concat('XForms-repeat-evaluate', $time-id))" />
         </xsl:variable>
         
@@ -2315,7 +2356,7 @@
     <xd:doc scope="component">
         <xd:desc>Identify when an XForms control is "relevant".</xd:desc>
         <xd:param name="xformsControl">XForms control element, e.g. input, output. NOTE: could be an HTML rendering of such an element.</xd:param>
-        <xd:param name="instanceField">XForms instande or instance field relevant to the control</xd:param>
+        <xd:param name="instanceField">XForms instance or instance field relevant to the control</xd:param>
         <xd:param name="binding">xforms:bind elements relevant to this control</xd:param>
     </xd:doc>
     <xsl:template name="getRelevantStatus" as="xs:boolean">
@@ -2392,7 +2433,17 @@
                 "/>
             
             <xsl:variable name="value" as="xs:string?">
-                <xsl:evaluate xpath="$xpath-mod" context-item="$contexti" namespace-context="$namespace-context-item"/>
+                <xsl:try>
+                    <xsl:evaluate xpath="$xpath-mod" context-item="$contexti" namespace-context="$namespace-context-item"/>
+                    <xsl:catch>
+                        <xsl:variable name="instanceDoc" as="document-node()">
+                            <xsl:document>
+                                <xsl:sequence select="$contexti"/>
+                            </xsl:document>
+                        </xsl:variable>
+                        <xsl:evaluate xpath="xforms:impose($xpath-mod)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>              
+                    </xsl:catch>
+                </xsl:try>
             </xsl:variable>
                         
             <xsl:variable name="associated-form-control" select="ixsl:page()//*[@id = $this-key]" as="node()?"/>
@@ -2452,11 +2503,28 @@
         <!-- go through all form controls where @data-relevant has been set -->
         <xsl:for-each select="ixsl:page()//*[@data-relevant]">
             <xsl:variable name="instanceXML" select="js:getInstance(string(@instance-context))" as="element()"/>
+            <xsl:variable name="instanceDoc" as="document-node()">
+                <xsl:document>
+                    <xsl:sequence select="$instanceXML"/>
+                </xsl:document>
+            </xsl:variable>
+            
             <xsl:variable name="context-node" as="node()?">
-                <xsl:evaluate xpath="string(xforms:impose(@data-ref))" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                <xsl:try>
+                    <xsl:evaluate xpath="string(xforms:impose(@data-ref))" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                    <xsl:catch>
+                        <xsl:evaluate xpath="string(xforms:impose(@data-ref))" context-item="$instanceDoc" namespace-context="$instanceDoc"/>              
+                    </xsl:catch>
+                </xsl:try>
             </xsl:variable>
             <xsl:variable name="relevantStatus" as="xs:boolean">
-                <xsl:evaluate xpath="string(xforms:impose(@data-relevant))" context-item="$context-node" namespace-context="$instanceXML"/>
+                <xsl:try>
+                    <xsl:evaluate xpath="string(xforms:impose(@data-relevant))" context-item="$context-node" namespace-context="$instanceXML"/>
+                    
+                    <xsl:catch>
+                        <xsl:evaluate xpath="string(xforms:impose(@data-relevant))" context-item="$instanceDoc" namespace-context="$instanceDoc"/>              
+                    </xsl:catch>
+                </xsl:try>
             </xsl:variable>
             <!-- 
                 div containing span, input, etc. with its label (HTML <label> generated from <xforms:label>)
@@ -2556,13 +2624,21 @@
             "/>
         
         <xsl:variable name="instanceXML2" as="element()?" select="js:getInstance($instance-context)"/>
-        
-<!--        <xsl:message use-when="$debugMode">[applyActions] evaluating action = <xsl:value-of select="serialize($action-map)"/></xsl:message>-->
+        <xsl:variable name="instanceDoc" as="document-node()">
+            <xsl:document>
+                <xsl:sequence select="$instanceXML2"/>
+            </xsl:document>
+        </xsl:variable>
         
         <xsl:variable name="ref-node" as="node()*">
             <xsl:choose>
                 <xsl:when test="exists($ref-qualified) and not($ref-qualified = '') and exists($instanceXML2)">
-                    <xsl:evaluate xpath="xforms:impose($ref-qualified)" context-item="$instanceXML2" namespace-context="$instanceXML2"/>
+                    <xsl:try>
+                        <xsl:evaluate xpath="xforms:impose($ref-qualified)" context-item="$instanceXML2" namespace-context="$instanceXML2"/>
+                        <xsl:catch>
+                            <xsl:evaluate xpath="xforms:impose($ref-qualified)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>
+                        </xsl:catch>
+                    </xsl:try>
                 </xsl:when>
             </xsl:choose>
         </xsl:variable>
@@ -2570,7 +2646,12 @@
         <xsl:variable name="context-node" as="node()?">
             <xsl:choose>
                 <xsl:when test="exists($context) and not($context = '') and exists($instanceXML2)">
-                    <xsl:evaluate xpath="xforms:impose($context)" context-item="$instanceXML2" namespace-context="$instanceXML2"/>                    
+                    <xsl:try>
+                        <xsl:evaluate xpath="xforms:impose($context)" context-item="$instanceXML2" namespace-context="$instanceXML2"/>
+                        <xsl:catch>
+                            <xsl:evaluate xpath="xforms:impose($context)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>
+                        </xsl:catch>
+                    </xsl:try>
                 </xsl:when>
             </xsl:choose>
         </xsl:variable>
@@ -2588,7 +2669,13 @@
         <xsl:variable name="ifExecuted" as="xs:boolean">
             <xsl:choose>
                 <xsl:when test="exists($ifVar) and exists($context)">
-                    <xsl:evaluate xpath="xforms:impose($ifVar)" context-item="$context" namespace-context="$instanceXML2"/>
+<!--                    <xsl:message use-when="$debugMode">[applyActions] applying @if = <xsl:sequence select="$ifVar"/> in context <xsl:sequence select="fn:serialize($context)"/></xsl:message>-->
+                    <xsl:try>
+                        <xsl:evaluate xpath="xforms:impose($ifVar)" context-item="$context" namespace-context="$instanceXML2"/>
+                        <xsl:catch>
+                            <xsl:evaluate xpath="xforms:impose($ifVar)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>
+                        </xsl:catch>
+                    </xsl:try>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:sequence select="true()" />
@@ -2596,10 +2683,17 @@
             </xsl:choose>                    
         </xsl:variable>
         
+<!--        <xsl:message use-when="$debugMode">[applyActions] $ifExecuted = <xsl:sequence select="$ifExecuted"/></xsl:message>-->
+        
         <xsl:variable name="isWhileTrue" as="xs:boolean">
             <xsl:choose>
                 <xsl:when test="exists($whileVar) and exists($context)">
-                    <xsl:evaluate xpath="xforms:impose($whileVar)" context-item="$context" namespace-context="$instanceXML2"/>
+                    <xsl:try>
+                        <xsl:evaluate xpath="xforms:impose($whileVar)" context-item="$context" namespace-context="$instanceXML2"/>
+                        <xsl:catch>
+                            <xsl:evaluate xpath="xforms:impose($whileVar)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>
+                        </xsl:catch>
+                    </xsl:try>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:sequence select="true()" />
@@ -2661,7 +2755,9 @@
                     <xsl:call-template name="action-message"/>
                 </xsl:when>
                 <xsl:when test="$action-name = 'output'">
-                    <xsl:call-template name="action-output"/>
+                    <xsl:call-template name="action-output">
+                        <xsl:with-param name="context-node" select="$context"/>
+                    </xsl:call-template>
                 </xsl:when>
                 <!-- special action for text content of xforms:message -->
                 <xsl:when test="$action-name = 'text'">
@@ -2697,7 +2793,12 @@
             <xsl:variable name="isWhileStillTrue" as="xs:boolean">
                 <xsl:choose>
                     <xsl:when test="exists($whileVar) and exists($context)">
-                        <xsl:evaluate xpath="xforms:impose($whileVar)" context-item="$context" namespace-context="$instanceXML2"/>
+                        <xsl:try>
+                            <xsl:evaluate xpath="xforms:impose($whileVar)" context-item="$context" namespace-context="$instanceXML2"/>
+                            <xsl:catch>
+                                <xsl:evaluate xpath="xforms:impose($whileVar)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>
+                            </xsl:catch>
+                        </xsl:try>
                     </xsl:when>
                     <xsl:otherwise>
                         <!-- 
@@ -2993,7 +3094,6 @@
             <xsl:variable name="instance-id" as="xs:string" select="."/>
             <xsl:variable name="instanceXML" select="js:getInstance(.)"/>
             <xsl:variable name="instance-calculation-bindings" as="element(xforms:bind)*" select="$bindings[@instance-context = $instance-id][exists(@calculate)]"/>
-
             <xsl:variable name="updatedInstanceXML" as="element()">
                 <xsl:call-template name="xforms-recalculate-binding">
                     <xsl:with-param name="instanceXML" as="element()" select="$instanceXML"/>
@@ -3005,8 +3105,6 @@
             <xsl:sequence select="js:setInstance($instance-id,$updatedInstanceXML)"/>
             
         </xsl:for-each>
-
-       
     
     </xsl:template>
     
@@ -3023,20 +3121,47 @@
         <xsl:param name="instanceXML" as="element()" required="yes"/>
         <xsl:param name="calculation-bindings" as="element(xforms:bind)*" tunnel="yes"/>
         <xsl:param name="counter" as="xs:integer" required="yes"/>
+        
+        <xsl:variable name="instanceDoc" as="document-node()">
+            <xsl:document>
+                <xsl:sequence select="$instanceXML"/>
+            </xsl:document>
+        </xsl:variable>
+        
         <xsl:variable name="this-binding" as="element(xforms:bind)?" select="$calculation-bindings[$counter]"/>
         <xsl:choose>
             <xsl:when test="exists($this-binding)">
                 <xsl:variable name="calculated-nodes" as="node()*">
-                    <xsl:evaluate xpath="xforms:impose($this-binding/@nodeset)" context-item="$instanceXML" namespace-context="$instanceXML"/>    
+                     <xsl:try>
+                         <xsl:evaluate xpath="xforms:impose($this-binding/@nodeset)" context-item="$instanceXML" namespace-context="$instanceXML"/> 
+                         <xsl:catch>
+                             <xsl:evaluate xpath="xforms:impose($this-binding/@nodeset)" context-item="$instanceDoc" namespace-context="$instanceDoc"/> 
+                        </xsl:catch>
+                    </xsl:try>
                 </xsl:variable>
                 <xsl:variable name="value" as="xs:string?">
-                    <xsl:evaluate xpath="xforms:impose($this-binding/@calculate)" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                    <xsl:try>
+                        <xsl:evaluate xpath="xforms:impose($this-binding/@calculate)" context-item="$instanceXML" namespace-context="$instanceXML"/> 
+                        <xsl:catch>
+                            <xsl:evaluate xpath="xforms:impose($this-binding/@calculate)" context-item="$instanceDoc" namespace-context="$instanceDoc"/> 
+                        </xsl:catch>
+                    </xsl:try>
                 </xsl:variable>
                 <xsl:variable name="updatedInstanceXML" as="element()">
-                    <xsl:apply-templates select="$instanceXML" mode="recalculate">
-                        <xsl:with-param name="updated-nodes" select="$calculated-nodes" tunnel="yes"/>
-                        <xsl:with-param name="updated-value" select="$value" tunnel="yes"/>
-                    </xsl:apply-templates>
+                    <xsl:choose>
+                        <xsl:when test="$instanceDoc//node()[. is $calculated-nodes[1]]">
+                            <xsl:apply-templates select="$instanceDoc" mode="recalculate">
+                                <xsl:with-param name="updated-nodes" select="$calculated-nodes" tunnel="yes"/>
+                                <xsl:with-param name="updated-value" select="$value" tunnel="yes"/>
+                            </xsl:apply-templates>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:apply-templates select="$instanceXML" mode="recalculate">
+                                <xsl:with-param name="updated-nodes" select="$calculated-nodes" tunnel="yes"/>
+                                <xsl:with-param name="updated-value" select="$value" tunnel="yes"/>
+                            </xsl:apply-templates>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:variable>
                 <!-- move on to next calculation -->
                 <xsl:call-template name="xforms-recalculate-binding">
@@ -3115,7 +3240,7 @@
                 </xsl:variable>
                 
                 <xsl:variable name="control-index" as="xs:string" select="string-join($context-indexes,'.')"/>
-                <xsl:message use-when="$debugMode">[xforms-focus] Control '<xsl:sequence select="$control"/>' has index '<xsl:sequence select="$control-index"/>'</xsl:message>
+<!--                <xsl:message use-when="$debugMode">[xforms-focus] Control '<xsl:sequence select="$control"/>' has index '<xsl:sequence select="$control-index"/>'</xsl:message>-->
                 <xsl:sequence select="js:setFocus( concat($control, '-', $control-index ) )"/>    
             </xsl:when>
             <xsl:otherwise>
@@ -3147,7 +3272,11 @@
         <xsl:variable name="instance-id-submit" as="xs:string" select="xforms:getInstanceId($refi)"/>
         <xsl:variable name="instance-id-update" as="xs:string" select="map:get($submission-map,'@instance')"/>
         <xsl:variable name="instanceXML-submit" as="element()?" select="js:getInstance($instance-id-submit)"/>
-        
+        <xsl:variable name="instanceDoc" as="document-node()">
+            <xsl:document>
+                <xsl:sequence select="$instanceXML-submit"/>
+            </xsl:document>
+        </xsl:variable>
         <!-- 
                     MD 2020-04-05: I think this is "the rebuild operation is performed without dispatching an event to invoke the operation."
                     
@@ -3164,7 +3293,12 @@
                 <xsl:variable name="requestBody" as="node()?">
                     <xsl:choose>
                         <xsl:when test="$refi">
-                            <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceXML-submit" namespace-context="$instanceXML-submit"/>
+                            <xsl:try>
+                                <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceXML-submit" namespace-context="$instanceXML-submit"/>
+                                <xsl:catch>
+                                    <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>
+                                </xsl:catch>
+                            </xsl:try>
                         </xsl:when>
                         <xsl:otherwise/>
                     </xsl:choose>
@@ -3355,6 +3489,7 @@
     </xd:doc>
     <xsl:template name="DOMActivate">
         <xsl:param name="form-control" as="node()"/>
+        <xsl:message use-when="$debugMode">[DOMActivate] START</xsl:message>
         
         <xsl:variable name="actions" select="js:getAction(string($form-control/@data-action))" as="map(*)*"/>
         
@@ -3364,21 +3499,41 @@
                 
         <!-- MD 2020-02-22 -->
         <xsl:variable name="instanceXML" as="element()?" select="xforms:instance($instance-id)"/>
+        <xsl:variable name="instanceDoc" as="document-node()">
+            <xsl:document>
+                <xsl:sequence select="$instanceXML"/>
+            </xsl:document>
+        </xsl:variable>
         
         <xsl:variable name="updatedInstanceXML" as="element()?">
             <xsl:choose>
                 <xsl:when test="exists($refi) and exists($instanceXML)">
                     <xsl:variable name="updatedNode" as="node()">
-                        <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                        <xsl:try>
+                            <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                            <xsl:catch>
+                                <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceDoc" namespace-context="$instanceDoc"/> 
+                            </xsl:catch>
+                        </xsl:try>
                     </xsl:variable>
                     <xsl:variable name="new-value" as="xs:string">
                         <xsl:apply-templates select="$form-control" mode="get-field"/>
                     </xsl:variable>
-                    <xsl:apply-templates select="$instanceXML" mode="recalculate">
-                        <xsl:with-param name="instance-id" select="$instance-id"/>
-                        <xsl:with-param name="updated-nodes" select="$updatedNode" tunnel="yes"/>
-                        <xsl:with-param name="updated-value" select="$new-value" tunnel="yes"/>
-                    </xsl:apply-templates>
+                    
+                    <xsl:choose>
+                        <xsl:when test="$instanceDoc//node()[. is $updatedNode]">
+                            <xsl:apply-templates select="$instanceDoc" mode="recalculate">
+                                <xsl:with-param name="updated-nodes" select="$updatedNode" tunnel="yes"/>
+                                <xsl:with-param name="updated-value" select="$new-value" tunnel="yes"/>
+                            </xsl:apply-templates>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:apply-templates select="$instanceXML" mode="recalculate">
+                                <xsl:with-param name="updated-nodes" select="$updatedNode" tunnel="yes"/>
+                                <xsl:with-param name="updated-value" select="$new-value" tunnel="yes"/>
+                            </xsl:apply-templates>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:sequence select="$instanceXML"/>
@@ -3422,23 +3577,40 @@
 
         
         <xsl:variable name="instanceXML2" as="element()" select="js:getInstance($instance-context)"/>
+        <xsl:variable name="instanceDoc" as="document-node()">
+            <xsl:document>
+                <xsl:sequence select="$instanceXML2"/>
+            </xsl:document>
+        </xsl:variable>
         
         <!--<xsl:message use-when="$debugMode">[action-setvalue] Applying action '<xsl:sequence select="serialize($action-map)"/>'</xsl:message>-->
-        
+<!--        <xsl:message use-when="$debugMode">[action-setvalue] Applying action @ref '<xsl:sequence select="$refz"/>'</xsl:message>-->
         
         <xsl:if test="exists($refz)">
-            <xsl:variable name="updated-node" as="node()">
-                <xsl:evaluate xpath="xforms:impose($refz)" context-item="$instanceXML2" namespace-context="$instanceXML2" as="node()" />
+            <xsl:variable name="updated-node" as="node()?">
+                <xsl:try>
+                    <xsl:evaluate xpath="xforms:impose($refz)" context-item="$instanceXML2" namespace-context="$instanceXML2"/>
+                    <xsl:catch>
+                        <xsl:evaluate xpath="xforms:impose($refz)" context-item="$instanceDoc" namespace-context="$instanceDoc" />
+                    </xsl:catch>
+                </xsl:try>
             </xsl:variable>
-            
+                        
             <xsl:variable name="updated-value" as="xs:string">
                 <xsl:choose>
                     <xsl:when test="map:contains($action-map,'@value')">
+<!--                        <xsl:message use-when="$debugMode">[action-setvalue] evaluating @value '<xsl:sequence select="map:get($action-map,'@value')"/>'</xsl:message>-->
+                        
                         <xsl:variable name="updated-item" as="item()">
-                            <xsl:evaluate xpath="xforms:impose(map:get($action-map,'@value'))" context-item="$updated-node" namespace-context="$updated-node" />
+                            <xsl:try>
+                                <xsl:evaluate xpath="xforms:impose(map:get($action-map,'@value'))" context-item="$updated-node" namespace-context="$updated-node" />
+                                <xsl:catch>
+                                    <xsl:evaluate xpath="xforms:impose(map:get($action-map,'@value'))" context-item="$instanceDoc" namespace-context="$instanceDoc" />
+                                </xsl:catch>
+                            </xsl:try>
+                            
                         </xsl:variable>
-                        <!--<xsl:message use-when="$debugMode">[action-setvalue] evaluating @value '<xsl:sequence select="map:get($action-map,'@value')"/>'</xsl:message>
-                        <xsl:message use-when="$debugMode">[action-setvalue] updated item '<xsl:sequence select="serialize($updated-item)"/>'</xsl:message>-->
+<!--                        <xsl:message use-when="$debugMode">[action-setvalue] updated item '<xsl:sequence select="serialize($updated-item)"/>'</xsl:message>-->
                         <xsl:choose>
                             <!-- 
                                 Handle case where @value evaluates to a boolean.
@@ -3468,20 +3640,44 @@
             </xsl:variable>
 <!--            <xsl:message use-when="$debugMode">[action-setvalue] updated value '<xsl:sequence select="serialize($updated-value)"/>'</xsl:message>-->
             
+            <xsl:choose>
+                <xsl:when test="exists($updated-node)">
+                    <xsl:variable name="updatedInstanceXML" as="element()">
+                        <xsl:choose>
+                            <xsl:when test="$instanceDoc//node()[. is $updated-node]">
+                                <xsl:apply-templates select="$instanceDoc" mode="recalculate">
+                                    <xsl:with-param name="updated-nodes" select="$updated-node" tunnel="yes"/>
+                                    <xsl:with-param name="updated-value" select="$updated-value" tunnel="yes"/>
+                                </xsl:apply-templates>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:apply-templates select="$instanceXML2" mode="recalculate">
+                                    <xsl:with-param name="updated-nodes" select="$updated-node" tunnel="yes"/>
+                                    <xsl:with-param name="updated-value" select="$updated-value" tunnel="yes"/>
+                                </xsl:apply-templates>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:variable>
+                    
+                    <!--            <xsl:message use-when="$debugMode">[action-setvalue] updated instance <xsl:sequence select="serialize($updatedInstanceXML)"/></xsl:message>-->
+                    
+                    <xsl:sequence select="js:setInstance($instance-context,$updatedInstanceXML)"/>
+                    
+                    <xsl:sequence select="js:setDeferredUpdateFlags(('recalculate','revalidate','refresh'))" />    
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:variable name="error-message" as="xs:string" select="'[setvalue] unable to find node at XPath ' || $refz"/>
+                    <xsl:message>
+                        <xsl:sequence select="'ERROR: ' || $error-message"/>
+                    </xsl:message>
+                    <xsl:call-template name="logToPage">
+                        <xsl:with-param name="level" select="'error'"/>
+                        <xsl:with-param name="message" select="$error-message"/>
+                    </xsl:call-template>
+                </xsl:otherwise>
+            </xsl:choose>
             
-            <xsl:variable name="updatedInstanceXML" as="element()">
-                <xsl:apply-templates select="$instanceXML2" mode="recalculate">
-                    <xsl:with-param name="updated-nodes" select="$updated-node" tunnel="yes"/>
-                    <xsl:with-param name="updated-value" select="$updated-value" tunnel="yes"/>
-                </xsl:apply-templates>
-            </xsl:variable>
-            
-<!--            <xsl:message use-when="$debugMode">[action-setvalue] updated instance <xsl:sequence select="serialize($updatedInstanceXML)"/></xsl:message>-->
-            
-            <xsl:sequence select="js:setInstance($instance-context,$updatedInstanceXML)"/>
-            
-            <xsl:sequence select="js:setDeferredUpdateFlags(('recalculate','revalidate','refresh'))" />    
-            
+           
          </xsl:if>
         
        
@@ -3507,18 +3703,37 @@
         
         <!-- MD 2020-02-22 -->
         <xsl:variable name="instanceXML" as="element()" select="xforms:instance($instance-id)"/>
+        <xsl:variable name="instanceDoc" as="document-node()">
+            <xsl:document>
+                <xsl:sequence select="$instanceXML"/>
+            </xsl:document>
+        </xsl:variable>
         <xsl:variable name="updatedNode" as="node()">
-            <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceXML" namespace-context="$instanceXML"/>
+            <xsl:try>
+                <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                <xsl:catch>
+                    <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>
+                </xsl:catch>
+            </xsl:try>
         </xsl:variable>
         <xsl:variable name="new-value" as="xs:string">
             <xsl:apply-templates select="$form-control" mode="get-field"/>
         </xsl:variable>
         <xsl:variable name="updatedInstanceXML" as="element()">
-            <xsl:apply-templates select="$instanceXML" mode="recalculate">
-                <xsl:with-param name="instance-id" select="$instance-id"/>
-                <xsl:with-param name="updated-nodes" select="$updatedNode" tunnel="yes"/>
-                <xsl:with-param name="updated-value" select="$new-value" tunnel="yes"/>
-            </xsl:apply-templates>
+            <xsl:choose>
+                <xsl:when test="$instanceDoc//node()[. is $updatedNode]">
+                    <xsl:apply-templates select="$instanceDoc" mode="recalculate">
+                        <xsl:with-param name="updated-nodes" select="$updatedNode" tunnel="yes"/>
+                        <xsl:with-param name="updated-value" select="$new-value" tunnel="yes"/>
+                    </xsl:apply-templates>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:apply-templates select="$instanceXML" mode="recalculate">
+                        <xsl:with-param name="updated-nodes" select="$updatedNode" tunnel="yes"/>
+                        <xsl:with-param name="updated-value" select="$new-value" tunnel="yes"/>
+                    </xsl:apply-templates>
+                </xsl:otherwise>
+            </xsl:choose>
         </xsl:variable>
         
 <!--        <xsl:message use-when="$debugMode">[xforms-value-changed] Updated XML: <xsl:sequence select="serialize($updatedInstanceXML)"/></xsl:message>-->
@@ -3580,17 +3795,44 @@
         
         <xsl:variable name="instance-id-origin" as="xs:string" select="xforms:getInstanceId($origin-ref)"/>
         <xsl:variable name="instanceXML-origin" as="element()" select="js:getInstance($instance-id-origin)"/>
-        
+        <xsl:variable name="instanceDoc" as="document-node()">
+            <xsl:document>
+                <xsl:sequence select="$instanceXML2"/>
+            </xsl:document>
+        </xsl:variable>
+        <xsl:variable name="instanceDoc-origin" as="document-node()">
+            <xsl:document>
+                <xsl:sequence select="$instanceXML-origin"/>
+            </xsl:document>
+        </xsl:variable>
         <xsl:variable name="origin-node" as="node()?">
-            <xsl:evaluate xpath="xforms:impose($origin-ref)" context-item="$instanceXML-origin" namespace-context="$instanceXML-origin"/>
+            <xsl:try>
+                <xsl:evaluate xpath="xforms:impose($origin-ref)" context-item="$instanceXML-origin" namespace-context="$instanceXML-origin"/>
+                <xsl:catch>
+                    <xsl:evaluate xpath="xforms:impose($ref-qualified)" context-item="$instanceDoc-origin" namespace-context="$instanceDoc-origin"/>
+                    
+                </xsl:catch>
+            </xsl:try>
         </xsl:variable>
         
         <xsl:variable name="insert-node-location" as="node()?">
-            <xsl:evaluate xpath="xforms:impose($ref-qualified)" context-item="$instanceXML2" namespace-context="$instanceXML2"/>
+            <xsl:try>
+                <xsl:evaluate xpath="xforms:impose($ref-qualified)" context-item="$instanceXML2" namespace-context="$instanceXML2"/>
+                <xsl:catch>
+                    <xsl:evaluate xpath="xforms:impose($ref-qualified)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>
+                    
+                </xsl:catch>
+            </xsl:try>
         </xsl:variable> 
         
         <xsl:variable name="context-node" as="node()">
-            <xsl:evaluate xpath="xforms:impose($context)" context-item="$instanceXML2" namespace-context="$instanceXML2"/>
+            <xsl:try>
+                <xsl:evaluate xpath="xforms:impose($context)" context-item="$instanceXML2" namespace-context="$instanceXML2"/> 
+                <xsl:catch>
+                    <xsl:evaluate xpath="xforms:impose($context)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>
+                    
+                </xsl:catch>
+            </xsl:try>
         </xsl:variable>
         
         
@@ -3608,11 +3850,23 @@
         
         
         <xsl:variable name="instance-with-insert" as="element()">
-            <xsl:apply-templates select="$instanceXML2" mode="insert-node">
-                <xsl:with-param name="insert-node-location" select="if (exists($insert-node-location)) then $insert-node-location else $context-node" tunnel="yes"/>
-                <xsl:with-param name="node-to-insert" select="$node-to-insert" tunnel="yes"/>
-                <xsl:with-param name="position-relative" select="if (exists($insert-node-location)) then $position else 'child'" tunnel="yes"/>
-            </xsl:apply-templates>
+            <xsl:choose>
+                <xsl:when test="$instanceDoc//node()[. is $insert-node-location]">
+                    <xsl:apply-templates select="$instanceDoc" mode="insert-node">
+                        <xsl:with-param name="insert-node-location" select="if (exists($insert-node-location)) then $insert-node-location else $context-node" tunnel="yes"/>
+                        <xsl:with-param name="node-to-insert" select="$node-to-insert" tunnel="yes"/>
+                        <xsl:with-param name="position-relative" select="if (exists($insert-node-location)) then $position else 'child'" tunnel="yes"/>
+                    </xsl:apply-templates>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:apply-templates select="$instanceXML2" mode="insert-node">
+                        <xsl:with-param name="insert-node-location" select="if (exists($insert-node-location)) then $insert-node-location else $context-node" tunnel="yes"/>
+                        <xsl:with-param name="node-to-insert" select="$node-to-insert" tunnel="yes"/>
+                        <xsl:with-param name="position-relative" select="if (exists($insert-node-location)) then $position else 'child'" tunnel="yes"/>
+                    </xsl:apply-templates>
+                </xsl:otherwise>
+            </xsl:choose>
+            
         </xsl:variable>
         
         <!--        <xsl:message use-when="$debugMode">[action-insert] Updated instance: <xsl:sequence select="fn:serialize($instance-with-insert)"/></xsl:message>-->
@@ -3673,19 +3927,39 @@
             "/>
         
         <xsl:variable name="instanceXML2" as="element()" select="js:getInstance($instance-context)"/>
-        
+        <xsl:variable name="instanceDoc" as="document-node()">
+            <xsl:document>
+                <xsl:sequence select="$instanceXML2"/>
+            </xsl:document>
+        </xsl:variable>
         <xsl:variable name="delete-node" as="node()*">
             <xsl:choose>
                 <xsl:when test="exists($ref-qualified) and not($ref-qualified = '')">
-                    <xsl:evaluate xpath="xforms:impose($ref-qualified)" context-item="$instanceXML2" namespace-context="$instanceXML2"/>
+                    <xsl:try>
+                        <xsl:evaluate xpath="xforms:impose($ref-qualified)" context-item="$instanceXML2" namespace-context="$instanceXML2"/>
+                        <xsl:catch>
+                            <xsl:evaluate xpath="xforms:impose($ref-qualified)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>
+                            
+                        </xsl:catch>
+                    </xsl:try>
                 </xsl:when>
             </xsl:choose>
         </xsl:variable>
                 
             <xsl:variable name="instance-with-delete" as="element()">
-                <xsl:apply-templates select="$instanceXML2" mode="delete-node">
-                    <xsl:with-param name="delete-node" select="$delete-node" tunnel="yes"/>
-                </xsl:apply-templates>
+                <xsl:choose>
+                    <xsl:when test="$instanceDoc//node()[. is $delete-node]">
+                        <xsl:apply-templates select="$instanceDoc" mode="delete-node">
+                            <xsl:with-param name="delete-node" select="$delete-node" tunnel="yes"/>
+                        </xsl:apply-templates>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:apply-templates select="$instanceXML2" mode="delete-node">
+                            <xsl:with-param name="delete-node" select="$delete-node" tunnel="yes"/>
+                        </xsl:apply-templates>
+                    </xsl:otherwise>
+                </xsl:choose>
+                
             </xsl:variable> 
             
 <!--            <xsl:message use-when="$debugMode">[action-delete] Updated instance: <xsl:sequence select="fn:serialize($instance-with-delete)"/></xsl:message>-->
@@ -3775,12 +4049,21 @@
             <xd:p>Template for applying output action (i.e. return a string value)</xd:p>
         </xd:desc>
         <xd:param name="action-map">Action map</xd:param>
+        <xd:param name="context-node">Context node identified in applyActions template</xd:param>
     </xd:doc>
     <xsl:template name="action-output">
         <xsl:param name="action-map" required="yes" as="map(*)" tunnel="yes"/>
+        <xsl:param name="context-node" as="node()?"/>
+        
+        <xsl:message use-when="$debugMode">[action-output] START</xsl:message>
         
         <xsl:variable name="instance-id" as="xs:string" select="map:get($action-map,'instance-context')"/>
         <xsl:variable name="instanceXML" as="element()" select="js:getInstance($instance-id)"/>
+        <xsl:variable name="instanceDoc" as="document-node()">
+            <xsl:document>
+                <xsl:sequence select="$instanceXML"/>
+            </xsl:document>
+        </xsl:variable>
         
         <xsl:variable name="ref" as="xs:string?">
             <xsl:choose>
@@ -3793,12 +4076,31 @@
             </xsl:choose>
         </xsl:variable>
         
-        <xsl:choose>
-            <xsl:when test="exists($ref)">
-                <xsl:evaluate xpath="xforms:impose($ref)" context-item="$instanceXML" namespace-context="$instanceXML" as="xs:string"/>
-            </xsl:when>
-            <xsl:otherwise/>
-        </xsl:choose>
+        <xsl:variable name="value" as="item()?">
+            <xsl:choose>
+                <xsl:when test="exists($ref) and exists($context-node)">
+<!--                    <xsl:message use-when="$debugMode">[action-output] evaluating <xsl:sequence select="$ref"/></xsl:message>-->
+                    <xsl:try>
+                        <xsl:evaluate xpath="xforms:impose($ref)" context-item="$context-node" namespace-context="$context-node"/>
+                        <xsl:catch>
+                            <xsl:evaluate xpath="xforms:impose($ref)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>    
+                        </xsl:catch>
+                    </xsl:try>
+                </xsl:when>
+                <xsl:when test="exists($ref)">
+<!--                    <xsl:message use-when="$debugMode">[action-output] evaluating <xsl:sequence select="$ref"/></xsl:message>-->
+                    <xsl:try>
+                        <xsl:evaluate xpath="xforms:impose($ref)" context-item="$instanceXML" namespace-context="$instanceXML"/>
+                        <xsl:catch>
+                            <xsl:evaluate xpath="xforms:impose($ref)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>    
+                        </xsl:catch>
+                    </xsl:try>
+                </xsl:when>
+                <xsl:otherwise/>
+            </xsl:choose>
+        </xsl:variable>
+        
+        <xsl:sequence select="string($value)"/>
         
         
     </xsl:template>
