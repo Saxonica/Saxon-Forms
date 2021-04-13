@@ -80,7 +80,7 @@
     
     <xsl:param name="xforms-file-global" as="xs:string?"/>
     
-    <xsl:param name="xforms-doc-global" as="document-node()?" required="no" select="if (exists($xforms-file-global) and fn:doc-available($xforms-file-global)) then fn:doc($xforms-file-global) else (if (exists(/) and namespace-uri(/*) = 'http://www.w3.org/2002/xforms') then (/) else ())"/>
+    <xsl:param name="xforms-doc-global" as="document-node()?" required="no" select="if (exists($xforms-file-global) and fn:doc-available($xforms-file-global)) then fn:doc($xforms-file-global) else (if (exists(/) and namespace-uri(/*) = ('http://www.w3.org/2002/xforms','http://www.w3.org/1999/xhtml')) then (/) else ())"/>
 
     <xsl:variable static="yes" name="debugMode" select="true()"/>
     <xsl:variable static="yes" name="debugTiming" select="false()"/>
@@ -143,9 +143,7 @@
         <xsl:param name="xFormsId" select="$xform-html-id" as="xs:string" required="no"/>
         
         <xsl:message use-when="$debugMode">[xformsjs-main] START</xsl:message>
-<!--        <xsl:sequence select="sfp:logInfo('[xformsjs-main] START')"/>-->
-        
-       
+
         <xsl:apply-templates select="ixsl:page()//*:head" mode="set-js"/>
         
        
@@ -176,16 +174,16 @@
         </xsl:variable>
         
         
-        <xsl:variable name="xform" as="element(xforms:xform)" select="xforms:addNamespaceDeclarations($xforms-doci/*)"/>  
+        <xsl:variable name="xform" as="element()" select="xforms:addNamespaceDeclarations($xforms-doci/*)"/>  
         
-        <xsl:variable name="first-model" as="element(xforms:model)" select="$xforms-doci/xforms:xform/xforms:model[1]"/>
+        <xsl:variable name="models" as="element(xforms:model)*" select="$xforms-doci/(xforms:xform|xhtml:html/xhtml:head)/xforms:model"/>
+        <xsl:variable name="first-model" as="element(xforms:model)" select="$models[1]"/>
         <xsl:variable name="first-model-id" as="attribute()?" select="$first-model/@id"/>
         <xsl:variable name="first-instance" as="element(xforms:instance)" select="$first-model/xforms:instance[1]"/>
         <xsl:variable name="first-instance-id" as="attribute()?" select="$first-instance/@id"/>
         <xsl:variable name="default-instance-id" as="xs:string" select="if (exists($first-instance-id)) then $first-instance-id else $global-default-instance-id"/>
         
         
-        <xsl:variable name="models" as="element(xforms:model)*" select="$xforms-doci/xforms:xform/xforms:model"/>
         
         <xsl:if test="count($models[not(@id)]) gt 1">
             <xsl:variable name="message" as="xs:string" select="'[xformsjs-main] FATAL ERROR: The XForm contains more than one model with no ID. At most one model may have no ID.'"/>
@@ -214,7 +212,7 @@
         <!-- register submissions in a map -->
         <xsl:variable name="submissions" as="map(xs:string, map(*))">
             <xsl:map>
-                <xsl:for-each select="$xforms-doci/xforms:xform/xforms:model/xforms:submission">
+                <xsl:for-each select="$models/xforms:submission">
                     <xsl:variable name="map-key" as="xs:string" select="
                         if (@id) then xs:string(@id)
                         else if (@ref) then xs:string(@ref) 
@@ -248,7 +246,7 @@
         
         <!-- Write HTML to placeholder <div id="xForm"> -->
         <xsl:result-document href="#{$xFormsId}" method="ixsl:replace-content">
-            <xsl:apply-templates select="$xforms-doci/xforms:xform">
+            <xsl:apply-templates select="$xforms-doci/xforms:xform | $xforms-doci/xhtml:html/xhtml:body/*">
                 <xsl:with-param name="bindings-js" select="js:getBindings()" as="element(xforms:bind)*" tunnel="yes"/>
                 <xsl:with-param name="submissions" select="$submissions" as="map(xs:string, map(*))" tunnel="yes"/>
                 <!-- clear nodeset when (re)building  -->
@@ -587,9 +585,6 @@
                 <xsl:map-entry key="'@value'" select="string(@value)" />                          
             </xsl:if>
             
-            <!-- TO DO: handle case where message content is a mix of text and output, e.g.
-                <xf:message level="ephemeral">Here is your message (iteration #<xf:output ref="instance('hello')/demo:Counter/text()"/>)</xf:message>
-            -->
             <xsl:if test="empty(@value) and exists(./text()) and not(self::xforms:message)">
                 <xsl:map-entry key="'value'" select="string(.)" />                         
             </xsl:if>
@@ -1168,7 +1163,8 @@
         <!-- GENERATE HTML -->
         <div>    
             <xsl:attribute name="class" select="$htmlClass"/>
-            <xsl:attribute name="style" select="if($relevantStatus) then 'display:block' else 'display:none'" /><xsl:apply-templates select="xforms:label"/>            
+            <xsl:attribute name="style" select="if($relevantStatus) then 'display:block' else 'display:none'" />
+            <xsl:apply-templates select="xforms:label"/>            
             <span>
                 <xsl:attribute name="id" select="$id"/>
                 <xsl:attribute name="class" select="$htmlClass"/>
@@ -1255,7 +1251,6 @@
         <div>
             <xsl:attribute name="class" select="$htmlClass"/>
             <xsl:attribute name="style" select="if($relevantStatus) then 'display:block' else 'display:none'" />
-            <xsl:apply-templates select="xforms:label"/>    
             <xsl:apply-templates select="xforms:label"/>
             
             <xsl:variable name="hints" select="xforms:hint/text()"/>
@@ -2119,10 +2114,7 @@
     </xd:doc>
     <xsl:template match="*:textarea" mode="set-field">
         <xsl:param name="value" select="''" tunnel="yes" />
-        <!-- select="ixsl:get(ixsl:page()//*[@id=$updatedPath],'value')" -->
-        
-        <!-- TO DO: (MD 2020-03-14) I don't think this is correct -->
-        <xsl:sequence select="ixsl:get(., 'value')"/>
+        <ixsl:set-property name="value" select="$value" object="."/>
     </xsl:template>
     
    
@@ -2981,9 +2973,6 @@
                     <xsl:attribute name="nodeset" select="concat( 'instance(', $instance-context ,')' )"/>
                 </xsl:otherwise>
             </xsl:choose>
-            
-            
-            <!-- TO DO: descendant elements? -->
         </xsl:copy>
     </xsl:template>
     
