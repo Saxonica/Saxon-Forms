@@ -3941,6 +3941,8 @@
                 <xsl:when test="exists($origin-nodeset)">
                     <xsl:copy-of select="$origin-nodeset"/>
                 </xsl:when>
+                <!-- empty node set if origin returns empty node set -->
+                <xsl:when test="exists($origin-ref)"/>
                 <xsl:otherwise>
                     <xsl:copy-of select="$insert-node-location"/>
                 </xsl:otherwise>
@@ -3951,58 +3953,64 @@
 <!--        <xsl:message use-when="$debugMode">[action-insert] $insert-node-location = <xsl:value-of select="fn:serialize($insert-node-location)"/></xsl:message>-->
 <!--        <xsl:message use-when="$debugMode">[action-insert] $origin-nodeset = <xsl:value-of select="fn:serialize($origin-nodeset)"/></xsl:message>-->
         
-        <xsl:variable name="instance-with-insert" as="element()">
-            <xsl:choose>
-                <xsl:when test="$instanceDoc//node()[. intersect ($insert-node-location,$context-node)]">
-<!--                    <xsl:message use-when="$debugMode">[action-insert] found insert location in $insertDoc</xsl:message>-->
-                    <xsl:apply-templates select="$instanceDoc" mode="insert-node">
-                        <xsl:with-param name="insert-node-location" select="if (exists($insert-node-location)) then $insert-node-location else $context-node" tunnel="yes"/>
-                        <xsl:with-param name="nodes-to-insert" select="$nodes-to-insert" tunnel="yes"/>
-                        <xsl:with-param name="position-relative" select="if (exists($insert-node-location)) then $position else 'child'" tunnel="yes"/>
-                    </xsl:apply-templates>
-                </xsl:when>
-                <xsl:otherwise>
-<!--                    <xsl:message use-when="$debugMode">[action-insert] looking for insert location in $insertXML2 (position <xsl:sequence select="$position"/>)</xsl:message>-->
-                    <xsl:apply-templates select="$instanceXML2" mode="insert-node">
-                        <xsl:with-param name="insert-node-location" select="if (exists($insert-node-location)) then $insert-node-location else $context-node" tunnel="yes"/>
-                        <xsl:with-param name="nodes-to-insert" select="$nodes-to-insert" tunnel="yes"/>
-                        <xsl:with-param name="position-relative" select="if (exists($insert-node-location)) then $position else 'child'" tunnel="yes"/>
-                    </xsl:apply-templates>
-                </xsl:otherwise>
-            </xsl:choose>
-            
-        </xsl:variable>
-        
-<!--                <xsl:message use-when="$debugMode">[action-insert] Updated instance: <xsl:sequence select="fn:serialize($instance-with-insert)"/></xsl:message>-->
-        
-        <xsl:sequence select="js:setInstance($instance-context,$instance-with-insert)"/>
-        
-        
-        <!-- update repeat index to that of inserted node -->
-        <xsl:if test="matches($at,'index\s*\(')">
-            <xsl:variable name="repeat-id" as="xs:string?" select="xforms:getRepeatID($at)"/>
-            <xsl:variable name="at-position" as="xs:integer">
-                <xsl:evaluate xpath="xforms:impose($at)"/>
-            </xsl:variable>
-            <!--<xsl:message use-when="$debugMode">[action-insert] $repeat-id = <xsl:value-of select="$repeat-id"/></xsl:message>
-            <xsl:message use-when="$debugMode">[action-insert] $at-position evaluated as <xsl:value-of select="$at-position"/></xsl:message>-->
-            
-            <xsl:if test="exists($repeat-id)">
+        <xsl:if test="exists($nodes-to-insert)">
+            <xsl:variable name="instance-with-insert" as="element()">
                 <xsl:choose>
-                    <xsl:when test="$position = 'before'">
-                        <xsl:sequence select="js:setRepeatIndex($repeat-id, $at-position)"/>
+                    <xsl:when test="$instanceDoc//node()[. intersect ($insert-node-location,$context-node)]">
+                        <!--                    <xsl:message use-when="$debugMode">[action-insert] found insert location in $insertDoc</xsl:message>-->
+                        <xsl:apply-templates select="$instanceDoc" mode="insert-node">
+                            <xsl:with-param name="insert-node-location" select="if (exists($insert-node-location)) then $insert-node-location else $context-node" tunnel="yes"/>
+                            <xsl:with-param name="nodes-to-insert" select="$nodes-to-insert" tunnel="yes"/>
+                            <xsl:with-param name="position-relative" select="if (exists($insert-node-location)) then $position else 'child'" tunnel="yes"/>
+                        </xsl:apply-templates>
+                    </xsl:when>
+                    <xsl:when test="$instanceXML2//node()[. intersect ($insert-node-location,$context-node)]">
+                        <!--                    <xsl:message use-when="$debugMode">[action-insert] looking for insert location in $insertXML2 (position <xsl:sequence select="$position"/>)</xsl:message>-->
+                        <xsl:apply-templates select="$instanceXML2" mode="insert-node">
+                            <xsl:with-param name="insert-node-location" select="if (exists($insert-node-location)) then $insert-node-location else $context-node" tunnel="yes"/>
+                            <xsl:with-param name="nodes-to-insert" select="$nodes-to-insert" tunnel="yes"/>
+                            <xsl:with-param name="position-relative" select="if (exists($insert-node-location)) then $position else 'child'" tunnel="yes"/>
+                        </xsl:apply-templates>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:sequence select="js:setRepeatIndex($repeat-id, $at-position + 1)"/>
                     </xsl:otherwise>
                 </xsl:choose>
+                
+            </xsl:variable>
+            
+            <!--                <xsl:message use-when="$debugMode">[action-insert] Updated instance: <xsl:sequence select="fn:serialize($instance-with-insert)"/></xsl:message>-->
+            
+            <xsl:sequence select="js:setInstance($instance-context,$instance-with-insert)"/>
+            
+            
+            <!-- update repeat index to that of inserted node -->
+            <xsl:if test="matches($at,'index\s*\(')">
+                <xsl:variable name="repeat-id" as="xs:string?" select="xforms:getRepeatID($at)"/>
+                <xsl:variable name="at-position" as="xs:integer">
+                    <xsl:evaluate xpath="xforms:impose($at)"/>
+                </xsl:variable>
+                <!--<xsl:message use-when="$debugMode">[action-insert] $repeat-id = <xsl:value-of select="$repeat-id"/></xsl:message>
+            <xsl:message use-when="$debugMode">[action-insert] $at-position evaluated as <xsl:value-of select="$at-position"/></xsl:message>-->
+                
+                <xsl:if test="exists($repeat-id)">
+                    <xsl:choose>
+                        <xsl:when test="$position = 'before'">
+                            <xsl:sequence select="js:setRepeatIndex($repeat-id, $at-position)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:sequence select="js:setRepeatIndex($repeat-id, $at-position + 1)"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:if>
+                
+            </xsl:if>
+            
+            <xsl:if test="$handler-status = 'inner'">
+                <xsl:sequence select="js:setDeferredUpdateFlags(('rebuild','recalculate','revalidate','refresh'))"/>
             </xsl:if>
             
         </xsl:if>
-                     
-        <xsl:if test="$handler-status = 'inner'">
-            <xsl:sequence select="js:setDeferredUpdateFlags(('rebuild','recalculate','revalidate','refresh'))"/>
-        </xsl:if>
+        
     </xsl:template>
     
  
