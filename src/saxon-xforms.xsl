@@ -82,7 +82,7 @@
     
     <xsl:param name="xforms-doc-global" as="document-node()?" required="no" select="if (exists($xforms-file-global) and fn:doc-available($xforms-file-global)) then fn:doc($xforms-file-global) else (if (exists(/) and namespace-uri(/*) = ('http://www.w3.org/2002/xforms','http://www.w3.org/1999/xhtml')) then (/) else ())"/>
 
-    <xsl:variable static="yes" name="debugMode" select="true()"/>
+    <xsl:variable static="yes" name="debugMode" select="false()"/>
     <xsl:variable static="yes" name="debugTiming" select="false()"/>
     <xsl:variable static="yes" name="global-default-model-id" select="'saxon-forms-default-model'" as="xs:string"/>
     <xsl:variable static="yes" name="global-default-instance-id" select="'saxon-forms-default-instance'" as="xs:string"/>
@@ -174,9 +174,10 @@
         </xsl:variable>
         
         
+        <xsl:variable name="xform-doc-ns" as="document-node()" select="xforms:addNamespaceDeclarationsToDocument($xforms-doci)"/>  
         <xsl:variable name="xform" as="element()" select="xforms:addNamespaceDeclarations($xforms-doci/*)"/>  
         
-        <xsl:variable name="models" as="element(xforms:model)*" select="$xforms-doci/(xforms:xform|xhtml:html/xhtml:head)/xforms:model"/>
+        <xsl:variable name="models" as="element(xforms:model)*" select="$xform-doc-ns/(xforms:xform|xhtml:html/xhtml:head)/xforms:model"/>
         <xsl:variable name="first-model" as="element(xforms:model)" select="$models[1]"/>
         <xsl:variable name="first-model-id" as="attribute()?" select="$first-model/@id"/>
         <xsl:variable name="first-instance" as="element(xforms:instance)" select="$first-model/xforms:instance[1]"/>
@@ -201,7 +202,7 @@
         
         
         <!-- populate Javascript variables -->
-        <xsl:sequence select="js:setXFormsDoc($xforms-doci)"/>
+        <xsl:sequence select="js:setXFormsDoc($xform-doc-ns)"/>
         
         <xsl:sequence select="js:setXForm($xform)"/>
         <!-- clear deferred update flags only if we're building from scratch -->
@@ -246,7 +247,7 @@
         
         <!-- Write HTML to placeholder <div id="xForm"> -->
         <xsl:result-document href="#{$xFormsId}" method="ixsl:replace-content">
-            <xsl:apply-templates select="$xforms-doci/xforms:xform, $xforms-doci/xhtml:html/xhtml:head/xforms:model, $xforms-doci/xhtml:html/xhtml:body/*">
+            <xsl:apply-templates select="$xform-doc-ns/xforms:xform, $xform-doc-ns/xhtml:html/xhtml:head/xforms:model, $xform-doc-ns/xhtml:html/xhtml:body/*">
                 <xsl:with-param name="bindings-js" select="js:getBindings()" as="element(xforms:bind)*" tunnel="yes"/>
                 <xsl:with-param name="submissions" select="$submissions" as="map(xs:string, map(*))" tunnel="yes"/>
                 <!-- clear nodeset when (re)building  -->
@@ -304,9 +305,10 @@
 
 
     <xd:doc scope="component">
-        <xd:desc>Handle change to HTML form control value</xd:desc>
+        <xd:desc>Handle change to HTML form control value (except when control has "incremental" set)</xd:desc>
     </xd:doc>
-    <xsl:template match="*:input | *:select | *:textarea" mode="ixsl:onchange">
+    <xsl:template match="*:input[not(xforms:hasClass(.,'incremental'))] | *:select | *:textarea" mode="ixsl:onchange">
+        <xsl:message use-when="$debugMode">[isxl:onchange mode] HTML form control '<xsl:sequence select="name()"/>' value changed</xsl:message>
         <xsl:call-template name="action-setvalue-form-control">
             <xsl:with-param name="form-control" select="."/>
         </xsl:call-template>
@@ -974,7 +976,9 @@
 <!--                         <xsl:message use-when="$debugMode">[HTTPsubmit] response body: <xsl:value-of select="serialize($response)"/></xsl:message>-->
                       </xsl:when>
                       <!-- TO DO: replace node or text within instance; replace entire page -->
-                      <xsl:otherwise/>
+                      <xsl:otherwise>
+                          <xsl:message use-when="$debugMode">[HTTPsubmit] response = <xsl:sequence select="serialize($response)"/></xsl:message>
+                      </xsl:otherwise>
                   </xsl:choose>
                   
               </xsl:otherwise>
@@ -1058,7 +1062,7 @@
         
 <!--        <xsl:message>[<xsl:sequence select="name()"/>] START</xsl:message>-->
         
-        <xsl:variable name="time-id" as="xs:string" select="concat('xforms-', local-name(), '-', generate-id())"/>
+        <xsl:variable name="time-id" as="xs:string" select="concat('XForms ', local-name(), ' ', generate-id())"/>
         <xsl:sequence use-when="$debugTiming" select="js:startTime($time-id)" />
         
         <xsl:variable name="string-position" as="xs:string" select="if ($context-position != '') then $context-position else string($position)"/>
@@ -1092,7 +1096,7 @@
         </xsl:variable>
         
         <!-- set actions relevant to this -->
-        <xsl:variable name="time-id-set-sctions" as="xs:string" select="concat('xforms-', local-name(), '-actions-', generate-id())"/>
+        <xsl:variable name="time-id-set-sctions" as="xs:string" select="concat('XForms ', local-name(), ' set actions ', generate-id())"/>
         <xsl:sequence use-when="$debugTiming" select="js:startTime($time-id-set-sctions)" />
         <xsl:variable name="actions" as="map(*)*">
             <xsl:apply-templates select="." mode="set-actions">
@@ -1143,6 +1147,8 @@
             </xsl:document>
         </xsl:variable>
         
+        <xsl:variable name="time-id-instance-field" as="xs:string" select="concat('XForms ', local-name(), ' get instance field ', generate-id())"/>
+        <xsl:sequence use-when="$debugTiming" select="js:startTime($time-id-instance-field)" />
         <xsl:variable name="instanceField" as="node()?">
             <xsl:choose>
                 <xsl:when test="$nodeset != ''">
@@ -1159,6 +1165,7 @@
                 <xsl:otherwise/>
             </xsl:choose>
         </xsl:variable>
+        <xsl:sequence use-when="$debugTiming" select="js:endTime($time-id-instance-field)" />
         
         
         <xsl:variable name="namespace-context-item" as="node()" select="
@@ -1168,8 +1175,12 @@
                 then $instanceField/parent::*
                 else $instanceField
             )
-            else xforms:addNamespaceDeclarations(/*)"/>
-             
+            else /*"/>
+        <!-- fallback was xforms:addNamespaceDeclarations(/*) which is SLOW -->
+        
+        <xsl:variable name="time-id-get-value" as="xs:string" select="concat('XForms ', local-name(), ' get instance field ', generate-id())"/>
+        <xsl:sequence use-when="$debugTiming" select="js:startTime($time-id-get-value)" />
+        
         <xsl:variable name="valueExecuted" as="xs:string">
             <xsl:choose>
                 <xsl:when test="exists(@value)">
@@ -1186,12 +1197,18 @@
             </xsl:choose>
         </xsl:variable>
         
+        <xsl:sequence use-when="$debugTiming" select="js:endTime($time-id-get-value)" />
+        
+        <xsl:variable name="time-id-get-relevant" as="xs:string" select="concat('XForms ', local-name(), ' get relevant status ', generate-id())"/>
+        <xsl:sequence use-when="$debugTiming" select="js:startTime($time-id-get-relevant)" />
+        
         <xsl:variable name="relevantStatus" as="xs:boolean">
             <xsl:call-template name="getRelevantStatus">
                 <xsl:with-param name="xformsControl" as="element()" select="."/>
                 <xsl:with-param name="instanceField" as="node()?" select="$instanceField"/>
             </xsl:call-template>
         </xsl:variable>
+        <xsl:sequence use-when="$debugTiming" select="js:endTime($time-id-get-relevant)" />
         
         <xsl:variable name="htmlClass" as="xs:string">
             <xsl:call-template name="getHtmlClass">
@@ -1203,6 +1220,9 @@
         
        
         <!-- GENERATE HTML -->
+        <xsl:variable name="time-id-get-html" as="xs:string" select="concat('XForms ', local-name(), ' get relevant status ', generate-id())"/>
+        <xsl:sequence use-when="$debugTiming" select="js:startTime($time-id-get-html)" />
+        
         <div>    
             <xsl:attribute name="class" select="$htmlClass"/>
             <xsl:attribute name="style" select="if($relevantStatus) then 'display:block' else 'display:none'" />
@@ -1219,8 +1239,12 @@
                 <xsl:sequence select="$valueExecuted" />
             </span>
         </div>
+        <xsl:sequence use-when="$debugTiming" select="js:endTime($time-id-get-html)" />
         
         <!-- register outputs (except those inside a repeat) -->
+        <xsl:variable name="time-id-register-outputs" as="xs:string" select="concat('XForms ', local-name(), ' get relevant status ', generate-id())"/>
+        <xsl:sequence use-when="$debugTiming" select="js:startTime($time-id-register-outputs)" />
+        
         <xsl:if test="not(ancestor::xforms:repeat)">
             <xsl:variable name="output-map" as="map(*)">
                 <xsl:map>
@@ -1244,7 +1268,9 @@
             </xsl:message>-->
             <xsl:sequence select="js:addOutput($id , $output-map)" />
         </xsl:if>
- 
+        <xsl:sequence use-when="$debugTiming" select="js:endTime($time-id-register-outputs)" />
+        
+        
         
     </xsl:template>
 
@@ -1614,8 +1640,6 @@
             
         </div>
         
-        
-        <xsl:sequence use-when="$debugTiming" select="js:endTime(concat('XForms-select', $time-id))" />
 
     </xsl:template>
 
@@ -1769,7 +1793,8 @@
 
         <!-- identify instance fields corresponding to this -->
         <xsl:variable name="selectedRepeatVar" as="element()*">
-            <xsl:sequence use-when="$debugTiming" select="js:startTime(concat('XForms-repeat-evaluate', $time-id))" />
+            <xsl:variable name="time-id" as="xs:string" select="concat('XForms repeat evaluate ', $myid)"/>
+            <xsl:sequence use-when="$debugTiming" select="js:startTime($time-id)" />
             <xsl:variable name="instanceXML" as="element()" select="js:getInstance($this-instance-id)"/>            
             <xsl:try>
                 <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceXML" namespace-context="$instanceXML"/>              
@@ -1782,7 +1807,7 @@
                     <xsl:evaluate xpath="xforms:impose($refi)" context-item="$instanceDoc" namespace-context="$instanceDoc"/>              
                 </xsl:catch>
             </xsl:try>
-            <xsl:sequence use-when="$debugTiming" select="js:endTime(concat('XForms-repeat-evaluate', $time-id))" />
+            <xsl:sequence use-when="$debugTiming" select="js:endTime($time-id)" />
         </xsl:variable>
         
         <!--<xsl:message use-when="$debugMode">
@@ -2028,8 +2053,8 @@
     <xsl:template match="xforms:*[local-name() = $xforms-actions] | xforms:action | xforms:show | xforms:hide | xforms:script | xforms:unload">
         <xsl:variable name="myid" as="xs:string" select="if (exists(@id)) then @id else generate-id()"/>
         
-        <xsl:variable name="time-id" select="generate-id()"/>
-        <xsl:sequence use-when="$debugTiming" select="js:startTime(concat('XForms-action', $time-id))" />        
+        <xsl:variable name="time-id" select="concat('XForms set action ', name(), ' ', generate-id())"/>
+        <xsl:sequence use-when="$debugTiming" select="js:startTime($time-id)" />        
         
         
   
@@ -2049,7 +2074,7 @@
             <xsl:sequence select="$action-map" />
         </xsl:if>
 
-        <xsl:sequence use-when="$debugTiming" select="js:endTime(concat('XForms-action', $time-id))" />
+        <xsl:sequence use-when="$debugTiming" select="js:endTime($time-id)" />
     </xsl:template>
     
 
@@ -2278,9 +2303,29 @@
                 <xsl:variable name="new-prefix" select="substring-before(name(),':')"/>
                 <xsl:namespace name="{$new-prefix}" select="$new-namespace"/>
             </xsl:for-each>
-            <xsl:copy-of select="$this/@*,$this/node()"/>
+            <xsl:sequence select="$this/@*,$this/node()"/>
         </xsl:element>
     </xsl:function>
+    
+    <xd:doc scope="component">
+        <xd:desc>Add all relevant namespace declarations to the xform element, to help with xsl:evaluation</xd:desc>
+        <xd:param name="this">Document for which namespaces are needed</xd:param>
+    </xd:doc>
+    <xsl:function name="xforms:addNamespaceDeclarationsToDocument" as="document-node()">
+        <xsl:param name="this" as="document-node()"/>
+        <xsl:document>
+            <xsl:element name="{name($this/*)}">
+                <xsl:namespace name="xforms" select="'http://www.w3.org/2002/xforms'"/>
+                <xsl:for-each select="$this//*[namespace-uri() != ''][not(namespace-uri() = (ancestor::*/namespace-uri(),preceding::*/namespace-uri()))]">
+                    <xsl:variable name="new-namespace" select="namespace-uri(.)"/>
+                    <xsl:variable name="new-prefix" select="substring-before(name(),':')"/>
+                    <xsl:namespace name="{$new-prefix}" select="$new-namespace"/>
+                </xsl:for-each>
+                <xsl:sequence select="$this/*/@*,$this/*/node()"/>
+            </xsl:element>
+        </xsl:document>    
+    </xsl:function>
+    
     
     <xd:doc scope="component">
         <xd:desc>Write message to HTML page for the user. (Tried this as a function but got an error message relating to a "temporary output state")</xd:desc>
@@ -2415,6 +2460,9 @@
         <xsl:param name="instanceField" as="node()?"/>
         <xsl:param name="binding" as="element(xforms:bind)*" tunnel="yes"/>
         
+        <xsl:variable name="time-id-ns-context" as="xs:string" select="concat('getRelevantStatus (get namespace context)) ', generate-id())"/>
+        <xsl:sequence use-when="$debugTiming" select="js:startTime($time-id-ns-context)" />
+        
         <xsl:variable name="namespace-context-item" as="node()" select="
             if (exists($instanceField))
             then (
@@ -2422,7 +2470,13 @@
             then $instanceField/parent::*
             else $instanceField
             )
-            else xforms:addNamespaceDeclarations(/*)"/>
+            else /*"/>
+        <!-- fallback was xforms:addNamespaceDeclarations(/*) which is SLOW -->
+        
+        <xsl:sequence use-when="$debugTiming" select="js:endTime($time-id-ns-context)" />
+        
+        <xsl:variable name="time-id-evaluate" as="xs:string" select="concat('getRelevantStatus (evaluate)) ', generate-id())"/>
+        <xsl:sequence use-when="$debugTiming" select="js:startTime($time-id-evaluate)" />
         
         <xsl:choose>
             <xsl:when test="exists($binding) and exists($binding/@relevant)">
@@ -2432,6 +2486,9 @@
                 <xsl:sequence select="true()"/>
             </xsl:otherwise>
         </xsl:choose>
+        
+        <xsl:sequence use-when="$debugTiming" select="js:endTime($time-id-evaluate)" />
+        
     </xsl:template>
 
     <xd:doc scope="component">
@@ -3393,9 +3450,12 @@
                             </xsl:choose>
                             
                         </xsl:variable>
-                        <xsl:sequence select="
-                            string-join($parts,'&amp;') 
-                            "/>
+                        <xsl:if test="exists($parts)">
+                            <xsl:sequence select="
+                                string-join($parts,'&amp;') 
+                                "/>
+                        </xsl:if>
+                        
                     </xsl:if>
                 </xsl:variable>
                 
@@ -3409,9 +3469,11 @@
                         </xsl:when>
                         
                         <xsl:when test="exists($query-parameters)">
+                            <xsl:message use-when="$debugMode">[xforms-submit] adding parameters '<xsl:sequence select="$query-parameters"/>' to href</xsl:message>
                             <xsl:sequence select="concat($href-base,'?',$query-parameters)"/>
                         </xsl:when>
                         <xsl:when test="$requestBody[self::text()]">
+                            <xsl:message use-when="$debugMode">[xforms-submit] adding path '/<xsl:sequence select="$requestBody"/>' to href</xsl:message>
                             <xsl:sequence select="concat($href-base,'/',$requestBody)"/>
                         </xsl:when>
                         <xsl:otherwise>
@@ -3419,7 +3481,7 @@
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
-                
+                <xsl:message use-when="$debugMode">[xforms-submit] submitting href '<xsl:sequence select="$href"/>'</xsl:message>
                 <xsl:variable name="mediatype" as="xs:string" select="map:get($submission-map,'@mediatype')"/>      
                 
                 <!-- http://www.saxonica.com/saxon-js/documentation/index.html#!development/http -->
@@ -3428,6 +3490,7 @@
                         <xsl:if test="not( upper-case($method) = 'GET')">
                             <xsl:choose>
                                 <xsl:when test="exists($requestBodyDoc)">
+                                    <xsl:message use-when="$debugMode">[xforms-submit] body of HTTPrequest = <xsl:sequence select="fn:serialize($requestBodyDoc)"/></xsl:message>
                                     <xsl:map-entry key="'body'" select="$requestBodyDoc"/>       
                                 </xsl:when>
                                 <xsl:otherwise>
@@ -3442,8 +3505,6 @@
                         
                     </xsl:map>
                 </xsl:variable>
-                
-                <!--                <xsl:message use-when="$debugMode">[xforms-submit] Sending HTTP request '<xsl:sequence select="fn:serialize($HTTPrequest)"/>'</xsl:message>-->
                 
                 
                 <ixsl:schedule-action http-request="$HTTPrequest">
@@ -3506,6 +3567,9 @@
         <xsl:variable name="deferred-update-flags" as="map(*)?" select="js:getDeferredUpdateFlags()"/>
         
         <xsl:message use-when="$debugMode">[outermost-action-handler] START</xsl:message>
+        <xsl:message use-when="$debugMode">[outermost-action-handler] Recalculate: <xsl:sequence select="map:get($deferred-update-flags,'recalculate') "/></xsl:message>
+        <xsl:message use-when="$debugMode">[outermost-action-handler] Revalidate: <xsl:sequence select="map:get($deferred-update-flags,'revalidate') "/></xsl:message>
+        <xsl:message use-when="$debugMode">[outermost-action-handler] Refresh: <xsl:sequence select="map:get($deferred-update-flags,'refresh') "/></xsl:message>
         
         <!-- not convinced there's anything to do in the xforms-rebuild event -->
         <!--<xsl:if test="map:get($deferred-update-flags,'rebuild') = 'true'">
