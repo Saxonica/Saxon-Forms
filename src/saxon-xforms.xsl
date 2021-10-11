@@ -550,7 +550,7 @@
                     </xsl:for-each>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:message use-when="$debugMode"><xsl:sequence select="$log-label"/> No binding found matcging nodeset</xsl:message>
+                    <xsl:message use-when="$debugMode"><xsl:sequence select="$log-label"/> No binding found matching nodeset</xsl:message>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
@@ -616,19 +616,23 @@
                     then  normalize-space( xs:string(@context) )
                     else '.'"/>
                 
+                <xsl:variable name="resolved-context" select="xforms:resolveXPathStrings($nodeset,$this-context)"/>
+                
+                <xsl:message use-when="$debugMode"><xsl:sequence select="$log-label"/> $this-ref = <xsl:sequence select="$this-ref"/></xsl:message>
+                <xsl:message use-when="$debugMode"><xsl:sequence select="$log-label"/> $this-context = <xsl:sequence select="$this-context"/></xsl:message>
+                
                 <xsl:variable name="data-ref" as="xs:string">
                     <xsl:choose>
-                        <xsl:when test="exists($this-ref) and $nodeset = ''">
+                        <!--<xsl:when test="exists($this-ref) and $nodeset = ''">
+                            <xsl:message use-when="$debugMode"><xsl:sequence select="$log-label"/> resolving $this-ref in $this-context</xsl:message>
                             <xsl:sequence select="xforms:resolveXPathStrings($this-context,$this-ref)"/>
-                        </xsl:when>
+                        </xsl:when>-->
                         <xsl:when test="exists($this-ref)">
-                            <xsl:sequence select="xforms:resolveXPathStrings($nodeset,$this-ref)"/>
-                        </xsl:when>
-                        <xsl:when test="$nodeset != ''">
-                            <xsl:sequence select="xforms:resolveXPathStrings('',$nodeset)"/>
+                            <xsl:message use-when="$debugMode"><xsl:sequence select="$log-label"/> resolving $this-ref in context $nodeset = <xsl:sequence select="$resolved-context"/></xsl:message>
+                            <xsl:sequence select="xforms:resolveXPathStrings($resolved-context,$this-ref)"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:value-of select="$nodeset"/>
+                            <xsl:sequence select="$nodeset"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
@@ -683,6 +687,8 @@
         
         <xsl:variable name="refi" as="xs:string" select="map:get($this-properties,'nodeset')"/>
         <xsl:variable name="this-instance-id" as="xs:string" select="map:get($this-properties,'instance-context')"/>
+        
+        <xsl:message use-when="$debugMode"><xsl:sequence select="$log-label"/> $refi = <xsl:sequence select="$refi"/></xsl:message>
         
         <xsl:variable name="action-map" as="map(*)">
             <xsl:map>
@@ -762,9 +768,9 @@
                 </xsl:if>
                 
                 <xsl:if test="exists(@context)">
-                    <xsl:map-entry key="'@context'" select="xforms:resolveXPathStrings($refi,@context)" />   
+                    <xsl:map-entry key="'@context'" select="xforms:resolveXPathStrings($nodeset,@context)" />   
                     
-                    <xsl:message use-when="$debugMode"><xsl:sequence select="$log-label"/> @context = <xsl:sequence select="xforms:resolveXPathStrings($refi,@context)"/></xsl:message>
+                    <xsl:message use-when="$debugMode"><xsl:sequence select="$log-label"/> @context = <xsl:sequence select="xforms:resolveXPathStrings($nodeset,@context)"/></xsl:message>
                 </xsl:if>
                 
                 <!-- need to apply nested actions in order! -->            
@@ -2781,7 +2787,8 @@
     <xsl:template name="applyActions">
         <xsl:param name="action-map" required="yes" as="map(*)" tunnel="yes"/>
         
-        <xsl:message use-when="$debugMode">[applyActions] START <xsl:sequence select="if(exists(map:get($action-map, '@event'))) then '(event ' || map:get($action-map, '@event') || ')' else ''"/></xsl:message>
+        <xsl:variable name="log-label" select="'[applyActions]'"/>
+        <xsl:message use-when="$debugMode"><xsl:sequence select="$log-label"/> START <xsl:sequence select="if(exists(map:get($action-map, '@event'))) then '(event ' || map:get($action-map, '@event') || ')' else map:get($action-map, 'name')"/></xsl:message>
         
         <xsl:variable name="instance-context" select="map:get($action-map, 'instance-context')" as="xs:string"/>
         <xsl:variable name="handler-status" select="map:get($action-map, 'handler-status')" as="xs:string"/>
@@ -2789,6 +2796,11 @@
         <xsl:variable name="at" select="map:get($action-map, '@at')" as="xs:string?"/>
         <xsl:variable name="position" select="(map:get($action-map, '@position'),'after')[1]" as="xs:string"/>
         <xsl:variable name="context" select="map:get($action-map, '@context')" as="xs:string?"/>
+ 
+        <xsl:message use-when="$debugMode"><xsl:sequence select="$log-label"/> $action-map @ref = <xsl:sequence select="$ref"/></xsl:message>
+        <xsl:message use-when="$debugMode"><xsl:sequence select="$log-label"/> $action-map @at = <xsl:sequence select="$at"/></xsl:message>
+        <xsl:message use-when="$debugMode"><xsl:sequence select="$log-label"/> $action-map @position = <xsl:sequence select="$position"/></xsl:message>
+        <xsl:message use-when="$debugMode"><xsl:sequence select="$log-label"/> $action-map @context = <xsl:sequence select="$context"/></xsl:message>
         
         
         <xsl:variable name="ref-qualified" as="xs:string?" select="
@@ -2849,7 +2861,7 @@
         <xsl:variable name="ifExecuted" as="xs:boolean">
             <xsl:choose>
                 <xsl:when test="exists($ifVar) and exists($context)">
-<!--                    <xsl:message use-when="$debugMode">[applyActions] applying @if = <xsl:sequence select="$ifVar"/> in context <xsl:sequence select="fn:serialize($context)"/></xsl:message>-->
+                    <xsl:message use-when="$debugMode">[applyActions] applying @if = <xsl:sequence select="$ifVar"/> in context <xsl:sequence select="fn:serialize($context)"/></xsl:message>
                     <xsl:try>
                         <xsl:evaluate xpath="xforms:impose($ifVar)" context-item="$context" namespace-context="$instanceXML2"/>
                         <xsl:catch>
@@ -2863,7 +2875,7 @@
             </xsl:choose>                    
         </xsl:variable>
         
-<!--        <xsl:message use-when="$debugMode">[applyActions] $ifExecuted = <xsl:sequence select="$ifExecuted"/></xsl:message>-->
+        <xsl:message use-when="$debugMode">[applyActions] $ifExecuted = <xsl:sequence select="$ifExecuted"/></xsl:message>
         
         <xsl:variable name="isWhileTrue" as="xs:boolean">
             <xsl:choose>
