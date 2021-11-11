@@ -7,6 +7,7 @@
         var XFormsDoc = null;
         var XForm = null;
         var defaultInstance = null;
+        var defaultInstanceID = null;
         
         var models = {}
         var instances = {};
@@ -136,6 +137,15 @@
         var getDefaultInstance = function() {
             return defaultInstance;
         }
+                
+        var setDefaultInstanceId = function(id) {
+            defaultInstanceId = id;
+        }
+                
+        var getDefaultInstanceId = function() {
+            return defaultInstanceId;
+        }
+                
                 
         var getInstanceKeys = function() {
             return Object.keys(instances);

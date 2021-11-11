@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:math="http://www.w3.org/2005/xpath-functions/math"
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -17,7 +18,7 @@
     exclude-result-prefixes="xs math xforms"
     extension-element-prefixes="ixsl" version="3.0">
     
-    <xsl:variable name="xform-functions" select="'instance', 'index', 'avg', 'foo', 'current-date', 'random'"/>
+    <xsl:variable name="xform-functions" select="'if','instance', 'index', 'avg', 'foo', 'current-date', 'random'"/>
     
     <xsl:function name="xforms:impose" as="xs:string" visibility="public">
         <xsl:param name="input" as="xs:string" />
@@ -57,9 +58,9 @@
                     <xsl:sequence select="replace($input2, '^\s/[^/]+', '.')"/>
                 </xsl:when>
                 <!-- TEST - can we remove instance() at start of expression? -->
-                <xsl:when test="matches($input2,'^\s*xforms:instance\s*\(\s*''[^'']+''\s*\)')">
+                <!--<xsl:when test="matches($input2,'^\s*xforms:instance\s*\(\s*''[^'']+''\s*\)')">
                     <xsl:sequence select="replace($input2, '^\s*xforms:instance\s*\(\s*''[^'']+''\s*\)', '.')"/>
-                </xsl:when>
+                </xsl:when>-->
                 <xsl:otherwise>
                     <xsl:sequence select="$input2"/>
                 </xsl:otherwise>
@@ -127,6 +128,26 @@
     <xsl:function name="xforms:instance" as="element()?" visibility="public">
         <xsl:param name="instance-id" as="xs:string"/>
         <xsl:sequence select="js:getInstance($instance-id)"/> 
+    </xsl:function>
+    
+    <xd:doc scope="component">
+        <xd:desc>Implement XForms <xd:a href="https://www.w3.org/TR/xforms11/#fn-if">if() function</xd:a></xd:desc>
+        <xd:param name="test-item">Result of evaluating first parameter of if()</xd:param>
+        <xd:param name="result-if-true">Result of evaluating second parameter of if()</xd:param>
+        <xd:param name="result-if-false">Result of evaluating third parameter of if()</xd:param>
+    </xd:doc>
+    <xsl:function name="xforms:if" as="item()*" visibility="public">
+        <xsl:param name="test-item" as="item()*"/>
+        <xsl:param name="result-if-true" as="item()*"/>
+        <xsl:param name="result-if-false" as="item()*"/>
+        <xsl:choose>
+            <xsl:when test="$test-item">
+                <xsl:sequence select="$result-if-true"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:sequence select="$result-if-false"/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:function>
     
 </xsl:stylesheet>
