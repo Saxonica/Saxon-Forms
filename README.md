@@ -12,13 +12,15 @@ See conference papers below:
 
 ## Build
 
-The latest builds of Saxon-Forms is placed in the builds directory (i.e. saxon-xforms.sef.xml). However to build the tool yourself you will need [Saxon-EE](http://www.saxonica.com/download/download_page.xml) to export the stylesheet into an export file (SEF file) to run directly in Saxon-JS. See instructions to build the Saxon executable for Saxon-JS see: 
-[Exporting for JS](http://www.saxonica.com/saxon-js/documentation/index.html#!starting/export) 
+The latest builds of Saxon-Forms are placed in the builds directory (i.e. saxon-xforms.sef.json, saxon-xforms.sef.xml). However to build the tool yourself you will need [Saxon-EE](http://www.saxonica.com/download/download_page.xml) to export the stylesheet into an export file (SEF file) to run directly in Saxon-JS.
+
+For instructions to build the Saxon executable for Saxon-JS see: 
+[Exporting for JS](http://www.saxonica.com/saxon-js/documentation/index.html#!starting/export) (see the [archive](https://www.saxonica.com/saxon-js/documentation1.1/index.html#!starting/export) for instructions for Saxon-JS 1.1).
 
 
 ## Setup
-Saxon-Forms currently supports Saxon-JS 1.1.0. To run Saxon-Forms you will need the latest Saxon-JS which can be downloaded at 
-[Saxon-JS](http://www.saxonica.com/saxon-js/index.xml). Please see sample1 and sample2 which show two alternative ways to use Saxon-Forms.
+Saxon-Forms currently supports Saxon-JS 1.1.0 and Saxon-JS 2. To run Saxon-Forms you will need Saxon-JS which can be downloaded at 
+[Saxon-JS](http://www.saxonica.com/saxon-js/index.xml) (older versions available at the [archive](https://www.saxonica.com/saxon-js/archive.xml)). Please see sample1 and sample2 which show two alternative ways to use Saxon-Forms.
 
 - Saxon-Forms can be loaded directly with the source document being the XForms application. See
 [sample1](https://github.com/Saxonica/Saxon-Forms/tree/master/samples/sample1).

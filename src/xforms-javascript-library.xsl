@@ -7,14 +7,18 @@
         var XFormsDoc = null;
         var XForm = null;
         var defaultInstance = null;
+        var defaultInstanceID = null;
         
         var models = {}
         var instances = {};
+        var modelDefaultInstanceKeyMap = {};
         var bindings = [];
         var actions = {};
+        var eventActions = {};
         var submissions = {};
         var outputs = {};
         var repeats = {};
+        var repeatModelContexts = {};
         var repeatContextNodesets = {};       
         
         var repeatIndexMap = {};
@@ -63,7 +67,14 @@
         var setModelDefaultInstance = function(modelId, value) {
             modelDefaultInstanceMap[modelId] = value;
         }
-                
+        
+        var setModelDefaultInstanceKey = function(modelId, instanceId) {
+            modelDefaultInstanceKeyMap[modelId] = [instanceId];
+        }
+        var getModelDefaultInstanceKey = function(modelId) {
+            return modelDefaultInstanceKeyMap[modelId];
+        }
+        
         var getModelInstances = function(modelId) {
             return modelInstanceMap[modelId];
         } 
@@ -127,6 +138,15 @@
             return defaultInstance;
         }
                 
+        var setDefaultInstanceId = function(id) {
+            defaultInstanceId = id;
+        }
+                
+        var getDefaultInstanceId = function() {
+            return defaultInstanceId;
+        }
+                
+                
         var getInstanceKeys = function() {
             return Object.keys(instances);
         }
@@ -165,6 +185,15 @@
         var getAction = function(name){
             return actions[name];
         }
+        
+        var addEventAction = function(name, value){
+            eventActions[name] = value;
+            console.log('[xforms-javascript-library] Adding action for event ' + name);
+        }
+        
+        var getEventAction = function(name){
+            return eventActions[name];
+        }
                 
         var updateAction = function(actioni, key, value){
             actioni[key] = value;
@@ -195,12 +224,18 @@
         var addRepeat = function(name, value){
             repeats[name] = value;
         }
+        var addRepeatModelContext = function(name, value) {
+            repeatModelContexts[name] = value;
+        }
         var addRepeatContext = function(name, value) {
             repeatContextNodesets[name] = value;
         }
                 
         var getRepeat = function(name){
             return repeats[name];
+        }
+        var getRepeatModelContext = function(name){
+            return repeatModelContexts[name];
         }
         var getRepeatContext = function(name){
             return repeatContextNodesets[name];

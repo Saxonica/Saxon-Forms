@@ -3,18 +3,28 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
    <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+       <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
        <title>Input, select, output | XForms demo</title>
-      <link rel="stylesheet" href="css/style.css" type="text/css" />
-      <script src="../Saxon-JS-1.1.0/SaxonJS.js"></script>
-
-      <script>
+       <link rel="stylesheet" href="css/style.css" type="text/css" />
+<!--      <script src="../Saxon-JS-1.1.0/SaxonJS.js"></script>-->
+       <script src="../Saxon-JS-2.0/SaxonJS2.rt.js"></script>
+          
+     <!-- <script>
       window.onload = function() {
         SaxonJS.transform({
            "stylesheetLocation":"../sef/saxon-xforms.sef.xml",
            "sourceLocation":"xml/demo-input-select-output-xform.xml",
         })
       }     
+      </script>-->
+          
+       <script>
+            window.onload = function() {
+                SaxonJS.transform({
+                    "stylesheetLocation":"../sef/saxon-xforms.sef.json",
+                    "sourceLocation":"xml/demo-input-select-output-xform.xml",
+                }, "async")
+            }     
       </script>
    </head>
 
