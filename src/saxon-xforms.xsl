@@ -1301,7 +1301,7 @@
         <xd:param name="instance-context">ID of XForms instance relevant to this control</xd:param>
         <xd:param name="binding">xforms:bind elements relevant to this control</xd:param>
     </xd:doc>
-    <xsl:template match="xforms:output" mode="get-html">
+    <xsl:template match="*:output" mode="get-html">
         <xsl:param name="id" as="xs:string"/>
         <xsl:param name="nodeset" as="xs:string" tunnel="yes"/>
         <xsl:param name="instance-context" as="xs:string"/>
