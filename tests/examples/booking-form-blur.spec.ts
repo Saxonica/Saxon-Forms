@@ -6,6 +6,11 @@ import {
   type RunningServer
 } from "./examples-server";
 
+/*
+This test suite verifies functionality of the underlying Saxon-Forms engine and should survive any changes to the
+example booking form. 
+*/
+
 const renderTimeoutMs = 15_000;
 const examplesPort = 5206;
 

@@ -5,7 +5,10 @@
 
     <section id="chapter-data-types-support">
         <title>Data types and XSD support</title>
-        <para>SaxonForms provides partial XSD type validation through the <literal>xsd-helpers.xsl</literal> package (~148 lines). Type validation occurs during the revalidate phase via <literal>check-instance-xsi-types()</literal> in <literal>src/saxon-xforms.xsl</literal>.</para>
+        <para>SaxonForms provides partial XSD type validation through the
+                <literal>xsd-helpers.xsl</literal> package. Type validation occurs during the
+            revalidate phase via <literal>check-instance-xsi-types()</literal> in
+                <literal>src/saxon-xforms.xsl</literal>.</para>
 
         <section id="chapter-data-types-canonical">
             <title>Type normalization</title>
@@ -20,8 +23,14 @@
 
         <section id="chapter-data-types-coercion">
             <title>Type coercion in XPath evaluation</title>
-            <para>XPath 3.1 is stricter about type coercion than XForms expects. SaxonForms wraps calculate and relevant expressions in try/catch blocks to handle empty-string arithmetic crashes (e.g., <literal>'' + 1</literal> throws in XPath 3.1 but should produce NaN in XForms). This was resolved for tests 6.1.5.a and 6.1.4.b.</para>
-            <para>Similarly, the <literal>xforms:min()</literal> and <literal>xforms:max()</literal> wrappers in <literal>src/xforms-function-library.xsl</literal> return NaN instead of throwing XPath 3.1 type errors when applied to non-numeric sequences, matching XForms semantics (resolved: 7.7.2.b, 7.7.3.b).</para>
+            <para>XPath 3.1 is stricter about type coercion than XForms expects. SaxonForms wraps
+                calculate and relevant expressions in try/catch blocks to handle empty-string
+                arithmetic crashes (e.g., <literal>'' + 1</literal> throws in XPath 3.1 but should
+                produce NaN in XForms). </para>
+            <para>Similarly, the <literal>xforms:min()</literal> and <literal>xforms:max()</literal>
+                wrappers in <literal>src/xforms-function-library.xsl</literal> return NaN instead of
+                throwing XPath 3.1 type errors when applied to non-numeric sequences, matching
+                XForms semantics.</para>
         </section>
     </section>
 
@@ -31,7 +40,11 @@
 
         <section id="chapter-mips-readonly">
             <title>readonly</title>
-            <para>The <literal>@readonly</literal> MIP expression is evaluated as a boolean. When <literal>true()</literal>, SaxonForms sets the HTML <literal>disabled</literal>/<literal>readonly</literal> attribute on the corresponding control. Readonly propagates by inheritance: if a parent bind is readonly, child binds inherit readonly status. Resolved: 6.1.2.a, 6.1.2.b (readonly MIP enforcement now propagates to HTML inputs, including inheritance from ancestor bindings).</para>
+            <para>The <literal>@readonly</literal> MIP expression is evaluated as a boolean. When
+                    <literal>true()</literal>, SaxonForms sets the HTML
+                    <literal>disabled</literal>/<literal>readonly</literal> attribute on the
+                corresponding control. Readonly propagates by inheritance: if a parent bind is
+                readonly, child binds inherit readonly status.</para>
         </section>
 
         <section id="chapter-mips-relevant">
@@ -46,7 +59,17 @@
 
         <section id="chapter-mips-constraint">
             <title>constraint</title>
-            <para>The <literal>@constraint</literal> MIP is an XPath boolean expression evaluated against the bound node. When the constraint evaluates to <literal>false()</literal>, the node is invalid and <literal>xforms-invalid</literal> is dispatched. Validation is performed by <literal>check-constraints-on-fields()</literal> and <literal>check-constraints-on-bindings()</literal> in <literal>src/saxon-xforms.xsl</literal>. Constraint validation events (<literal>xforms-valid</literal>/<literal>xforms-invalid</literal>) now dispatch after setvalue changes constraint state (resolved: 6.1.6.a). Revalidate persists resulting validity in the validation MIP registry, and refresh projects this as <literal>xforms-valid</literal>/<literal>xforms-invalid</literal> class tokens.</para>
+            <para>The <literal>@constraint</literal> MIP is an XPath boolean expression evaluated
+                against the bound node. When the constraint evaluates to <literal>false()</literal>,
+                the node is invalid and <literal>xforms-invalid</literal> is dispatched. Validation
+                is performed by <literal>check-constraints-on-fields()</literal> and
+                    <literal>check-constraints-on-bindings()</literal> in
+                    <literal>src/saxon-xforms.xsl</literal>. Constraint validation events
+                    (<literal>xforms-valid</literal>/<literal>xforms-invalid</literal>) now dispatch
+                after setvalue changes constraint state.  Revalidate persists resulting validity in
+                the validation MIP registry, and refresh projects this as
+                    <literal>xforms-valid</literal>/<literal>xforms-invalid</literal> class
+                tokens.</para>
         </section>
         <section id="chapter-mips-validation-registry">
             <title>Revalidate-to-refresh MIP state projection</title>
@@ -56,7 +79,13 @@
 
         <section id="chapter-mips-calculate">
             <title>calculate</title>
-            <para>The <literal>@calculate</literal> MIP is an XPath expression whose result replaces the bound node's value on each recalculate cycle. Evaluation is handled by <literal>xforms-recalculate-binding</literal> using <literal>evaluate-xpath-with-context-node()</literal> in <literal>src/saxon-xforms.xsl</literal>. Calculate expressions containing <literal>position()</literal> or <literal>last()</literal> have actual nodeset position/size pre-substituted before evaluation (resolved: 7.2.e).</para>
+            <para>The <literal>@calculate</literal> MIP is an XPath expression whose result replaces
+                the bound node's value on each recalculate cycle. Evaluation is handled by
+                    <literal>xforms-recalculate-binding</literal> using
+                    <literal>evaluate-xpath-with-context-node()</literal> in
+                    <literal>src/saxon-xforms.xsl</literal>. Calculate expressions containing
+                    <literal>position()</literal> or <literal>last()</literal> have actual nodeset
+                position/size pre-substituted before evaluation.</para>
         </section>
 
         <section id="chapter-mips-binding-resolution">

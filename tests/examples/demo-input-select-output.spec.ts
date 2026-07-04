@@ -1,6 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { startExamplesServer, stopServer, waitForServerReady, type RunningServer } from "./examples-server";
 
+/*
+This test suite provides supplemental tests on mapping decisions between XForms and HTML controls.
+*/
+
 const renderTimeoutMs = 15_000;
 const examplesPort = 5201;
 

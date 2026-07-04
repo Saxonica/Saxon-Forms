@@ -3,10 +3,10 @@ title SaxonForms package map (XSLT-centered)
 skinparam packageStyle rectangle
 
 package "src/" {
-  [saxon-xforms.xsl\n~8100 lines\nMain transform: controls, actions,\nmodel lifecycle, submission] as SAXON_XFORMS
-  [xforms-function-library.xsl\n~300 lines\nimpose(), instance(), index(),\nid(), min(), max(), random()] as FUNCTION_LIBRARY
-  [xforms-xpath-functions.xsl\n~420 lines\nproperty(), boolean-from-string(),\navg(), days-from-date(), digest(),\nhmac(), event(), now()] as XPATH_FUNCTIONS
-  [xsd-helpers.xsl\n~148 lines\ncanonical-type(), is-type-valid()] as XSD_HELPERS
+  [saxon-xforms.xsl\nMain transform: controls, actions,\nmodel lifecycle, submission] as SAXON_XFORMS
+  [xforms-function-library.xsl\nimpose(), instance(), index(),\nid(), min(), max(), random()] as FUNCTION_LIBRARY
+  [xforms-xpath-functions.xsl\nproperty(), boolean-from-string(),\navg(), days-from-date(), digest(),\nhmac(), event(), now()] as XPATH_FUNCTIONS
+  [xsd-helpers.xsl\ncanonical-type(), is-type-valid()] as XSD_HELPERS
   package "packages/" {
     [logger.xsl\nsfp:logInfo, sfp:logDebug\nOptional tracing] as LOGGER
   }

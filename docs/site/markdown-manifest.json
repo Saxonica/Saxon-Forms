@@ -13,10 +13,6 @@
       "title": "Setup guide"
     },
     {
-      "source": "MAY-GAPS.md",
-      "title": "Known MAY gaps"
-    },
-    {
       "source": "tests/xforms/w3c/STATUS.md",
       "title": "W3C coverage status"
     }

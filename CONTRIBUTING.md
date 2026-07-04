@@ -8,7 +8,7 @@ This repository contains:
 - Browser-facing bridges and helpers
 - W3C conformance tests in `tests/xforms/w3c/`
 - Interactive examples in `examples/`
-- Implementation and conformance docs in `docs/docbook/` and `tests/xforms/w3c/STATUS.md`
+- Implementation docs in `docs/docbook/` 
 
 ## Prerequisites
 - Node.js + npm
@@ -80,7 +80,6 @@ Use this map to find implementation ownership quickly:
 - Schema/type helper logic: `src/xsd-helpers.xsl`
 - End-to-end conformance tests by chapter: `tests/xforms/w3c/chXX.spec.ts`
 - Shared Playwright fixtures/helpers: `tests/xforms/w3c/helpers.ts`, `tests/fixtures/`
-- Conformance gap tracking and rationale: `tests/xforms/w3c/STATUS.md`
 
 When fixing a conformance gap:
 1. Reproduce with a specific chapter/test ID.
@@ -91,7 +90,7 @@ When fixing a conformance gap:
 
 ## Coding guidelines
 - Prefer minimal, localized changes.
-- Preserve existing project style in XSL/TS/JS files.
+- Preserve existing project style in XSL/TS files.
 - Use descriptive names and keep control-flow explicit.
 - Add comments where logic is subtle (especially XPath/XForms semantics).
 - Avoid broad formatting-only churn in functional PRs.

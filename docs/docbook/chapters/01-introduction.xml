@@ -33,7 +33,6 @@
                         rendering.</para></listitem>
                 <listitem><para><emphasis>Actions and Submission</emphasis>  — Action execution and HTTP submission
                         mechanisms.</para></listitem>
-                <listitem><para><emphasis>Conformance</emphasis> — Test coverage and implementation-defined behavior.</para></listitem>
                 <listitem><para><emphasis>Additional Topics</emphasis> — Reusable components, accessibility, BPMN workflows, XSLT API reference.</para></listitem>
             </itemizedlist>
         </section>
@@ -41,7 +40,7 @@
 
     <section id="chapter-introduction-use-cases">
         <title>Primary use-cases</title>
-        <para>The use-case diagram enumerates the implementation-facing scenarios that the rest of the guide traces back to source templates, functions, and Playwright assertions. Four actor roles interact with SaxonForms:</para>
+        <para>Four primary actor roles interact with SaxonForms:</para>
         <itemizedlist>
             <listitem><para><emphasis>Form Author</emphasis> — Writes XForms markup using standard controls and XPath bindings. Relies on correct rendering and function evaluation.</para></listitem>
             <listitem><para><emphasis>Application Developer</emphasis> — Integrates SaxonForms into web applications, using actions (insert, delete, toggle, script, load), submission, and file upload.</para></listitem>
