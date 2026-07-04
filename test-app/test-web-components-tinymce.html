@@ -7,7 +7,10 @@
     <script src="/lib/SaxonJS3.rt.js"></script>
     <script src="/lib/tinymce/tinymce.min.js"></script>
     <script>
-      window.tinymce = window.tinymce || {};
+      if (!window.tinymce || typeof window.tinymce.init !== "function") {
+        throw new Error("TinyMCE runtime failed to load from /lib/tinymce/tinymce.min.js");
+      }
+      // TEST-TRACE: require concrete TinyMCE runtime before xform render so missing local assets fail deterministically; helps tests/supplemental/web-components.spec.ts "Web components integration (tinymce)".
       window.tinymce.baseURL = "/lib/tinymce";
     </script>
     <script src="/lib/test-web-components-tinymce.js"></script>

@@ -18,6 +18,13 @@
       "baseline_path": ".agents/skills/regression-gate/baselines/saxon-forms.json",
       "regression_policy": "waivable-with-justification"
     },
+    "supplemental-web-components": {
+      "description": "Supplemental web-components integration coverage (Shoelace + TinyMCE)",
+      "config_path": "playwright.config.ts",
+      "test_path": "tests/supplemental/web-components.spec.ts",
+      "baseline_path": ".agents/skills/regression-gate/baselines/supplemental-web-components.json",
+      "regression_policy": "waivable-with-justification"
+    },
     "examples-demos": {
       "description": "Examples directory demo coverage (direct-load and stylesheet-driven samples)",
       "config_path": "playwright.config.ts",

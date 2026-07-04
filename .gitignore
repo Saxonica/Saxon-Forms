@@ -8,6 +8,7 @@ test-results/
 playwright-report/
 public-test/
 test-app/w3c-suite
+test-app/lib
 public-test/w3c-suite/
 runs/
 builds/
