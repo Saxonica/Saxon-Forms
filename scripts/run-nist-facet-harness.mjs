@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import os from "node:os";
 import { spawn } from "node:child_process";
+import { getTestPaths } from "./lib/test-paths.mjs";
 
 function parseArgs(argv) {
   const args = {
@@ -33,6 +34,7 @@ function parseArgs(argv) {
       throw new Error(`Unknown argument: ${arg}`);
     }
   }
+
   return args;
 }
 
@@ -64,6 +66,7 @@ function loadManifest(manifestPath) {
 }
 
 function resolveSourceTestSetPath(repoRoot, sourceTestSet) {
+  const testPaths = getTestPaths(repoRoot);
   const sourceValue = String(sourceTestSet || "").trim();
   const directPath = path.resolve(repoRoot, sourceValue);
   if (fs.existsSync(directPath)) {
@@ -73,7 +76,7 @@ function resolveSourceTestSetPath(repoRoot, sourceTestSet) {
   const normalizedSlashes = sourceValue.replaceAll("\\", "/");
   const legacyPrefix = "../xsdtests/";
   if (normalizedSlashes.startsWith(legacyPrefix)) {
-    const mappedSource = `public-test/xsdtests/${normalizedSlashes.slice(legacyPrefix.length)}`;
+    const mappedSource = `tests/fixtures/external/xsdtests/${normalizedSlashes.slice(legacyPrefix.length)}`;
     const mappedPath = path.resolve(repoRoot, mappedSource);
     if (fs.existsSync(mappedPath)) {
       return {
@@ -81,6 +84,16 @@ function resolveSourceTestSetPath(repoRoot, sourceTestSet) {
         resolvedPath: mappedPath,
         warning: `legacy source_test_set "${sourceValue}" resolved to "${mappedSource}".`
       };
+    }
+  }
+  const canonicalPrefix = "tests/fixtures/external/xsdtests/";
+  if (normalizedSlashes.startsWith(canonicalPrefix)) {
+    const mappedPath = path.join(
+      testPaths.fixturesXsdtestsDir,
+      normalizedSlashes.slice(canonicalPrefix.length)
+    );
+    if (fs.existsSync(mappedPath)) {
+      return { sourceValue, resolvedPath: mappedPath, warning: null };
     }
   }
 

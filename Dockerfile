@@ -24,8 +24,6 @@ ENV PATH="${ANT_HOME}/bin:${PATH}"
 COPY . .
 
 RUN npm run fetch:w3c
-RUN if [ -L test-app/w3c-suite ]; then rm test-app/w3c-suite; fi \
-    && if [ ! -e test-app/w3c-suite ]; then ln -s /app/public-test/w3c-suite /app/test-app/w3c-suite; fi
 RUN npm run build:sef
 
 ENV CI=1

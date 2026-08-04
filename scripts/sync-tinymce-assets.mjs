@@ -2,10 +2,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { getTestPaths } from "./lib/test-paths.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..");
+const testPaths = getTestPaths(repoRoot);
 const sourceTinyRoot = path.join(repoRoot, "node_modules", "tinymce");
 const sourceTinyWebComponent = path.join(
   repoRoot,
@@ -15,7 +17,7 @@ const sourceTinyWebComponent = path.join(
   "dist",
   "tinymce-webcomponent.js"
 );
-const destinationLibRoot = path.join(repoRoot, "test-app", "lib");
+const destinationLibRoot = path.join(testPaths.runtimeRoot, "lib");
 const destinationTinyRoot = path.join(destinationLibRoot, "tinymce");
 const destinationTinyWebComponent = path.join(destinationLibRoot, "tinymce-webcomponent.js");
 const tinymceEntries = ["tinymce.min.js", "icons", "models", "plugins", "skins", "themes"];
@@ -64,7 +66,7 @@ function syncTinymceAssets() {
     console.log("[sync:tinymce] Patched tinymce-webcomponent.js to forward license-key (GPL self-hosted).");
   }
 
-  console.log("[sync:tinymce] Synced TinyMCE assets to test-app/lib.");
+  console.log("[sync:tinymce] Synced TinyMCE assets to tests/runtime/lib.");
 }
 
 try {

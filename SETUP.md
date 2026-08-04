@@ -11,12 +11,12 @@ Run these commands in order from repo root:
 - JavaScript/TypeScript/XSLT source code
 - npm dependency manifests (`package.json`, `package-lock.json`)
 - Committed Saxon-JS runtime files under `Saxon-JS/`
-- Committed SEF artifacts under `sef/` and `test-app/sef/`
+- Committed SEF artifacts under `sef/` and `tests/runtime/sef/`
 
 ## What is intentionally not committed
 The following are excluded by `.gitignore` and are expected to be generated, downloaded, or installed locally:
 - `node_modules/`
-- `public-test/w3c-suite/` and `test-app/w3c-suite`
+- `tests/fixtures/external/w3c-suite/` and `tests/runtime/w3c-suite`
 - `ant4docbook-0.10.0/`
 - `apache-ant*/`
 - `tests/xsd/nist/.cache/` (generated NIST Playwright case index)
@@ -69,18 +69,18 @@ W3C tests require a downloaded suite:
 - `npm run fetch:w3c`
 
 This downloads and extracts the suite into:
-- `public-test/w3c-suite/` (ignored in git)
-- and links `test-app/w3c-suite` when needed
+- `tests/fixtures/external/w3c-suite/` (ignored in git)
+- and links `tests/runtime/w3c-suite` when needed
 
 ### NIST XSD dataset
 NIST-related manifests reference:
-- `public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet`
+- `tests/fixtures/external/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet`
 
 Fetch the dataset with:
 - `npm run fetch:nist`
 - `npm run fetch:nist -- --force` (refresh existing copy)
 
-This mirrors the W3C asset model by placing downloaded test assets under `public-test/` inside this repository (ignored in git).
+This mirrors the W3C asset model by placing downloaded test assets under `tests/fixtures/external/` inside this repository (ignored in git).
 
 NIST Playwright engine tests require a generated case index:
 - `npm run build:nist-engine-index`

@@ -6,10 +6,8 @@ xsltforms/
 node_modules/
 test-results/
 playwright-report/
-public-test/
-test-app/w3c-suite
-test-app/lib
-public-test/w3c-suite/
+tests/fixtures/external/
+tests/runtime/w3c-suite
 runs/
 builds/
 examples/generated/*.sef.xml

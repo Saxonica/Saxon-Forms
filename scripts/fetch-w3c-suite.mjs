@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Fetch the W3C XForms 1.1 Test Suite and extract into public-test/w3c-suite/
+ * Fetch the W3C XForms 1.1 Test Suite and extract into tests/fixtures/external/w3c-suite/
  *
  * Usage:
  *   node scripts/fetch-w3c-suite.mjs           # skips if already present
@@ -12,6 +12,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { downloadArchive, extractZipArchive, stripExtractedPrefix } from "./lib/archive-utils.mjs";
+import { ensureDirectoryAlias, getTestPaths } from "./lib/test-paths.mjs";
 
 const ZIP_URL = "https://www.w3.org/MarkUp/Forms/Test/XForms1.1/Edition1/zip/TestCases11.zip";
 const STRIP_PREFIX = ["Test", "XForms1.1", "Edition1"];
@@ -19,7 +20,8 @@ const STRIP_PREFIX = ["Test", "XForms1.1", "Edition1"];
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, "..");
-const targetDir = path.join(projectRoot, "public-test", "w3c-suite");
+const testPaths = getTestPaths(projectRoot);
+const targetDir = testPaths.fixturesW3CSuiteDir;
 
 const force = process.argv.slice(2).includes("--force");
 
@@ -65,6 +67,7 @@ async function main() {
     console.log(`Extracting to ${targetDir}...`);
     extractZipArchive(tmpZip, targetDir);
     stripExtractedPrefix(targetDir, STRIP_PREFIX);
+    ensureDirectoryAlias(testPaths.fixturesW3CSuiteDir, testPaths.runtimeW3CSuiteDir);
 
     const xhtmlCount = countXhtmlFiles(targetDir);
     console.log(`W3C test suite extracted successfully (${xhtmlCount} xhtml files)`);

@@ -2,15 +2,13 @@
   "suite_id": "saxon-forms",
   "test_path": "tests/supplemental/saxon-forms.spec.ts",
   "config_path": "playwright.config.ts",
-  "last_updated": "2026-05-17T13:53:53.318Z",
+  "last_updated": "2026-07-07T16:20:45.395Z",
   "stats": {
     "total": 14,
-    "passed": 13,
-    "failed": 1,
+    "passed": 14,
+    "failed": 0,
     "flaky": 0,
     "skipped": 0
   },
-  "allowed_failures": [
-    "Fix 2 — xf:upload › uploading XML via xf:upload sets instance data"
-  ]
+  "allowed_failures": []
 }

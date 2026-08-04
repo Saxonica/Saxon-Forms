@@ -3,10 +3,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { getTestPaths } from "./lib/test-paths.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..");
+const testPaths = getTestPaths(repoRoot);
 
 function commandExists(commandName) {
   const locator = process.platform === "win32" ? "where" : "which";
@@ -154,28 +156,28 @@ async function main() {
 
   await checkPlaywrightBrowser(results);
 
-  const w3cSuiteRoot = path.join(repoRoot, "public-test", "w3c-suite", "Chapt02");
+  const w3cSuiteRoot = path.join(testPaths.fixturesW3CSuiteDir, "Chapt02");
   if (fs.existsSync(w3cSuiteRoot)) {
-    addCheck(results, "pass", "W3C suite assets", "public-test/w3c-suite is present.");
+    addCheck(results, "pass", "W3C suite assets", "tests/fixtures/external/w3c-suite is present.");
   } else {
     addCheck(
       results,
       "fail",
       "W3C suite assets",
-      "public-test/w3c-suite is missing.",
+      "tests/fixtures/external/w3c-suite is missing.",
       "Run `npm run fetch:w3c`."
     );
   }
 
-  const w3cSuiteLink = path.join(repoRoot, "test-app", "w3c-suite");
+  const w3cSuiteLink = testPaths.runtimeW3CSuiteDir;
   if (fs.existsSync(w3cSuiteLink)) {
-    addCheck(results, "pass", "W3C suite test-app link", "test-app/w3c-suite exists.");
+    addCheck(results, "pass", "W3C suite runtime link", "tests/runtime/w3c-suite exists.");
   } else {
     addCheck(
       results,
       "fail",
-      "W3C suite test-app link",
-      "test-app/w3c-suite is missing.",
+      "W3C suite runtime link",
+      "tests/runtime/w3c-suite is missing.",
       "Run `npm run setup -- --profile conformance` (or `npm run predev`)."
     );
   }
@@ -206,9 +208,7 @@ async function main() {
   }
 
   const nistDatasetPath = path.resolve(
-    repoRoot,
-    "public-test",
-    "xsdtests",
+    testPaths.fixturesXsdtestsDir,
     "nistMeta",
     "NISTXMLSchemaDatatypes.testSet"
   );

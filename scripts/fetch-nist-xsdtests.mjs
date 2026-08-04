@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Fetch W3C xsdtests archive and extract into public-test/xsdtests/
+ * Fetch W3C xsdtests archive and extract into tests/fixtures/external/xsdtests/
  *
  * Usage:
  *   node scripts/fetch-nist-xsdtests.mjs           # skips if already present
@@ -12,6 +12,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { downloadArchive, extractZipArchive, stripExtractedPrefix } from "./lib/archive-utils.mjs";
+import { getTestPaths } from "./lib/test-paths.mjs";
 
 const ZIP_URL = "https://github.com/w3c/xsdtests/archive/refs/heads/master.zip";
 const STRIP_PREFIX = ["xsdtests-master"];
@@ -19,7 +20,8 @@ const STRIP_PREFIX = ["xsdtests-master"];
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, "..");
-const targetDir = path.join(projectRoot, "public-test", "xsdtests");
+const testPaths = getTestPaths(projectRoot);
+const targetDir = testPaths.fixturesXsdtestsDir;
 const requiredDatasetPath = path.join(targetDir, "nistMeta", "NISTXMLSchemaDatatypes.testSet");
 
 const force = process.argv.slice(2).includes("--force");

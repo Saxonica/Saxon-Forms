@@ -1,8 +1,13 @@
 import { test, expect } from "@playwright/test";
 
-const target = process.env.DEBUG_W3C_TEST ?? "Appendix/B/B.3/b.3.a.xhtml";
+const target = process.env.DEBUG_W3C_TEST;
 
-test(`debug W3C state: ${target}`, async ({ page }) => {
+test(`debug W3C state: ${target ?? "<unset>"}`, async ({ page }) => {
+  if (!target) {
+    throw new Error(
+      "DEBUG_W3C_TEST is required. Example: DEBUG_W3C_TEST=Appendix/B/B.3/b.3.a.xhtml"
+    );
+  }
   page.on("pageerror", (err) => {
     console.log(`[pageerror] ${err.message}`);
   });

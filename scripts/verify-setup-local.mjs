@@ -3,10 +3,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { ensureDirectoryAlias, getTestPaths } from "./lib/test-paths.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..");
+const testPaths = getTestPaths(repoRoot);
 const npmCommand = "npm";
 const nodeCommand = process.execPath;
 
@@ -30,20 +32,15 @@ function runCommand(command, args, description) {
 }
 
 function ensureW3CSuiteLink() {
-  const targetPath = path.join(repoRoot, "public-test", "w3c-suite");
-  const linkPath = path.join(repoRoot, "test-app", "w3c-suite");
+  const targetPath = testPaths.fixturesW3CSuiteDir;
+  const linkPath = testPaths.runtimeW3CSuiteDir;
 
   if (!fs.existsSync(targetPath)) {
     throw new Error(
       `Expected W3C suite at ${targetPath}; run "npm run fetch:w3c" before verification.`
     );
   }
-  if (fs.existsSync(linkPath)) {
-    return;
-  }
-
-  const symlinkType = process.platform === "win32" ? "junction" : "dir";
-  fs.symlinkSync(targetPath, linkPath, symlinkType);
+  ensureDirectoryAlias(targetPath, linkPath);
 }
 
 function main() {
@@ -55,7 +52,7 @@ function main() {
     [
       "scripts/run-playwright-with-port.mjs",
       "--config=playwright.config.ts",
-      "tests/supplemental/demo-samples-render.spec.ts",
+      "tests/examples/demo-samples-render.spec.ts",
       "--grep",
       "examples fundamentals page renders XForms controls",
       "--workers=1"

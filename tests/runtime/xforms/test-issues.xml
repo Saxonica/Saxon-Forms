@@ -2,7 +2,7 @@
 <!--
   Test XForm for Saxon-Forms upstream issues #19-27.
   Each section has its own instance, trigger, and output to verify data mutations.
-  The host page (test-app/issues.html) loads this XForm.
+  The host page (tests/runtime/issues.html) loads this XForm.
 -->
 <xf:xform
     xmlns:xf="http://www.w3.org/2002/xforms"

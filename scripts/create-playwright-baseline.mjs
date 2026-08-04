@@ -23,7 +23,7 @@
  * This script:
  *   - Selects suites from .agents/skills/regression-gate/playwright/suites.json
  *   - Prepares W3C data if needed
- *   - Compiles SEF and copies to test-app
+ *   - Compiles SEF and copies to tests/runtime
  *   - Runs Playwright for each suite and writes JSON baseline
  *   - Evaluates results and writes summary
  */
@@ -32,6 +32,7 @@ import os from "os";
 import path from "path";
 import { spawnSync } from "child_process";
 import { fileURLToPath } from "url";
+import { ensureDirectoryAlias, getTestPaths } from "./lib/test-paths.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,6 +46,7 @@ function toMntPath(inputPath) {
 }
 
 const repoRoot = toMntPath(repoRootNative);
+const testPathsNative = getTestPaths(repoRootNative);
 
 const suitesPath = path.join(
   repoRoot,
@@ -65,7 +67,7 @@ const evaluatorPath = path.join(
 const fetchW3CPath = path.join(repoRoot, "scripts", "fetch-w3c-suite.mjs");
 const playwrightLauncherPath = path.join(repoRoot, "scripts", "run-playwright-with-port.mjs");
 const sefPath = path.join(repoRoot, "sef", "saxon-xforms.sef.json");
-const testAppSefPath = path.join(repoRoot, "test-app", "sef", "saxon-xforms.sef.json");
+const testAppSefPath = toMntPath(testPathsNative.runtimeSefFile);
 
 function fail(message) {
   console.error(message);
@@ -287,10 +289,7 @@ const needsW3CData = selectedSuiteIds.some((suiteId) => suiteId.startsWith("w3c-
 if (needsW3CData) {
   console.log("Preparing W3C test data...");
   run("node", [fetchW3CPath]);
-  const linkPath = path.join(repoRoot, "test-app", "w3c-suite");
-  if (!fs.existsSync(linkPath)) {
-    fs.symlinkSync(path.resolve(repoRoot, "public-test", "w3c-suite"), linkPath, "junction");
-  }
+  ensureDirectoryAlias(testPathsNative.fixturesW3CSuiteDir, testPathsNative.runtimeW3CSuiteDir);
 }
 console.log("Compiling/refreshing SEF...");
 

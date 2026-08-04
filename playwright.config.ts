@@ -54,7 +54,7 @@ export default defineConfig({
   },
   projects,
   webServer: {
-    command: `npx http-server test-app -p ${playwrightPort} -c-1`,
+    command: `npx http-server tests/runtime -p ${playwrightPort} -c-1`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
   },

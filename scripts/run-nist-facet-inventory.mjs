@@ -57,7 +57,7 @@ function normalizeSourceTestSetForRepo(sourceTestSet) {
   const sourceValue = String(sourceTestSet || "").trim().replaceAll("\\", "/");
   const legacyPrefix = "../xsdtests/";
   if (sourceValue.startsWith(legacyPrefix)) {
-    return `public-test/xsdtests/${sourceValue.slice(legacyPrefix.length)}`;
+    return `tests/fixtures/external/xsdtests/${sourceValue.slice(legacyPrefix.length)}`;
   }
   return sourceValue;
 }

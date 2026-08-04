@@ -4,18 +4,20 @@ import os from "os";
 import path from "path";
 import { spawnSync } from "child_process";
 import { fileURLToPath } from "url";
+import { ensureDirectoryAlias, getTestPaths } from "../../../../scripts/lib/test-paths.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const skillRoot = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(skillRoot, "../../..");
+const testPaths = getTestPaths(repoRoot);
 
 const suitesPath = path.join(skillRoot, "playwright", "suites.json");
 const evaluatorPath = path.join(skillRoot, "scripts", "evaluate_playwright_baseline.mjs");
 const fetchW3CPath = path.join(repoRoot, "scripts", "fetch-w3c-suite.mjs");
 const playwrightLauncherPath = path.join(repoRoot, "scripts", "run-playwright-with-port.mjs");
 const sefPath = path.join(repoRoot, "sef", "saxon-xforms.sef.json");
-const testAppSefPath = path.join(repoRoot, "test-app", "sef", "saxon-xforms.sef.json");
+const testAppSefPath = testPaths.runtimeSefFile;
 const runsRoot = path.join(skillRoot, "runs");
 
 const playwrightTimeoutMs = Number(process.env.REGRESSION_GATE_PLAYWRIGHT_TIMEOUT_MS || 1200000);
@@ -254,15 +256,13 @@ function ensureW3CDataIfNeeded(queueIds) {
   if (!needsW3CData) return;
 
   run("node", [fetchW3CPath]);
-  const linkPath = path.join(repoRoot, "test-app", "w3c-suite");
-  const targetPath = path.join(repoRoot, "public-test", "w3c-suite");
+  const linkPath = testPaths.runtimeW3CSuiteDir;
+  const targetPath = testPaths.fixturesW3CSuiteDir;
 
   if (!fs.existsSync(targetPath)) {
     throw new Error(`W3C source directory missing: ${toRepoRelative(targetPath)}`);
   }
-  if (!fs.existsSync(linkPath)) {
-    fs.symlinkSync(targetPath, linkPath, process.platform === "win32" ? "junction" : "dir");
-  }
+  ensureDirectoryAlias(targetPath, linkPath);
 }
 
 function compileEngine() {

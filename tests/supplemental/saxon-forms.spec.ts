@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 /**
  * Saxon-Forms E2E tests.
  *
- * These run against a generic test XForm (public-test/xforms/test-app.xml)
+ * These run against a generic test XForm (tests/runtime/xforms/test-app.xml)
  * that exercises the features added/fixed in the Saxon-Forms fork.
  * The XForm uses a custom namespace (urn:test:items) with prefix t:
  * and includes xf:script, xf:upload, and xf:load controls.
@@ -139,8 +139,9 @@ test.describe("Fix 2 — xf:upload", () => {
     );
     await expect(fileInput).toBeAttached({ timeout: SF_RENDER_TIMEOUT });
 
+    // TEST-TRACE: fix relative path after asset consolidation; fixture lives in tests/fixtures/; helps tests/supplemental/saxon-forms.spec.ts upload test
     await fileInput.setInputFiles(
-      path.resolve(__dirname, "fixtures/upload-data.xml")
+      path.resolve(__dirname, "../fixtures/upload-data.xml")
     );
 
     // Verify the instance was populated at the JS level

@@ -33,7 +33,7 @@ npm run setup
 npm run build:sef
 ```
 
-This generates `sef/saxon-xforms.sef.json` and syncs it into `test-app/sef/saxon-xforms.sef.json`.
+This generates `sef/saxon-xforms.sef.json` and syncs it into `tests/runtime/sef/saxon-xforms.sef.json`.
 
 ### 3) Run examples locally
 ```bash

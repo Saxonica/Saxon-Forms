@@ -1,6 +1,6 @@
 {
   "manifest_name": "nist-simpletype-facets",
-  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "source_test_set": "tests/fixtures/external/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
   "scope": "all NISTXMLSchemaDatatypes.testSet groups whose schemas do not declare xs:complexType",
   "facets": {
     "all_non_complex_types": {
