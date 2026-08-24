@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<detail xmlns="">
+  <item mode="a" id="d1"><label>Alpha-A</label></item>
+  <item mode="a" id="d2"><label>Alpha-B</label></item>
+  <item mode="b" id="d3"><label>Beta-Only</label></item>
+</detail>

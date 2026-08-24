@@ -11,11 +11,18 @@
       "baseline_path": ".agents/skills/regression-gate/baselines/issues-spec.json",
       "regression_policy": "waivable-with-justification"
     },
-    "saxon-forms": {
+"saxon-forms": {
       "description": "General Saxon-Forms behavior smoke/regression checks",
       "config_path": "playwright.config.ts",
       "test_path": "tests/supplemental/saxon-forms.spec.ts",
       "baseline_path": ".agents/skills/regression-gate/baselines/saxon-forms.json",
+      "regression_policy": "waivable-with-justification"
+    },
+    "engine-limitations": {
+      "description": "SAXON-LIMITATIONS #2/#3/#4/#5 engine regression coverage",
+      "config_path": "playwright.config.ts",
+      "test_path": "tests/supplemental/engine-limitations.spec.ts",
+      "baseline_path": ".agents/skills/regression-gate/baselines/engine-limitations.json",
       "regression_policy": "waivable-with-justification"
     },
     "supplemental-web-components": {

@@ -2193,19 +2193,31 @@
                                               </xsl:otherwise>
                                           </xsl:choose>
                                       </xsl:when>
-                                      <xsl:otherwise>
-                                          <xsl:sequence select="js:setInstance($instance-id,$response-instance-root)"/>
+<xsl:otherwise>
+                                          <!-- TEST-TRACE: copy response root so root() is element not document; helps tests/supplemental/engine-limitations.spec.ts "#2+#3 page-relative load-detail". -->
+                                          <xsl:variable name="parentless-response-root" as="element()">
+                                              <xsl:copy select="$response-instance-root">
+                                                  <xsl:copy-of select="@*, node()"/>
+                                              </xsl:copy>
+                                          </xsl:variable>
+                                          <xsl:sequence select="js:setInstance($instance-id,$parentless-response-root)"/>
                                           <xsl:sequence select="js:addDirtyInstance($instance-id)"/>
                                           <xsl:sequence select="js:setDeferredUpdateFlags(('rebuild','recalculate','revalidate','refresh'))"/>
-                                          <xsl:message use-when="$debugMode">[HTTPsubmit-trace] setInstance missing-instance-fallback response-root=<xsl:value-of select="name($response-instance-root)"/> response-xml=<xsl:value-of select="serialize($response-instance-root)"/></xsl:message>
+                                          <xsl:message use-when="$debugMode">[HTTPsubmit-trace] setInstance missing-instance-fallback response-root=<xsl:value-of select="name($parentless-response-root)"/> response-xml=<xsl:value-of select="serialize($parentless-response-root)"/></xsl:message>
                                       </xsl:otherwise>
                                   </xsl:choose>
                               </xsl:when>
                               <xsl:otherwise>
-                                  <xsl:sequence select="js:setInstance($instance-id,$response-instance-root)"/>
+                                  <!-- TEST-TRACE: copy response root so root() is element not document; helps tests/supplemental/engine-limitations.spec.ts "#2+#3 page-relative load-detail". -->
+                                  <xsl:variable name="parentless-response-root" as="element()">
+                                      <xsl:copy select="$response-instance-root">
+                                          <xsl:copy-of select="@*, node()"/>
+                                      </xsl:copy>
+                                  </xsl:variable>
+                                  <xsl:sequence select="js:setInstance($instance-id,$parentless-response-root)"/>
                                   <xsl:sequence select="js:addDirtyInstance($instance-id)"/>
                                   <xsl:sequence select="js:setDeferredUpdateFlags(('rebuild','recalculate','revalidate','refresh'))"/>
-                                  <xsl:message use-when="$debugMode">[HTTPsubmit-trace] setInstance direct-instance-replace response-root=<xsl:value-of select="name($response-instance-root)"/> response-xml=<xsl:value-of select="serialize($response-instance-root)"/></xsl:message>
+                                  <xsl:message use-when="$debugMode">[HTTPsubmit-trace] setInstance direct-instance-replace response-root=<xsl:value-of select="name($parentless-response-root)"/> response-xml=<xsl:value-of select="serialize($parentless-response-root)"/></xsl:message>
                               </xsl:otherwise>
                           </xsl:choose>
                           
@@ -3796,8 +3808,10 @@
 <!--            <xsl:message use-when="$debugMode">[xforms:repeat] setting context nodeset '<xsl:sequence select="$nodeset"/>'</xsl:message>-->
             <xsl:sequence select="js:addRepeatContext($myid , $nodeset)" /> 
             <xsl:sequence select="js:addRepeatModelContext($myid , $model-ref)" /> 
-            <!-- PERF-6a: store resolved instance ID for dirty-repeat guard -->
+<!-- PERF-6a: store resolved instance ID for dirty-repeat guard -->
             <xsl:sequence select="js:setRepeatInstanceId($myid, $this-instance-id)"/>
+            <!-- TEST-TRACE: PERF-6a multi-instance deps from nodeset instance() tokens; helps tests/supplemental/engine-limitations.spec.ts "#5 mode change refreshes filtered repeat". -->
+            <xsl:sequence select="js:setRepeatInstanceDeps($myid, $refi)"/>
             <!-- PERF-6b: store resolved nodeset for splice-path matching -->
             <xsl:sequence select="js:setRepeatRef($myid, $refi)"/>
         </xsl:if>
@@ -4581,7 +4595,13 @@
             -->
             <xsl:when test="exists($instanceField) and $instanceField[self::*]">
                 <xsl:variable name="all-bindings" as="element(xforms:bind)*" select="js:getBindings()"/>
-                <xsl:variable name="instance-root" as="element()" select="root($instanceField)"/>
+<!-- TEST-TRACE: tolerate document-node roots if instance storage still parented; helps tests/supplemental/engine-limitations.spec.ts "#2+#3 page-relative load-detail". -->
+                <xsl:variable name="instance-root" as="element()" select="
+                    let $r := root($instanceField)
+                    return
+                        if ($r instance of element())
+                        then $r
+                        else $r/*[1]"/>
                 <!-- Check the node itself AND its ancestors for non-relevant bindings -->
                 <xsl:variable name="ancestor-irrelevant" as="xs:boolean">
                     <xsl:iterate select="$instanceField/ancestor-or-self::*">
@@ -4994,12 +5014,13 @@
             <xsl:variable name="this-repeat-nodeset" as="xs:string" select="js:getRepeatContext($this-key)"/>
             <xsl:variable name="this-repeat-model" as="xs:string" select="js:getRepeatModelContext($this-key)"/>
             
-            <!-- TEST-TRACE: PERF-6a – skip repeats bound to instances that were not
-                 mutated in this action cycle.  When no dirty instances are recorded
-                 (e.g. after a full reset) we fall back to refreshing every repeat. -->
+<!-- TEST-TRACE: PERF-6a – skip repeats only when none of their instance() deps
+                 are dirty. When no dirty instances are recorded (e.g. after a full reset)
+                 fall back to refreshing every repeat.
+                 helps tests/supplemental/engine-limitations.spec.ts "#5 mode change refreshes filtered repeat". -->
             <xsl:variable name="this-repeat-instance-id" as="xs:string"
                 select="js:getRepeatInstanceId($this-key)"/>
-            <xsl:if test="not(js:hasDirtyInstances()) or js:isDirtyInstance($this-repeat-instance-id)">
+            <xsl:if test="not(js:hasDirtyInstances()) or js:isDirtyRepeat($this-key)">
             
             <xsl:variable name="page-element" select="ixsl:page()//*[@id = $this-key]" as="node()?"/>
             
@@ -5039,7 +5060,7 @@
                         object="$page-element"/>
                     <xsl:sequence select="js:setRepeatSize($this-key, xs:integer($pending-append-pos))"/>
                 </xsl:when>
-                <!-- Full re-render (non-append mutations or no pending mutation) -->
+<!-- Full re-render (non-append mutations or no pending mutation) -->
                 <xsl:when test="exists($page-element)">
                     <xsl:result-document href="#{$this-key}" method="ixsl:replace-content">
                         <xsl:apply-templates select="$this-repeat">
@@ -5050,6 +5071,11 @@
                             <xsl:with-param name="default-namespace-context" select="$namespace-context-item" tunnel="yes"/>
                         </xsl:apply-templates>
                     </xsl:result-document>
+                    <!-- TEST-TRACE: keep data-count in sync on full re-render; helps tests/supplemental/engine-limitations.spec.ts "#4 data-count tracks live filtered cardinality". -->
+                    <ixsl:set-attribute name="data-count"
+                        select="string(xs:integer($live-repeat-size))"
+                        object="$page-element"/>
+                    <xsl:sequence select="js:setRepeatSize($this-key, xs:integer($live-repeat-size))"/>
                 </xsl:when>
                 <xsl:otherwise/>
             </xsl:choose>
@@ -6661,10 +6687,12 @@
                 <xsl:variable name="href-resolved-candidate" as="xs:string?">
                     <xsl:choose>
                         <xsl:when test="empty($href)"/>
-                        <xsl:when test="matches($href,'^[A-Za-z][A-Za-z0-9+.\-]*:')">
+<xsl:when test="matches($href,'^[A-Za-z][A-Za-z0-9+.\-]*:')">
                             <xsl:sequence select="$href"/>
                         </xsl:when>
                         <xsl:otherwise>
+                            <!-- Relative resources resolve against xform/document base (W3C ch11).
+                                 Page-root relative paths remain an app concern (absolute URL or /path). -->
                             <xsl:sequence select="string(resolve-uri($href, if (exists($source-base-uri) and $source-base-uri != '') then $source-base-uri else string(base-uri($xforms-doc-global))))"/>
                         </xsl:otherwise>
                     </xsl:choose>

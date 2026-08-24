@@ -28,8 +28,10 @@
         var repeats = {};
         var repeatModelContexts = {};
         var repeatContextNodesets = {};       
-        /* PERF-6a: map repeat ID → resolved instance ID for dirty-instance guard */
+/* PERF-6a: map repeat ID → resolved instance ID for dirty-instance guard */
         var repeatInstanceIds = {};
+        /* TEST-TRACE: PERF-6a multi-instance deps per repeat; helps tests/supplemental/engine-limitations.spec.ts "#5 mode change refreshes filtered repeat". */
+        var repeatInstanceDeps = {};
         /* PERF-6b: map repeat ID → resolved nodeset (e.g. "instance('target')/o:control") */
         var repeatRefs = {};
         /* PERF-6b: queue of pending structural mutations for splice-based refresh */
@@ -83,7 +85,8 @@
             repeats = {};
             repeatModelContexts = {};
             repeatContextNodesets = {};       
-            repeatInstanceIds = {};
+repeatInstanceIds = {};
+            repeatInstanceDeps = {};
             repeatRefs = {};
             pendingMutations = [];
         
@@ -476,12 +479,50 @@
         var getRepeatContext = function(name){
             return repeatContextNodesets[name];
         }
-        /* PERF-6a: store/retrieve the resolved instance ID for each repeat */
+/* PERF-6a: store/retrieve the resolved instance ID for each repeat */
         var setRepeatInstanceId = function(name, value) {
             repeatInstanceIds[name] = value;
         }
         var getRepeatInstanceId = function(name) {
             return repeatInstanceIds[name] || "";
+        }
+        /* TEST-TRACE: extract instance('id') tokens from repeat nodeset for multi-dep dirty checks;
+           helps tests/supplemental/engine-limitations.spec.ts "#5 mode change refreshes filtered repeat". */
+        var setRepeatInstanceDeps = function(name, nodesetExpr) {
+            var deps = [];
+            var seen = {};
+            var primary = repeatInstanceIds[name] || "";
+            if (primary) {
+                deps.push(primary);
+                seen[primary] = true;
+            }
+            var src = String(nodesetExpr || "");
+var re = /instance\s*\(\s*['\x22]([^'\x22]+)['\x22]\s*\)/g;
+            var m;
+            while ((m = re.exec(src)) !== null) {
+                var id = m[1];
+if (id &amp;&amp; !seen[id]) {
+                    deps.push(id);
+                    seen[id] = true;
+                }
+            }
+            repeatInstanceDeps[name] = deps;
+        }
+        var getRepeatInstanceDeps = function(name) {
+            if (repeatInstanceDeps[name] &amp;&amp; repeatInstanceDeps[name].length) {
+                return repeatInstanceDeps[name];
+            }
+            var primary = getRepeatInstanceId(name);
+            return primary ? [primary] : [];
+        }
+var isDirtyRepeat = function(name) {
+            var deps = getRepeatInstanceDeps(name);
+            for (var i = 0; i &lt; deps.length; i++) {
+                if (isDirtyInstance(deps[i])) {
+                    return true;
+                }
+            }
+            return false;
         }
         /* PERF-6b: store/retrieve the repeat's own resolved nodeset */
         var setRepeatRef = function(name, value) {
