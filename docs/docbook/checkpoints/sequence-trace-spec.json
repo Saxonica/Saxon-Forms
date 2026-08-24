@@ -15,7 +15,7 @@
           "purpose": "Template-level [SEQTRACE] markers for xformsjs-main/model-construct/rebuild/recalculate/revalidate/refresh and event dispatch."
         },
         {
-          "location": "test-app/w3c-runner.html",
+          "location": "tests/runtime/w3c-runner.html",
           "purpose": "sequenceTrace query option forwards sequence-template-trace stylesheet param."
         },
         {
@@ -42,7 +42,7 @@
           "purpose": "DOMActivate/applyActions/action-* templates emit [SEQTRACE] markers for dispatch sequencing."
         },
         {
-          "location": "test-app/w3c-runner.html",
+          "location": "tests/runtime/w3c-runner.html",
           "purpose": "sequenceTrace query option enables template trace instrumentation at runtime."
         },
         {
@@ -70,7 +70,7 @@
           "purpose": "[SEQTRACE] markers for action-send, xforms-submit, HTTPsubmit, and dispatch-submit-error."
         },
         {
-          "location": "test-app/w3c-runner.html",
+          "location": "tests/runtime/w3c-runner.html",
           "purpose": "sequenceTrace query option enables runtime template traces for submission scenarios."
         },
         {

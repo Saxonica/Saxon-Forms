@@ -2,7 +2,7 @@
   "suite_id": "examples-demos",
   "test_path": "tests/examples",
   "config_path": "playwright.config.ts",
-  "last_updated": "2026-07-07T16:21:30.291Z",
+  "last_updated": "2026-08-09T15:20:39.738Z",
   "stats": {
     "total": 19,
     "passed": 19,

@@ -8,6 +8,7 @@ test-results/
 playwright-report/
 tests/fixtures/external/
 tests/runtime/w3c-suite
+tests/runtime/lib/tinymce/
 runs/
 builds/
 examples/generated/*.sef.xml

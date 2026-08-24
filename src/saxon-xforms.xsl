@@ -4148,7 +4148,9 @@
         <xsl:variable name="current-namespace" as="xs:anyURI" select="namespace-uri()"/>
         <xsl:variable name="new-name" as="xs:QName" select="QName($current-namespace, name())"/>
         <xsl:element name="{$new-name}" namespace="{$current-namespace}">
+            <!-- TEST-TRACE: keep canonical function prefixes resolvable when instance-root is namespace-context; helps tests/supplemental/issues.spec.ts "Issue #33". -->
             <xsl:namespace name="xforms" select="'http://www.w3.org/2002/xforms'"/>
+            <xsl:namespace name="fn" select="'http://www.w3.org/2005/xpath-functions'"/>
             <xsl:copy-of select="namespace::*"/>
             <xsl:apply-templates select="@*,node()" mode="namespace-fix"/>
         </xsl:element>
@@ -4338,7 +4340,9 @@
             <xsl:variable name="default-namespace" as="xs:anyURI" select="$this/*/namespace-uri()"/>
             <xsl:message use-when="$debugMode">[xforms:addNamespaceDeclarationsToDocument] <xsl:sequence select="if (name($this/*) eq 'html') then '&quot;' || string($this/*/*:head/*:title) || '&quot; ' else ()"/>Default namespace of root <xsl:sequence select="name($this/*)"/>: <xsl:sequence select="$default-namespace"/></xsl:message>
             <xsl:copy select="$this/*" copy-namespaces="yes">
+                <!-- TEST-TRACE: bind canonical fn/xforms prefixes on evaluation root; helps tests/supplemental/issues.spec.ts "Issue #33". -->
                 <xsl:namespace name="xforms" select="'http://www.w3.org/2002/xforms'"/>
+                <xsl:namespace name="fn" select="'http://www.w3.org/2005/xpath-functions'"/>
                 <xsl:for-each select="$this//*[not(namespace-uri() = ('','http://www.w3.org/2002/xforms',$default-namespace))][not(namespace-uri() = (ancestor::*/namespace-uri(),preceding::*/namespace-uri()))]">
                     <xsl:variable name="new-namespace" select="namespace-uri(.)"/>
                     <xsl:variable name="new-prefix-1" as="xs:string" select="substring-before(name(),':')"/>

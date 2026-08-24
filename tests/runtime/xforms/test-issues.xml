@@ -111,6 +111,13 @@
       </bag>
     </xf:instance>
 
+    <!-- #33: explicit function-prefix behavior for avg() -->
+    <xf:instance id="i33">
+      <nums xmlns="">
+        <n>1</n>
+      </nums>
+    </xf:instance>
+
   </xf:model>
 
   <div id="issues-root">
@@ -298,6 +305,21 @@
       <h3>#32: current() literal is not rewritten</h3>
       <span id="out-32-contains" class="issue-output">
         <xf:output value="contains('current()', '()')"/>
+      </span>
+    </div>
+
+    <!-- ======== #33: avg() vs xforms:avg() vs fn:avg() on empty nodeset ======== -->
+    <!-- TEST-TRACE: verifies explicit fn:/xforms: prefixes are preserved through impose() rewrite; helps tests/supplemental/issues.spec.ts "Issue #33". -->
+    <div id="issue-33" class="issue-section">
+      <h3>#33: explicit avg() prefix semantics</h3>
+      <span id="out-33-unpref" class="issue-output">
+        <xf:output value="avg(instance('i33')/n[false()])"/>
+      </span>
+      <span id="out-33-xforms" class="issue-output">
+        <xf:output value="xforms:avg(instance('i33')/n[false()])"/>
+      </span>
+      <span id="out-33-fn" class="issue-output">
+        <xf:output value="fn:avg(instance('i33')/n[false()])"/>
       </span>
     </div>
 

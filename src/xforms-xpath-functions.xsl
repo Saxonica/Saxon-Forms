@@ -5,7 +5,7 @@
     All functions in this file are implementable without JS bridges,
     leveraging the full XPath 3.1 support provided by Saxon-JS.
     
-    TEST-TRACE: Phase 1a XPath functions; helps tests/w3c/ch07.spec.ts
+    TEST-TRACE: helps tests/w3c/ch07.spec.ts
 -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"

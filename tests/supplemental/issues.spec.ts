@@ -350,3 +350,36 @@ test.describe("Issue #32 — current() literal handling", () => {
     await expect(output).toContainText("true");
   });
 });
+
+// =========================================================
+// #33 — explicit avg() namespace prefixes
+// Expected: avg() and xforms:avg() keep XForms wrapper semantics (NaN),
+//           fn:avg() keeps native fn semantics on empty nodeset (empty string)
+// =========================================================
+test.describe("Issue #33 — explicit avg() prefixes", () => {
+  test("avg(), xforms:avg(), fn:avg() preserve intended semantics", async ({ page }) => {
+    // TEST-TRACE: assert explicit fn:/xforms: prefixes are preserved through impose(); helps tests/supplemental/issues.spec.ts "Issue #33".
+    const pageErrors: string[] = [];
+    page.on("pageerror", (error) => {
+      pageErrors.push(String(error?.message ?? ""));
+    });
+    await waitForIssuesForm(page);
+    await expect(page.locator("#issue-33")).toBeVisible({ timeout: RENDER_TIMEOUT });
+
+    // TEST-TRACE: assert semantic split regardless of wrapper display state; helps tests/supplemental/issues.spec.ts "Issue #33".
+    const unprefText = (await page.locator("#out-33-unpref").textContent() ?? "").trim();
+    const xformsText = (await page.locator("#out-33-xforms").textContent() ?? "").trim();
+    expect(unprefText).toBe("NaN");
+    expect(xformsText).toBe("NaN");
+
+    const fnAvgText = (await page.locator("#out-33-fn").textContent() ?? "").trim();
+    expect(fnAvgText).toBe("");
+
+    const rewriteCorruptionErrors = pageErrors.filter(
+      (msg) =>
+        /xforms:xforms:avg/i.test(msg) ||
+        /fn:xforms:avg/i.test(msg)
+    );
+    expect(rewriteCorruptionErrors).toEqual([]);
+  });
+});

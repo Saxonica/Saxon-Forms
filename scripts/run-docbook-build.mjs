@@ -29,10 +29,57 @@ function resolvePathArgument(rawValue, baseDir = repoRoot) {
   return path.isAbsolute(trimmed) ? trimmed : path.resolve(baseDir, trimmed);
 }
 
+/**
+ * Resolve an executable reference. Bare command names (e.g. "ant") stay on PATH.
+ * Path-like values (slashes, .bat/.cmd/.exe) become absolute under baseDir so Windows
+ * cmd.exe does not mis-parse leading "./" as the "." builtin.
+ */
+function resolveExecutable(rawValue, baseDir = repoRoot) {
+  const trimmed = String(rawValue ?? "").trim();
+  if (!trimmed) {
+    return trimmed;
+  }
+  const looksLikePath =
+    path.isAbsolute(trimmed) ||
+    trimmed.includes("/") ||
+    trimmed.includes("\\") ||
+    /\.(bat|cmd|exe)$/i.test(trimmed);
+  if (!looksLikePath) {
+    return trimmed;
+  }
+  return resolvePathArgument(trimmed, baseDir);
+}
+
+/** Quote one argument for cmd.exe /c when the full command line is a single string. */
+function quoteForCmd(arg) {
+  const value = String(arg);
+  if (value.length === 0) {
+    return '""';
+  }
+  const needsQuotes = /[\s"&<>|()^%]/.test(value);
+  if (!needsQuotes) {
+    return value;
+  }
+  return `"${value.replace(/"/g, '""')}"`;
+}
+
+/**
+ * Spawn a process. On Windows, always run through cmd.exe with a single /c string
+ * so .bat/.cmd paths and arguments with spaces are handled correctly.
+ */
+function spawnProcess(command, args, options = {}) {
+  const isWindows = process.platform === "win32";
+  if (!isWindows) {
+    return spawn(command, args, options);
+  }
+  const commandLine = [command, ...args].map(quoteForCmd).join(" ");
+  return spawn("cmd.exe", ["/d", "/s", "/c", commandLine], options);
+}
+
 function parseArgs(argv) {
   const config = {
     format: "all",
-    antBin: process.env.ANT_BIN || "ant",
+    antBin: resolveExecutable(process.env.ANT_BIN || "ant"),
     buildFile: defaultBuildFile,
     ant4docbookHome: defaultAnt4DocbookHome,
     ant4docbookCacheHome: resolvePathArgument(
@@ -50,7 +97,7 @@ function parseArgs(argv) {
       continue;
     }
     if (arg.startsWith("--ant-bin=")) {
-      config.antBin = arg.slice("--ant-bin=".length).trim();
+      config.antBin = resolveExecutable(arg.slice("--ant-bin=".length).trim());
       continue;
     }
     if (arg.startsWith("--build-file=")) {
@@ -81,9 +128,10 @@ function parseArgs(argv) {
 
 async function commandExists(commandName) {
   if (!commandName) return false;
-  if (commandName.includes("/") || commandName.includes("\\")) {
+  const resolved = resolveExecutable(commandName);
+  if (resolved.includes(path.sep) || resolved.includes("/") || resolved.includes("\\")) {
     try {
-      await fs.access(path.resolve(commandName));
+      await fs.access(resolved);
       return true;
     } catch {
       return false;
@@ -91,10 +139,10 @@ async function commandExists(commandName) {
   }
   const isWindows = process.platform === "win32";
   const lookupCommand = isWindows ? "where" : "which";
-  const lookupArgs = [commandName];
+  const lookupArgs = [resolved];
   try {
     await new Promise((resolve, reject) => {
-      const child = spawn(lookupCommand, lookupArgs, {
+      const child = spawnProcess(lookupCommand, lookupArgs, {
         cwd: repoRoot,
         stdio: "ignore"
       });
@@ -157,25 +205,23 @@ async function cloneDocbookTree(sourceRoot, destinationRoot) {
 
 
 async function runCommand(command, args, options = {}) {
-  const isWindows = process.platform === "win32";
-  const resolvedCommand = isWindows ? "cmd.exe" : command;
-  const resolvedArgs = isWindows ? ["/d", "/s", "/c", command, ...args] : args;
   const cwd = options.cwd || repoRoot;
   const stdio = options.stdio || "ignore";
+  const resolvedCommand = resolveExecutable(command);
 
   await new Promise((resolve, reject) => {
-    const child = spawn(resolvedCommand, resolvedArgs, {
+    const child = spawnProcess(resolvedCommand, args, {
       cwd,
       stdio
     });
     child.on("error", reject);
     child.on("exit", (code, signal) => {
       if (signal) {
-        reject(new Error(`Command terminated by signal ${signal}: ${command} ${args.join(" ")}`));
+        reject(new Error(`Command terminated by signal ${signal}: ${resolvedCommand} ${args.join(" ")}`));
         return;
       }
       if ((code ?? 1) !== 0) {
-        reject(new Error(`Command failed (${code}): ${command} ${args.join(" ")}`));
+        reject(new Error(`Command failed (${code}): ${resolvedCommand} ${args.join(" ")}`));
         return;
       }
       resolve();
@@ -261,6 +307,132 @@ async function ensureAnt4DocbookRuntimeCache(config) {
   }
 }
 
+/**
+ * ant4docbook-0.10.0.jar ships Apache FOP Batik SVG classes, but its fat-jar
+ * META-INF/services registry omits PreloaderSVG / ImageLoaderFactorySVG.
+ * Without those SPI entries FOP reports "No ImagePreloader found" for every
+ * diagram SVG. Drop a tiny overlay jar onto the Ant task classpath.
+ */
+async function ensureFopBatikSvgSpiOverlay(config) {
+  const thirdPartyDir = path.join(config.ant4docbookHome, "3rd-party");
+  const overlayJar = path.join(thirdPartyDir, "fop-batik-svg-spi.jar");
+  const markerPath = path.join(thirdPartyDir, ".fop-batik-svg-spi-version");
+  const overlayVersion = "1";
+
+  let currentVersion = "";
+  try {
+    currentVersion = (await fs.readFile(markerPath, "utf8")).trim();
+  } catch {
+    currentVersion = "";
+  }
+
+  if ((await pathExists(overlayJar)) && currentVersion === overlayVersion) {
+    return;
+  }
+
+  await fs.mkdir(thirdPartyDir, { recursive: true });
+
+  const stagingRoot = await fs.mkdtemp(path.join(os.tmpdir(), "fop-batik-svg-spi-"));
+  try {
+    const serviceEntries = {
+      "org.apache.xmlgraphics.image.loader.spi.ImagePreloader": [
+        "org.apache.fop.image.loader.batik.PreloaderSVG",
+        "org.apache.fop.image.loader.batik.PreloaderWMF"
+      ],
+      "org.apache.xmlgraphics.image.loader.spi.ImageLoaderFactory": [
+        "org.apache.fop.image.loader.batik.ImageLoaderFactorySVG",
+        "org.apache.fop.image.loader.batik.ImageLoaderFactoryWMF"
+      ],
+      "org.apache.xmlgraphics.image.loader.spi.ImageConverter": [
+        "org.apache.fop.image.loader.batik.ImageConverterSVG2G2D",
+        "org.apache.fop.image.loader.batik.ImageConverterG2D2SVG",
+        "org.apache.fop.image.loader.batik.ImageConverterWMF2G2D"
+      ]
+    };
+
+    const servicesDir = path.join(stagingRoot, "META-INF", "services");
+    await fs.mkdir(servicesDir, { recursive: true });
+    for (const [serviceName, implementations] of Object.entries(serviceEntries)) {
+      await fs.writeFile(
+        path.join(servicesDir, serviceName),
+        `${implementations.join("\n")}\n`,
+        "utf8"
+      );
+    }
+    await fs.writeFile(
+      path.join(stagingRoot, "META-INF", "README-fop-batik-svg-spi.txt"),
+      [
+        "SPI overlay for Apache FOP Batik SVG/WMF image support.",
+        "Registers PreloaderSVG and related factories that ship inside",
+        "ant4docbook-0.10.0.jar but are missing from its META-INF/services.",
+        ""
+      ].join("\n"),
+      "utf8"
+    );
+
+    const jarExists = await commandExists("jar");
+    if (jarExists) {
+      await runCommand("jar", ["cf", overlayJar, "-C", stagingRoot, "."], { cwd: repoRoot });
+    } else {
+      // Fallback without the jar CLI: write a minimal zip via Python if available.
+      const pythonCandidates = process.platform === "win32" ? ["py", "python", "python3"] : ["python3", "python"];
+      let wrote = false;
+      for (const pythonBin of pythonCandidates) {
+        if (!(await commandExists(pythonBin))) {
+          continue;
+        }
+        const pyArgs =
+          pythonBin === "py"
+            ? [
+                "-3",
+                "-c",
+                "import pathlib,sys,zipfile; root=pathlib.Path(sys.argv[1]); out=pathlib.Path(sys.argv[2]); " +
+                  "zf=zipfile.ZipFile(out,'w',compression=zipfile.ZIP_DEFLATED); " +
+                  "[zf.write(p, p.relative_to(root).as_posix()) for p in root.rglob('*') if p.is_file()]; zf.close()",
+                stagingRoot,
+                overlayJar
+              ]
+            : [
+                "-c",
+                "import pathlib,sys,zipfile; root=pathlib.Path(sys.argv[1]); out=pathlib.Path(sys.argv[2]); " +
+                  "zf=zipfile.ZipFile(out,'w',compression=zipfile.ZIP_DEFLATED); " +
+                  "[zf.write(p, p.relative_to(root).as_posix()) for p in root.rglob('*') if p.is_file()]; zf.close()",
+                stagingRoot,
+                overlayJar
+              ];
+        try {
+          await runCommand(pythonBin, pyArgs, { cwd: repoRoot });
+          wrote = true;
+          break;
+        } catch {
+          // try next interpreter
+        }
+      }
+      if (!wrote) {
+        throw new Error(
+          `Unable to provision ${overlayJar}: neither 'jar' nor a working Python interpreter is available.`
+        );
+      }
+    }
+
+    if (!(await pathExists(overlayJar))) {
+      throw new Error(`Failed to provision FOP Batik SVG SPI overlay at ${overlayJar}.`);
+    }
+
+    await fs.writeFile(markerPath, `${overlayVersion}\n`, "utf8");
+    console.log(
+      JSON.stringify({
+        event: "fop-batik-svg-spi-overlay-ready",
+        ts: new Date().toISOString(),
+        overlay_jar: overlayJar,
+        version: overlayVersion
+      })
+    );
+  } finally {
+    await fs.rm(stagingRoot, { recursive: true, force: true });
+  }
+}
+
 async function runAnt(config) {
   const target = TARGET_BY_FORMAT[config.format];
   const antArgs = [
@@ -270,11 +442,13 @@ async function runAnt(config) {
     target
   ];
 
+  const antBin = resolveExecutable(config.antBin);
+
   console.log(
     JSON.stringify({
       event: "docbook-build-start",
       ts: new Date().toISOString(),
-      ant_bin: config.antBin,
+      ant_bin: antBin,
       build_file: config.buildFile,
       ant4docbook_home: config.ant4docbookHome,
       ant4docbook_cache_home: config.ant4docbookCacheHome,
@@ -282,12 +456,8 @@ async function runAnt(config) {
     })
   );
 
-  const isWindows = process.platform === "win32";
-  const command = isWindows ? "cmd.exe" : config.antBin;
-  const args = isWindows ? ["/d", "/s", "/c", config.antBin, ...antArgs] : antArgs;
-
   await new Promise((resolve, reject) => {
-    const child = spawn(command, args, {
+    const child = spawnProcess(antBin, antArgs, {
       cwd: repoRoot,
       stdio: "inherit"
     });
@@ -329,6 +499,7 @@ async function main() {
   }
   await ensureDocbookStylesheetCompatibility(config);
   await ensureAnt4DocbookRuntimeCache(config);
+  await ensureFopBatikSvgSpiOverlay(config);
   await runAnt(config);
 }
 

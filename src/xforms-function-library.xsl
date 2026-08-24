@@ -51,6 +51,8 @@
         </xsl:variable>
         
         <xsl:variable name="input2" as="xs:string" select="string-join($parts)"/>
+        <!-- TEST-TRACE: normalize accidental prefix-corruption (fn:xforms:* / xforms:xforms:*) after local-name rewrite pass; helps tests/supplemental/issues.spec.ts "Issue #33". -->
+        <xsl:variable name="input2a" as="xs:string" select="replace($input2, '(\i\c*:)\s*xforms:(\i\c*)\(', '$1$2(')"/>
         
         <!-- 
             Handle absolute XPaths like /rootElement/path anywhere in the expression.
@@ -67,7 +69,7 @@
             that can precede an absolute path, but NOT '/' (to avoid //elem).
         -->
         <xsl:variable name="input3" as="xs:string" select="
-            replace($input2, '(^|[\s(*+,=&lt;&gt;\[\-])(/\i\c*)(/)','$1root(.)$3')"/>
+            replace($input2a, '(^|[\s(*+,=&lt;&gt;\[\-])(/\i\c*)(/)','$1root(.)$3')"/>
 
         
         <!-- 
