@@ -2775,51 +2775,16 @@
                 <xsl:if test="exists($binding) and exists($binding/@required)">
                     <xsl:attribute name="data-required" select="$binding/@required"/>
                 </xsl:if>
-                <!-- TEST-TRACE: propagate readonly MIP (direct or inherited) to HTML input;
-                     XForms §6.1.2: ancestor readonly="true()" overrides any child readonly;
-                     helps tests/w3c/ch06.spec.ts "6.1.2.a", "6.1.2.b" -->
-                <xsl:if test="exists($instanceField) and $instanceField[self::* or self::text() or self::attribute()]">
-                    <xsl:variable name="all-bindings-ro" as="element(xforms:bind)*" select="js:getBindings()"/>
-                    <xsl:variable name="ns-ctx-ro" as="node()" select="
-                        if ($instanceField[self::attribute() or self::text()])
-                        then ($instanceField/parent::*, /*)[1]
-                        else $instanceField"/>
-                    <xsl:variable name="instance-root-ro" as="element()" select="root($instanceField)"/>
-                    <!-- Walk ancestor-or-self to find any readonly binding (ancestor wins per spec) -->
-                    <xsl:variable name="readonly-status" as="xs:boolean">
-                        <xsl:iterate select="reverse($instanceField/ancestor-or-self::*)">
-                            <xsl:param name="found" as="xs:boolean" select="false()"/>
-                            <xsl:on-completion select="$found"/>
-                            <xsl:variable name="anc" as="element()" select="."/>
-                            <xsl:variable name="ro-bind" as="element(xforms:bind)?" select="
-                                ($all-bindings-ro[exists(@readonly)][
-                                    let $bn := xforms:impose(string(@nodeset))
-                                    return (some $n in xforms:evaluate-xpath-with-context-node($bn, $instance-root-ro, ())
-                                            satisfies $n is $anc)
-                                ])[1]"/>
-                            <xsl:choose>
-                                <xsl:when test="exists($ro-bind)">
-                                    <xsl:variable name="ro-val" as="xs:boolean">
-                                        <xsl:try>
-                                            <xsl:evaluate xpath="xforms:impose($ro-bind/@readonly)" context-item="$anc" namespace-context="$ns-ctx-ro"/>
-                                            <xsl:catch><xsl:sequence select="false()"/></xsl:catch>
-                                        </xsl:try>
-                                    </xsl:variable>
-                                    <xsl:choose>
-                                        <!-- Ancestor readonly=true wins unconditionally -->
-                                        <xsl:when test="$ro-val"><xsl:break select="true()"/></xsl:when>
-                                        <xsl:otherwise><xsl:next-iteration><xsl:with-param name="found" select="$found"/></xsl:next-iteration></xsl:otherwise>
-                                    </xsl:choose>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:next-iteration><xsl:with-param name="found" select="$found"/></xsl:next-iteration>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </xsl:iterate>
-                    </xsl:variable>
-                    <xsl:if test="$readonly-status">
-                        <xsl:attribute name="data-readonly" select="'true'"/>
-                    </xsl:if>
+                <!-- TEST-TRACE: propagate readonly MIP (direct or inherited) to HTML input via shared helper;
+                     XForms §6.1.2 ancestor walk; helps tests/w3c/ch06.spec.ts "6.1.2.a", "6.1.2.b"
+                     and tests/supplemental/trigger-mips.spec.ts -->
+                <xsl:variable name="readonly-status" as="xs:boolean">
+                    <xsl:call-template name="getReadonlyStatus">
+                        <xsl:with-param name="instanceField" as="node()?" select="$instanceField"/>
+                    </xsl:call-template>
+                </xsl:variable>
+                <xsl:if test="$readonly-status">
+                    <xsl:attribute name="data-readonly" select="'true'"/>
                 </xsl:if>
                 <!--
                     Persist bind @type on the rendered control so submit-time validation
@@ -3992,23 +3957,48 @@
     <xd:doc scope="component">
         <xd:desc>
             <xd:p>Implementation of XForms <a href="https://www.w3.org/TR/xforms11/#ui-trigger">trigger element</a></xd:p>
-            <xd:p>Generates HTML link or button and registers actions.</xd:p>
+            <xd:p>Generates HTML link or button and registers actions. Honors bound relevant/readonly MIPs.</xd:p>
         </xd:desc>
         <xd:param name="id">ID of HTML element.</xd:param>
         <xd:param name="nodeset">XPath binding expression</xd:param>
+        <xd:param name="instance-context">ID of XForms instance relevant to this control</xd:param>
+        <xd:param name="binding">xforms:bind elements relevant to this control</xd:param>
     </xd:doc>
     <xsl:template match="xforms:trigger" mode="get-html">
         <xsl:param name="id" as="xs:string" tunnel="yes"/>
         <xsl:param name="nodeset" as="xs:string" tunnel="yes"/>
-        
-        <xsl:variable name="additional-class-values" as="xs:string+" select="('xforms-trigger')"/>
+        <xsl:param name="instance-context" as="xs:string" tunnel="yes"/>
+        <xsl:param name="binding" as="element(xforms:bind)*" tunnel="yes"/>
+
+        <!-- TEST-TRACE: trigger MIP resolution (relevant hide / readonly disable);
+             helps tests/supplemental/trigger-mips.spec.ts -->
+        <xsl:variable name="instanceField" as="node()?" select="
+            if (normalize-space($nodeset) ne '')
+            then xforms:evaluate-xpath-with-instance-id($nodeset,$instance-context,())[1]
+            else ()"/>
+        <xsl:variable name="relevantStatus" as="xs:boolean">
+            <xsl:call-template name="getRelevantStatus">
+                <xsl:with-param name="xformsControl" as="element()" select="."/>
+                <xsl:with-param name="instanceField" as="node()?" select="$instanceField"/>
+            </xsl:call-template>
+        </xsl:variable>
+        <xsl:variable name="readonly-status" as="xs:boolean">
+            <xsl:call-template name="getReadonlyStatus">
+                <xsl:with-param name="instanceField" as="node()?" select="$instanceField"/>
+            </xsl:call-template>
+        </xsl:variable>
+
+        <xsl:variable name="additional-class-values" as="xs:string+" select="
+            if ($readonly-status and @appearance = 'minimal')
+            then ('xforms-trigger','xforms-disabled')
+            else ('xforms-trigger')"/>
         <xsl:variable name="htmlClass" as="xs:string">
             <xsl:call-template name="getHtmlClass">
                 <xsl:with-param name="source-class" as="xs:string?" select="@class"/>
                 <xsl:with-param name="additional-values" as="xs:string*" select="$additional-class-values"/>
             </xsl:call-template>
         </xsl:variable>
-        
+
         <xsl:variable name="innerbody">
             <xsl:choose>
                 <xsl:when test="child::xforms:label">
@@ -4018,32 +4008,52 @@
                     <xsl:sequence select="'&#x00a0;'"/>
                 </xsl:otherwise>
             </xsl:choose>
-            
         </xsl:variable>
-        
-        <!--<span class="xforms-trigger">-->
-            <xsl:variable name="html-element" as="xs:string">
+
+        <xsl:variable name="html-element" as="xs:string">
+            <xsl:choose>
+                <xsl:when test="@appearance = 'minimal'">
+                    <xsl:sequence select="'a'"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:sequence select="'button'"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <xsl:element name="{$html-element}">
+            <xsl:if test="@appearance = 'minimal'">
+                <xsl:attribute name="type" select="'button'"/>
+            </xsl:if>
+            <xsl:attribute name="class" select="$htmlClass"/>
+            <xsl:call-template name="copy-custom-data-attributes"/>
+            <xsl:attribute name="data-ref" select="$nodeset"/>
+            <xsl:attribute name="data-action" select="$id"/>
+            <xsl:if test="normalize-space($instance-context) ne ''">
+                <xsl:attribute name="instance-context" select="$instance-context"/>
+            </xsl:if>
+            <xsl:if test="exists($binding) and exists($binding/@relevant)">
+                <xsl:attribute name="data-relevant" select="$binding/@relevant"/>
+            </xsl:if>
+            <xsl:if test="exists($binding) and exists($binding/@readonly)">
+                <xsl:attribute name="data-readonly-expr" select="string($binding/@readonly)"/>
+            </xsl:if>
+            <xsl:if test="$readonly-status">
+                <xsl:attribute name="data-readonly" select="'true'"/>
                 <xsl:choose>
                     <xsl:when test="@appearance = 'minimal'">
-                        <xsl:sequence select="'a'"/>
+                        <xsl:attribute name="aria-disabled" select="'true'"/>
+                        <xsl:attribute name="tabindex" select="'-1'"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:sequence select="'button'"/>
+                        <xsl:attribute name="disabled" select="'disabled'"/>
                     </xsl:otherwise>
                 </xsl:choose>
-            </xsl:variable>
-        <xsl:element name="{$html-element}">
-                <xsl:if test="@appearance = 'minimal'">
-                    <xsl:attribute name="type" select="'button'"/>
-                </xsl:if>
-                <xsl:attribute name="class" select="$htmlClass"/>
-                <xsl:call-template name="copy-custom-data-attributes"/>
-                
-                <xsl:attribute name="data-ref" select="$nodeset"/>
-                <xsl:attribute name="data-action" select="$id"/>
-                <xsl:copy-of select="$innerbody"/>            
-            </xsl:element>
-        <!--</span>-->        
+            </xsl:if>
+            <xsl:if test="not($relevantStatus)">
+                <xsl:attribute name="style" select="'display:none'"/>
+            </xsl:if>
+            <xsl:copy-of select="$innerbody"/>
+        </xsl:element>
     </xsl:template>
 
     <xd:doc scope="component">
@@ -4521,7 +4531,7 @@
         </xd:desc>
     </xd:doc>
     <xsl:template name="copy-custom-data-attributes">
-        <xsl:copy-of select="@*[starts-with(local-name(), 'data-')][not(local-name() = ('data-ref','data-action','data-relevant','data-required','data-constraint','data-binding-type','data-type','data-mediatype','data-group-ref','data-instance-context','data-repeatable-context','data-count','data-repeat-item','data-switch-id','data-case-id-base'))]"/>
+        <xsl:copy-of select="@*[starts-with(local-name(), 'data-')][not(local-name() = ('data-ref','data-action','data-relevant','data-required','data-constraint','data-binding-type','data-type','data-mediatype','data-group-ref','data-instance-context','data-repeatable-context','data-count','data-repeat-item','data-switch-id','data-case-id-base','data-readonly','data-readonly-expr'))]"/>
     </xsl:template>
     
     
@@ -4544,6 +4554,71 @@
         </xsl:choose>
     </xsl:template>
     
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Identify when an instance node is readonly via bind MIPs (direct or ancestor).</xd:p>
+            <xd:p>XForms 1.1 §6.1.2: ancestor readonly="true()" wins.</xd:p>
+        </xd:desc>
+        <xd:param name="instanceField">Bound instance node for the control</xd:param>
+    </xd:doc>
+    <!-- TEST-TRACE: shared readonly ancestor walk for input + trigger;
+         helps tests/w3c/ch06.spec.ts "6.1.2.a", "6.1.2.b" and tests/supplemental/trigger-mips.spec.ts -->
+    <xsl:template name="getReadonlyStatus" as="xs:boolean">
+        <xsl:param name="instanceField" as="node()?"/>
+        <xsl:choose>
+            <xsl:when test="exists($instanceField) and $instanceField[self::* or self::text() or self::attribute()]">
+                <xsl:variable name="all-bindings-ro" as="element(xforms:bind)*" select="js:getBindings()"/>
+                <xsl:variable name="ns-ctx-ro" as="node()" select="
+                    if ($instanceField[self::attribute() or self::text()])
+                    then ($instanceField/parent::*, /*)[1]
+                    else $instanceField"/>
+                <xsl:variable name="instance-root-ro" as="element()" select="
+                    let $r := root($instanceField)
+                    return
+                        if ($r instance of element())
+                        then $r
+                        else $r/*[1]"/>
+                <xsl:iterate select="reverse($instanceField/ancestor-or-self::*)">
+                    <xsl:param name="found" as="xs:boolean" select="false()"/>
+                    <xsl:on-completion select="$found"/>
+                    <xsl:variable name="anc" as="element()" select="."/>
+                    <xsl:variable name="ro-bind" as="element(xforms:bind)?" select="
+                        ($all-bindings-ro[exists(@readonly)][
+                            let $bn := xforms:impose(string(@nodeset))
+                            return (some $n in xforms:evaluate-xpath-with-context-node($bn, $instance-root-ro, ())
+                                    satisfies $n is $anc)
+                        ])[1]"/>
+                    <xsl:choose>
+                        <xsl:when test="exists($ro-bind)">
+                            <xsl:variable name="ro-val" as="xs:boolean">
+                                <xsl:try>
+                                    <xsl:evaluate xpath="xforms:impose($ro-bind/@readonly)" context-item="$anc" namespace-context="$ns-ctx-ro"/>
+                                    <xsl:catch><xsl:sequence select="false()"/></xsl:catch>
+                                </xsl:try>
+                            </xsl:variable>
+                            <xsl:choose>
+                                <xsl:when test="$ro-val"><xsl:break select="true()"/></xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:next-iteration>
+                                        <xsl:with-param name="found" select="$found"/>
+                                    </xsl:next-iteration>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:next-iteration>
+                                <xsl:with-param name="found" select="$found"/>
+                            </xsl:next-iteration>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:iterate>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:sequence select="false()"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
     <xd:doc scope="component">
         <xd:desc>Identify when an XForms control is "relevant".</xd:desc>
         <xd:param name="xformsControl">XForms control element, e.g. input, output. NOTE: could be an HTML rendering of such an element.</xd:param>
@@ -5103,17 +5178,10 @@
                 div containing span, input, etc. with its label (HTML <label> generated from <xforms:label>)
             -->
             <xsl:variable name="htmlWrapper" as="element()?" select="./parent::*"/>
-            
-            <!--<xsl:variable name="htmlClass" as="xs:string?">
-                <xsl:call-template name="getHtmlClass">
-                    
-                </xsl:call-template>
-            </xsl:variable>-->
-            
-           <!-- <ixsl:set-attribute name="class" select="$htmlClass" object="."/>
-            <xsl:if test="exists($htmlWrapper)">
-                <ixsl:set-attribute name="class" select="$htmlClass" object="$htmlWrapper"/>
-            </xsl:if>-->
+            <!-- TEST-TRACE: bare xf:trigger renders button/a without control wrapper;
+                 do not hide parent toolbar/container; helps tests/supplemental/trigger-mips.spec.ts -->
+            <xsl:variable name="is-trigger-control" as="xs:boolean" select="
+                (local-name() = ('button','a')) and contains(concat(' ', normalize-space(string(@class)), ' '), ' xforms-trigger ')"/>
             
             <xsl:choose>
                 <xsl:when test="$relevantStatus">
@@ -5126,7 +5194,7 @@
                         Change setting on parent as well
                         HTML for <xf:output> includes parent <span> containing rendering of label
                     -->
-                    <xsl:if test="exists($htmlWrapper) and ixsl:style($htmlWrapper)?display = 'none'">
+                    <xsl:if test="not($is-trigger-control) and exists($htmlWrapper) and ixsl:style($htmlWrapper)?display = 'none'">
                         <xsl:message use-when="$debugMode">[refreshRelevantFields-JS] removing display="none" from parent</xsl:message>
                         <ixsl:remove-property name="style.display" object="$htmlWrapper"/>
                         <ixsl:remove-attribute name="style" object="$htmlWrapper"/>
@@ -5134,7 +5202,7 @@
                 </xsl:when>
                 <xsl:otherwise>
                     <ixsl:set-style name="display" select="'none'" object="."/>
-                    <xsl:if test="exists($htmlWrapper)">
+                    <xsl:if test="not($is-trigger-control) and exists($htmlWrapper)">
                         <ixsl:set-style name="display" select="'none'" object="$htmlWrapper"/>
                     </xsl:if>
                 </xsl:otherwise>
@@ -5163,6 +5231,74 @@
         <xsl:message use-when="$debugMode">[refreshRelevantFields-JS] END</xsl:message>
         
      </xsl:template>
+
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Re-evaluate readonly MIPs on triggers during xforms-refresh and sync disabled/aria-disabled.</xd:p>
+        </xd:desc>
+    </xd:doc>
+    <!-- TEST-TRACE: live readonly refresh for triggers; helps tests/supplemental/trigger-mips.spec.ts -->
+    <xsl:template name="refreshReadonlyFields-JS">
+        <xsl:message use-when="$debugMode">[refreshReadonlyFields-JS] START</xsl:message>
+        <xsl:for-each select="ixsl:page()//(*:button|*:a)[contains(concat(' ', normalize-space(string(@class)), ' '), ' xforms-trigger ')][@data-ref][@instance-context]">
+            <xsl:variable name="context-node" as="node()?" select="xforms:evaluate-xpath-with-instance-id(string(@data-ref),string(@instance-context),())[1]"/>
+            <xsl:variable name="readonly-status" as="xs:boolean">
+                <xsl:choose>
+                    <!-- Prefer full ancestor walk when a live instance node is available -->
+                    <xsl:when test="exists($context-node)">
+                        <xsl:call-template name="getReadonlyStatus">
+                            <xsl:with-param name="instanceField" as="node()?" select="$context-node"/>
+                        </xsl:call-template>
+                    </xsl:when>
+                    <xsl:when test="exists(@data-readonly-expr) and exists($context-node)">
+                        <xsl:try>
+                            <xsl:sequence select="boolean(xforms:evaluate-xpath-with-context-node(string(@data-readonly-expr),$context-node,()))"/>
+                            <xsl:catch><xsl:sequence select="false()"/></xsl:catch>
+                        </xsl:try>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:sequence select="@data-readonly = 'true'"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:variable>
+            <xsl:variable name="is-anchor" as="xs:boolean" select="local-name() = 'a'"/>
+            <xsl:choose>
+                <xsl:when test="$readonly-status">
+                    <ixsl:set-attribute name="data-readonly" select="'true'" object="."/>
+                    <xsl:choose>
+                        <xsl:when test="$is-anchor">
+                            <ixsl:set-attribute name="aria-disabled" select="'true'" object="."/>
+                            <ixsl:set-attribute name="tabindex" select="'-1'" object="."/>
+                            <xsl:variable name="class-tokens" as="xs:string*" select="tokenize(normalize-space(string(@class)), '\s+')"/>
+                            <xsl:if test="not($class-tokens = 'xforms-disabled')">
+                                <ixsl:set-attribute name="class" select="string-join(($class-tokens, 'xforms-disabled'), ' ')" object="."/>
+                            </xsl:if>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <ixsl:set-attribute name="disabled" select="'disabled'" object="."/>
+                            <ixsl:set-property name="disabled" select="true()" object="."/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:when>
+                <xsl:otherwise>
+                    <ixsl:remove-attribute name="data-readonly" object="."/>
+                    <xsl:choose>
+                        <xsl:when test="$is-anchor">
+                            <ixsl:remove-attribute name="aria-disabled" object="."/>
+                            <ixsl:remove-attribute name="tabindex" object="."/>
+                            <xsl:variable name="class-tokens" as="xs:string*" select="tokenize(normalize-space(string(@class)), '\s+')[. ne 'xforms-disabled']"/>
+                            <ixsl:set-attribute name="class" select="string-join($class-tokens, ' ')" object="."/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <ixsl:remove-attribute name="disabled" object="."/>
+                            <ixsl:set-property name="disabled" select="false()" object="."/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:for-each>
+        <xsl:message use-when="$debugMode">[refreshReadonlyFields-JS] END</xsl:message>
+    </xsl:template>
     
     
     
@@ -6274,6 +6410,8 @@
         <xsl:call-template name="refreshRepeats-JS"/>
         <xsl:call-template name="refreshElementsUsingIndexFunction-JS"/>
         <xsl:call-template name="refreshRelevantFields-JS"/>
+        <!-- TEST-TRACE: keep trigger readonly/disabled in sync on refresh; helps tests/supplemental/trigger-mips.spec.ts -->
+        <xsl:call-template name="refreshReadonlyFields-JS"/>
         <xsl:sequence select="js:clearForceFullValidationFeedback()"/>
     </xsl:template>
     
@@ -7384,6 +7522,13 @@
         <xsl:if test="$sequence-template-trace-enabled">
             <xsl:message>[SEQTRACE] template=DOMActivate control=<xsl:value-of select="name($form-control)"/> action=<xsl:value-of select="$form-control/@data-action"/></xsl:message>
         </xsl:if>
+
+        <!-- TEST-TRACE: skip activation when trigger/control is readonly;
+             helps tests/supplemental/trigger-mips.spec.ts -->
+        <xsl:if test="$form-control/@data-readonly = 'true'">
+            <xsl:message use-when="$debugMode">[DOMActivate] blocked: data-readonly=true</xsl:message>
+        </xsl:if>
+        <xsl:if test="not($form-control/@data-readonly = 'true')">
         
         <!-- TEST-TRACE: update ancestor repeat indices before processing actions so that
              index() calls inside action handlers (e.g. xf:insert @origin) resolve to the
@@ -7475,6 +7620,7 @@
             <xsl:call-template name="outermost-action-handler"/>
         </xsl:if>
         
+        </xsl:if>
         <xsl:message use-when="$debugMode">[DOMActivate] END</xsl:message>
         
     </xsl:template>

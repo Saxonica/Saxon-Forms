@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Saxon-Forms Trigger MIPs</title>
+    <script src="/lib/SaxonJS3.rt.js"></script>
+    <script>
+      window.addEventListener("DOMContentLoaded", function () {
+        SaxonJS.transform(
+          {
+            stylesheetLocation: "/sef/saxon-xforms.sef.json",
+            sourceLocation: "/xforms/test-trigger-mips.xml",
+          },
+          "async"
+        );
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Trigger MIPs Test</h1>
+    <div id="xForm"></div>
+  </body>
+</html>
