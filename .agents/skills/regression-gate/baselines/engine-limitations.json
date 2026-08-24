@@ -2,7 +2,7 @@
   "suite_id": "engine-limitations",
   "test_path": "tests/supplemental/engine-limitations.spec.ts",
   "config_path": "playwright.config.ts",
-  "last_updated": "2026-08-24T16:15:42.146Z",
+  "last_updated": "2026-08-24T19:13:56.279Z",
   "stats": {
     "total": 3,
     "passed": 3,
