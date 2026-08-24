@@ -2,7 +2,7 @@
   "suite_id": "supplemental-web-components",
   "test_path": "tests/supplemental/web-components.spec.ts",
   "config_path": "playwright.config.ts",
-  "last_updated": "2026-08-09T15:20:23.937Z",
+  "last_updated": "2026-08-24T15:57:36.198Z",
   "stats": {
     "total": 16,
     "passed": 14,

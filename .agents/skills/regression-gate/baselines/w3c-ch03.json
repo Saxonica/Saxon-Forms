@@ -2,7 +2,7 @@
   "suite_id": "w3c-ch03",
   "test_path": "tests/xforms/w3c/ch03.spec.ts",
   "config_path": "playwright.config.ts",
-  "last_updated": "2026-08-09T15:21:04.042Z",
+  "last_updated": "2026-08-24T15:58:30.641Z",
   "stats": {
     "total": 37,
     "passed": 37,
