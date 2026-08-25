@@ -2,7 +2,7 @@
   "suite_id": "w3c-appendix",
   "test_path": "tests/xforms/w3c/appendix.spec.ts",
   "config_path": "playwright.config.ts",
-  "last_updated": "2026-08-24T19:19:25.820Z",
+  "last_updated": "2026-08-25T15:00:13.558Z",
   "stats": {
     "total": 27,
     "passed": 27,
