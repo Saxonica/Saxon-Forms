@@ -32,6 +32,13 @@
       "baseline_path": ".agents/skills/regression-gate/baselines/trigger-mips.json",
       "regression_policy": "waivable-with-justification"
     },
+    "mip-perf": {
+      "description": "SAXON-LIMITATIONS #7 MIP refresh performance and ancestor MIP correctness",
+      "config_path": "playwright.config.ts",
+      "test_path": "tests/supplemental/mip-perf.spec.ts",
+      "baseline_path": ".agents/skills/regression-gate/baselines/mip-perf.json",
+      "regression_policy": "waivable-with-justification"
+    },
     "supplemental-web-components": {
       "description": "Supplemental web-components integration coverage (Shoelace + TinyMCE)",
       "config_path": "playwright.config.ts",

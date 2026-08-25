@@ -46,6 +46,9 @@
         /* PERF-6a: track which instance IDs were mutated so refreshRepeats-JS
            can skip repeats bound to unaffected instances. */
         var dirtyInstances = {};
+        /* TEST-TRACE: SAXON-LIMITATIONS #7 — per instance-root bind→node index for relevant/readonly
+           ancestor walks; helps tests/supplemental/mip-perf.spec.ts and trigger-mips / ch06. */
+        var mipBindIndex = {};
         /* TEST-TRACE: persist validity/required MIP state between revalidate and refresh;
            helps tests/supplemental/saxon-forms-validation.spec.ts. */
         var validationMIPs = {};
@@ -95,6 +98,7 @@ repeatInstanceIds = {};
             elementsUsingIndexFunction = {};
             elementsContextUsingIndexFunction = {};
             dirtyInstances = {};
+            mipBindIndex = {};
             validationMIPs = {};
             visitedControls = {};
             forceFullValidationFeedback = false;
@@ -114,6 +118,8 @@ repeatInstanceIds = {};
             for (var key in initialInstances) {
                 instances[key] = initialInstances[key].cloneNode(true);
             }
+            /* TEST-TRACE: xf:reset clones invalidate MIP bind node index; helps tests/w3c/ch10.spec.ts */
+            mipBindIndex = {};
         }
         
         var setModel = function(name, value) {
@@ -132,9 +138,95 @@ repeatInstanceIds = {};
                 
         var setBinding = function(value) {
             bindings.push(value);
+            /* TEST-TRACE: bind registry change invalidates MIP node index; helps tests/supplemental/mip-perf.spec.ts */
+            mipBindIndex = {};
         } 
         var getBindings = function() {
             return bindings;
+        }
+        /* TEST-TRACE: #7 MIP bind index API; first-bind-wins per generate-id(node);
+           helps tests/supplemental/mip-perf.spec.ts, trigger-mips.spec.ts, tests/w3c/ch06.spec.ts */
+        var clearMipBindIndex = function() {
+            mipBindIndex = {};
+            return true;
+        }
+        var _ensureMipBindIndexBucket = function(rootKey) {
+            var key = String(rootKey || '');
+            if (!mipBindIndex[key]) {
+                /* relevant/readonly: nodeId → bind index; relevantVal/readonlyVal: nodeId → boolean */
+                mipBindIndex[key] = { relevant: {}, readonly: {}, relevantVal: {}, readonlyVal: {}, built: false };
+            }
+            return mipBindIndex[key];
+        }
+        var isMipBindIndexBuilt = function(rootKey) {
+            var bucket = mipBindIndex[String(rootKey || '')];
+            return !!(bucket &amp;&amp; bucket.built === true);
+        }
+        var markMipBindIndexBuilt = function(rootKey) {
+            _ensureMipBindIndexBucket(rootKey).built = true;
+            return true;
+        }
+        /* Store 1-based index into bindings[] (not XDM nodes — safer JS round-trip). */
+        var putMipRelevantBindIndex = function(rootKey, nodeId, bindIndex) {
+            var bucket = _ensureMipBindIndexBucket(rootKey);
+            var id = String(nodeId || '');
+            var idx = Number(bindIndex);
+            if (id &amp;&amp; !(id in bucket.relevant) &amp;&amp; idx &gt;= 1) {
+                bucket.relevant[id] = idx;
+            }
+            return true;
+        }
+        var putMipReadonlyBindIndex = function(rootKey, nodeId, bindIndex) {
+            var bucket = _ensureMipBindIndexBucket(rootKey);
+            var id = String(nodeId || '');
+            var idx = Number(bindIndex);
+            if (id &amp;&amp; !(id in bucket.readonly) &amp;&amp; idx &gt;= 1) {
+                bucket.readonly[id] = idx;
+            }
+            return true;
+        }
+        var getMipRelevantBindIndex = function(rootKey, nodeId) {
+            var bucket = mipBindIndex[String(rootKey || '')];
+            if (!bucket) return 0;
+            var found = bucket.relevant[String(nodeId || '')];
+            return (found === undefined || found === null) ? 0 : Number(found);
+        }
+        var getMipReadonlyBindIndex = function(rootKey, nodeId) {
+            var bucket = mipBindIndex[String(rootKey || '')];
+            if (!bucket) return 0;
+            var found = bucket.readonly[String(nodeId || '')];
+            return (found === undefined || found === null) ? 0 : Number(found);
+        }
+        var putMipRelevantValue = function(rootKey, nodeId, value) {
+            var bucket = _ensureMipBindIndexBucket(rootKey);
+            var id = String(nodeId || '');
+            if (id &amp;&amp; !(id in bucket.relevantVal)) {
+                bucket.relevantVal[id] = (value === true || String(value) === 'true');
+            }
+            return true;
+        }
+        var putMipReadonlyValue = function(rootKey, nodeId, value) {
+            var bucket = _ensureMipBindIndexBucket(rootKey);
+            var id = String(nodeId || '');
+            if (id &amp;&amp; !(id in bucket.readonlyVal)) {
+                bucket.readonlyVal[id] = (value === true || String(value) === 'true');
+            }
+            return true;
+        }
+        /* Returns '' if unknown, 'true'/'false' if cached */
+        var getMipRelevantValue = function(rootKey, nodeId) {
+            var bucket = mipBindIndex[String(rootKey || '')];
+            if (!bucket) return '';
+            var id = String(nodeId || '');
+            if (!(id in bucket.relevantVal)) return '';
+            return bucket.relevantVal[id] ? 'true' : 'false';
+        }
+        var getMipReadonlyValue = function(rootKey, nodeId) {
+            var bucket = mipBindIndex[String(rootKey || '')];
+            if (!bucket) return '';
+            var id = String(nodeId || '');
+            if (!(id in bucket.readonlyVal)) return '';
+            return bucket.readonlyVal[id] ? 'true' : 'false';
         }
 
 
@@ -157,6 +249,8 @@ repeatInstanceIds = {};
                 
         var setInstance = function(name, value) {
             instances[name] = value;
+            /* TEST-TRACE: instance replace invalidates MIP bind node index; helps tests/supplemental/mip-perf.spec.ts */
+            mipBindIndex = {};
         } 
                 
         var getInstance = function(name) {

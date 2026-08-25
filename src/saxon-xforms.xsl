@@ -103,7 +103,9 @@
     <xsl:param name="xforms-doc-global" as="document-node()?" required="no" select="if (exists($xforms-file-global) and fn:doc-available($xforms-file-global)) then fn:doc($xforms-file-global) else (if (exists(/) and namespace-uri(/*) = ('http://www.w3.org/2002/xforms','http://www.w3.org/1999/xhtml')) then (/) else ())"/>
 
     <xsl:variable static="yes" name="debugMode" select="false()"/>
-    <xsl:variable static="yes" name="debugTiming" select="true()"/>
+    <!-- TEST-TRACE: debugTiming off for shipped SEF; SAXON-LIMITATIONS #7 console spam;
+         helps tests/supplemental/mip-perf.spec.ts -->
+    <xsl:variable static="yes" name="debugTiming" select="false()"/>
     <xsl:variable static="yes" name="global-default-model-id" select="'saxon-forms-default-model'" as="xs:string"/>
     <xsl:variable static="yes" name="global-default-instance-id" select="'saxon-forms-default-instance'" as="xs:string"/>
     <xsl:variable static="yes" name="global-default-submission-id" select="'saxon-forms-default-submission'" as="xs:string"/>
@@ -4556,6 +4558,112 @@
     
     <xd:doc scope="component">
         <xd:desc>
+            <xd:p>Build (once per instance root identity) a bind→node index for relevant/readonly MIPs.</xd:p>
+            <xd:p>Avoids O(controls × ancestors × bindings) XPath re-evaluation during ancestor walks.</xd:p>
+        </xd:desc>
+        <xd:param name="instance-root">Root element of the bound instance document/tree.</xd:param>
+        <xd:return>Empty; side-effect populates js:mipBindIndex (JS helpers may yield discarded items).</xd:return>
+    </xd:doc>
+    <!-- TEST-TRACE: SAXON-LIMITATIONS #7 MIP bind index build; first bind wins per node;
+         helps tests/supplemental/mip-perf.spec.ts, trigger-mips.spec.ts, tests/w3c/ch06.spec.ts -->
+    <xsl:function name="xforms:ensure-mip-bind-index" as="item()*">
+        <xsl:param name="instance-root" as="element()"/>
+        <xsl:variable name="root-key" as="xs:string" select="generate-id($instance-root)"/>
+        <xsl:if test="not(js:isMipBindIndexBuilt($root-key))">
+            <xsl:variable name="all-bindings" as="element(xforms:bind)*" select="js:getBindings()"/>
+            <!-- Iterate full binding list so 1-based position matches js:bindings[] -->
+            <xsl:for-each select="$all-bindings">
+                <xsl:variable name="bind" as="element(xforms:bind)" select="."/>
+                <xsl:variable name="bind-index" as="xs:integer" select="position()"/>
+                <xsl:if test="exists($bind/@relevant) or exists($bind/@readonly)">
+                    <xsl:variable name="bn" as="xs:string" select="xforms:impose(string($bind/@nodeset))"/>
+                    <xsl:variable name="bind-instance-id" as="xs:string?" select="string($bind/@instance-context)[. ne '']"/>
+                    <!-- Prefer instance-id eval so instance('x')/... paths hit the live instance map -->
+                    <xsl:variable name="bound-nodes" as="node()*">
+                        <xsl:try>
+                            <xsl:sequence select="
+                                if (exists($bind-instance-id))
+                                then xforms:evaluate-xpath-with-instance-id($bn, $bind-instance-id, ())[. instance of node()]
+                                else xforms:evaluate-xpath-with-context-node($bn, $instance-root, ())[. instance of node()]"/>
+                            <xsl:catch>
+                                <xsl:sequence select="()"/>
+                            </xsl:catch>
+                        </xsl:try>
+                    </xsl:variable>
+                    <xsl:for-each select="$bound-nodes">
+                        <xsl:variable name="bound" as="node()" select="."/>
+                        <xsl:variable name="node-id" as="xs:string" select="generate-id($bound)"/>
+                        <xsl:variable name="eval-ctx" as="node()" select="
+                            if ($bound[self::attribute() or self::text()])
+                            then ($bound/parent::*, $instance-root)[1]
+                            else $bound"/>
+                        <xsl:if test="exists($bind/@relevant)">
+                            <xsl:sequence select="js:putMipRelevantBindIndex($root-key, $node-id, $bind-index)"/>
+                            <xsl:variable name="rel-val" as="xs:boolean">
+                                <xsl:try>
+                                    <xsl:evaluate xpath="xforms:impose($bind/@relevant)" context-item="$eval-ctx" namespace-context="$eval-ctx"/>
+                                    <xsl:catch><xsl:sequence select="true()"/></xsl:catch>
+                                </xsl:try>
+                            </xsl:variable>
+                            <xsl:sequence select="js:putMipRelevantValue($root-key, $node-id, $rel-val)"/>
+                        </xsl:if>
+                        <xsl:if test="exists($bind/@readonly)">
+                            <xsl:sequence select="js:putMipReadonlyBindIndex($root-key, $node-id, $bind-index)"/>
+                            <xsl:variable name="ro-val" as="xs:boolean">
+                                <xsl:try>
+                                    <xsl:evaluate xpath="xforms:impose($bind/@readonly)" context-item="$eval-ctx" namespace-context="$eval-ctx"/>
+                                    <xsl:catch><xsl:sequence select="false()"/></xsl:catch>
+                                </xsl:try>
+                            </xsl:variable>
+                            <xsl:sequence select="js:putMipReadonlyValue($root-key, $node-id, $ro-val)"/>
+                        </xsl:if>
+                    </xsl:for-each>
+                </xsl:if>
+            </xsl:for-each>
+            <xsl:sequence select="js:markMipBindIndexBuilt($root-key)"/>
+        </xsl:if>
+    </xsl:function>
+
+    <!-- TEST-TRACE: resolve cached bind index back to xforms:bind; helps tests/supplemental/mip-perf.spec.ts -->
+    <xsl:function name="xforms:mip-bind-by-index" as="element(xforms:bind)?">
+        <xsl:param name="bind-index" as="xs:double?"/>
+        <xsl:variable name="idx" as="xs:integer" select="if (exists($bind-index)) then xs:integer($bind-index) else 0"/>
+        <xsl:variable name="all" as="element(xforms:bind)*" select="js:getBindings()"/>
+        <xsl:sequence select="if ($idx ge 1 and $idx le count($all)) then $all[$idx] else ()"/>
+    </xsl:function>
+
+    <!-- TEST-TRACE: index miss fallback preserves pre-#7 semantics; helps trigger-mips / ch06 -->
+    <xsl:function name="xforms:find-mip-bind-for-node" as="element(xforms:bind)?">
+        <xsl:param name="instance-root" as="element()"/>
+        <xsl:param name="target" as="node()"/>
+        <xsl:param name="mip" as="xs:string"/>
+        <xsl:variable name="_ensure" select="xforms:ensure-mip-bind-index($instance-root)"/>
+        <xsl:variable name="root-key" as="xs:string" select="generate-id($instance-root)"/>
+        <xsl:variable name="node-key" as="xs:string" select="generate-id($target)"/>
+        <xsl:variable name="cached" as="element(xforms:bind)?" select="
+            if ($mip eq 'readonly')
+            then xforms:mip-bind-by-index(js:getMipReadonlyBindIndex($root-key, $node-key))
+            else xforms:mip-bind-by-index(js:getMipRelevantBindIndex($root-key, $node-key))"/>
+        <xsl:choose>
+            <xsl:when test="exists($cached)">
+                <xsl:sequence select="$cached"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:variable name="all-bindings" as="element(xforms:bind)*" select="js:getBindings()"/>
+                <xsl:sequence select="
+                    ($all-bindings[
+                        if ($mip eq 'readonly') then exists(@readonly) else exists(@relevant)
+                    ][
+                        let $bn := xforms:impose(string(@nodeset))
+                        return (some $n in xforms:evaluate-xpath-with-context-node($bn, $instance-root, ())
+                                satisfies $n is $target)
+                    ])[1]"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+
+    <xd:doc scope="component">
+        <xd:desc>
             <xd:p>Identify when an instance node is readonly via bind MIPs (direct or ancestor).</xd:p>
             <xd:p>XForms 1.1 §6.1.2: ancestor readonly="true()" wins.</xd:p>
         </xd:desc>
@@ -4567,7 +4675,6 @@
         <xsl:param name="instanceField" as="node()?"/>
         <xsl:choose>
             <xsl:when test="exists($instanceField) and $instanceField[self::* or self::text() or self::attribute()]">
-                <xsl:variable name="all-bindings-ro" as="element(xforms:bind)*" select="js:getBindings()"/>
                 <xsl:variable name="ns-ctx-ro" as="node()" select="
                     if ($instanceField[self::attribute() or self::text()])
                     then ($instanceField/parent::*, /*)[1]
@@ -4578,37 +4685,48 @@
                         if ($r instance of element())
                         then $r
                         else $r/*[1]"/>
+                <xsl:variable name="_mip-ro-build" select="xforms:ensure-mip-bind-index($instance-root-ro)"/>
+                <xsl:variable name="root-key-ro" as="xs:string" select="generate-id($instance-root-ro)"/>
                 <xsl:iterate select="reverse($instanceField/ancestor-or-self::*)">
                     <xsl:param name="found" as="xs:boolean" select="false()"/>
                     <xsl:on-completion select="$found"/>
                     <xsl:variable name="anc" as="element()" select="."/>
-                    <xsl:variable name="ro-bind" as="element(xforms:bind)?" select="
-                        ($all-bindings-ro[exists(@readonly)][
-                            let $bn := xforms:impose(string(@nodeset))
-                            return (some $n in xforms:evaluate-xpath-with-context-node($bn, $instance-root-ro, ())
-                                    satisfies $n is $anc)
-                        ])[1]"/>
+                    <!-- TEST-TRACE: #7 prefer cached readonly value; helps tests/supplemental/mip-perf.spec.ts -->
+                    <xsl:variable name="cached-ro" as="xs:string" select="js:getMipReadonlyValue($root-key-ro, generate-id($anc))"/>
                     <xsl:choose>
-                        <xsl:when test="exists($ro-bind)">
-                            <xsl:variable name="ro-val" as="xs:boolean">
-                                <xsl:try>
-                                    <xsl:evaluate xpath="xforms:impose($ro-bind/@readonly)" context-item="$anc" namespace-context="$ns-ctx-ro"/>
-                                    <xsl:catch><xsl:sequence select="false()"/></xsl:catch>
-                                </xsl:try>
-                            </xsl:variable>
+                        <xsl:when test="$cached-ro = 'true'"><xsl:break select="true()"/></xsl:when>
+                        <xsl:when test="$cached-ro = 'false'">
+                            <xsl:next-iteration>
+                                <xsl:with-param name="found" select="$found"/>
+                            </xsl:next-iteration>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:variable name="ro-bind" as="element(xforms:bind)?" select="
+                                xforms:find-mip-bind-for-node($instance-root-ro, $anc, 'readonly')"/>
                             <xsl:choose>
-                                <xsl:when test="$ro-val"><xsl:break select="true()"/></xsl:when>
+                                <xsl:when test="exists($ro-bind)">
+                                    <xsl:variable name="ro-val" as="xs:boolean">
+                                        <xsl:try>
+                                            <xsl:evaluate xpath="xforms:impose($ro-bind/@readonly)" context-item="$anc" namespace-context="$ns-ctx-ro"/>
+                                            <xsl:catch><xsl:sequence select="false()"/></xsl:catch>
+                                        </xsl:try>
+                                    </xsl:variable>
+                                    <xsl:variable name="_store-ro" select="js:putMipReadonlyValue($root-key-ro, generate-id($anc), $ro-val)"/>
+                                    <xsl:choose>
+                                        <xsl:when test="$ro-val"><xsl:break select="true()"/></xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:next-iteration>
+                                                <xsl:with-param name="found" select="$found"/>
+                                            </xsl:next-iteration>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </xsl:when>
                                 <xsl:otherwise>
                                     <xsl:next-iteration>
                                         <xsl:with-param name="found" select="$found"/>
                                     </xsl:next-iteration>
                                 </xsl:otherwise>
                             </xsl:choose>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:next-iteration>
-                                <xsl:with-param name="found" select="$found"/>
-                            </xsl:next-iteration>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:iterate>
@@ -4669,7 +4787,6 @@
                 its ancestors are also relevant."
             -->
             <xsl:when test="exists($instanceField) and $instanceField[self::*]">
-                <xsl:variable name="all-bindings" as="element(xforms:bind)*" select="js:getBindings()"/>
 <!-- TEST-TRACE: tolerate document-node roots if instance storage still parented; helps tests/supplemental/engine-limitations.spec.ts "#2+#3 page-relative load-detail". -->
                 <xsl:variable name="instance-root" as="element()" select="
                     let $r := root($instanceField)
@@ -4678,42 +4795,53 @@
                         then $r
                         else $r/*[1]"/>
                 <!-- Check the node itself AND its ancestors for non-relevant bindings -->
+                <xsl:variable name="_mip-rel-build" select="xforms:ensure-mip-bind-index($instance-root)"/>
+                <xsl:variable name="root-key-rel" as="xs:string" select="generate-id($instance-root)"/>
                 <xsl:variable name="ancestor-irrelevant" as="xs:boolean">
                     <xsl:iterate select="$instanceField/ancestor-or-self::*">
                         <xsl:param name="found" as="xs:boolean" select="false()"/>
                         <xsl:on-completion select="$found"/>
                         <xsl:variable name="anc" as="element()" select="."/>
-                        <xsl:variable name="matching-bind" as="element(xforms:bind)?" select="
-                            ($all-bindings[exists(@relevant)][
-                                let $bn := xforms:impose(string(@nodeset))
-                                return (some $n in xforms:evaluate-xpath-with-context-node($bn, $instance-root, ())
-                                        satisfies $n is $anc)
-                            ])[1]"/>
+                        <!-- TEST-TRACE: #7 prefer cached relevant value; helps tests/supplemental/mip-perf.spec.ts -->
+                        <xsl:variable name="cached-rel" as="xs:string" select="js:getMipRelevantValue($root-key-rel, generate-id($anc))"/>
                         <xsl:choose>
-                            <xsl:when test="exists($matching-bind)">
-                                <xsl:variable name="rel" as="xs:boolean">
-                                    <xsl:try>
-                                        <xsl:evaluate xpath="xforms:impose($matching-bind/@relevant)" context-item="$anc" namespace-context="$namespace-context-item"/>
-                                        <xsl:catch>
-                                            <xsl:sequence select="true()"/>
-                                        </xsl:catch>
-                                    </xsl:try>
-                                </xsl:variable>
+                            <xsl:when test="$cached-rel = 'false'"><xsl:break select="true()"/></xsl:when>
+                            <xsl:when test="$cached-rel = 'true'">
+                                <xsl:next-iteration>
+                                    <xsl:with-param name="found" select="false()"/>
+                                </xsl:next-iteration>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:variable name="matching-bind" as="element(xforms:bind)?" select="
+                                    xforms:find-mip-bind-for-node($instance-root, $anc, 'relevant')"/>
                                 <xsl:choose>
-                                    <xsl:when test="not($rel)">
-                                        <xsl:break select="true()"/>
+                                    <xsl:when test="exists($matching-bind)">
+                                        <xsl:variable name="rel" as="xs:boolean">
+                                            <xsl:try>
+                                                <xsl:evaluate xpath="xforms:impose($matching-bind/@relevant)" context-item="$anc" namespace-context="$namespace-context-item"/>
+                                                <xsl:catch>
+                                                    <xsl:sequence select="true()"/>
+                                                </xsl:catch>
+                                            </xsl:try>
+                                        </xsl:variable>
+                                        <xsl:variable name="_store-rel" select="js:putMipRelevantValue($root-key-rel, generate-id($anc), $rel)"/>
+                                        <xsl:choose>
+                                            <xsl:when test="not($rel)">
+                                                <xsl:break select="true()"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:next-iteration>
+                                                    <xsl:with-param name="found" select="false()"/>
+                                                </xsl:next-iteration>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <xsl:next-iteration>
-                                            <xsl:with-param name="found" select="false()"/>
+                                            <xsl:with-param name="found" select="$found"/>
                                         </xsl:next-iteration>
                                     </xsl:otherwise>
                                 </xsl:choose>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:next-iteration>
-                                    <xsl:with-param name="found" select="$found"/>
-                                </xsl:next-iteration>
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:iterate>
@@ -5170,10 +5298,28 @@
     <xsl:template name="refreshRelevantFields-JS">
         <xsl:message use-when="$debugMode">[refreshRelevantFields-JS] START</xsl:message>
         
-        <!-- go through all form controls where @data-relevant has been set -->
-        <xsl:for-each select="ixsl:page()//*[@data-relevant]">
-            <xsl:variable name="context-node" as="node()?" select="xforms:evaluate-xpath-with-instance-id(string(@data-ref),string(@instance-context),())"/>
-            <xsl:variable name="relevantStatus" as="xs:boolean" select="if (exists($context-node)) then xforms:evaluate-xpath-with-context-node(string(@data-relevant),$context-node,()) else false()"/>
+        <!-- TEST-TRACE: #7 refresh all data-ref controls via getRelevantStatus (direct + ancestor MIPs);
+             not only @data-relevant; helps tests/supplemental/mip-perf.spec.ts and trigger-mips.spec.ts -->
+        <xsl:for-each select="ixsl:page()//*[@data-ref][@instance-context]">
+            <xsl:variable name="context-node" as="node()?" select="xforms:evaluate-xpath-with-instance-id(string(@data-ref),string(@instance-context),())[1]"/>
+            <xsl:variable name="relevantStatus" as="xs:boolean">
+                <xsl:choose>
+                    <xsl:when test="exists($context-node)">
+                        <!-- Empty tunnel binding → ancestor/self bind walk (uses MIP index) -->
+                        <xsl:call-template name="getRelevantStatus">
+                            <xsl:with-param name="xformsControl" select="."/>
+                            <xsl:with-param name="instanceField" select="$context-node"/>
+                            <xsl:with-param name="binding" as="element(xforms:bind)*" select="()" tunnel="yes"/>
+                        </xsl:call-template>
+                    </xsl:when>
+                    <xsl:when test="exists(@data-relevant)">
+                        <xsl:sequence select="false()"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:sequence select="true()"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:variable>
             <!-- 
                 div containing span, input, etc. with its label (HTML <label> generated from <xforms:label>)
             -->
