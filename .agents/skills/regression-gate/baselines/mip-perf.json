@@ -1,0 +1,14 @@
+{
+  "suite_id": "mip-perf",
+  "test_path": "tests/supplemental/mip-perf.spec.ts",
+  "config_path": "playwright.config.ts",
+  "last_updated": "2026-08-25T15:49:35.916Z",
+  "stats": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "flaky": 0,
+    "skipped": 0
+  },
+  "allowed_failures": []
+}
