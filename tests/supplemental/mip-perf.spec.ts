@@ -110,3 +110,65 @@ test.describe("MIP perf — debugTiming quiet", () => {
     expect(timingSpam.length).toBeLessThan(20);
   });
 });
+
+/** Soft budget: replace instance('detail') with ~200 props (guards multi-10s / 40s regression). */
+const REPLACE_BUDGET_MS = 15_000;
+
+async function gotoReplaceReady(page: import("@playwright/test").Page) {
+  await page.goto("/mip-perf-replace.html");
+  await expect(page.locator("#mip-replace-root")).toBeVisible({
+    timeout: TIMEOUT,
+  });
+  // xforms-ready loads payload A (~200 props)
+  await expect(page.locator("#detail-count-output")).toContainText("200", {
+    timeout: TIMEOUT,
+  });
+  await expect(page.locator(".prop-row").first()).toBeVisible({
+    timeout: TIMEOUT,
+  });
+}
+
+test.describe("MIP perf — detail instance replace (A+B)", () => {
+  test("large detail replace stays under budget; tree trigger stays readonly", async ({
+    page,
+  }) => {
+    await gotoReplaceReady(page);
+
+    const treeAct = page.locator("button.tree-act").first();
+    await expect(treeAct).toBeDisabled({ timeout: TIMEOUT });
+    await expect(treeAct).toHaveAttribute("data-readonly", "true");
+
+    const detailAct = page.locator("button.detail-act").first();
+    await expect(detailAct).toBeDisabled({ timeout: TIMEOUT });
+
+    const reloadB = page.locator(".reload-b, button.reload-b, [data-submit='load-detail-b']").first();
+    const reloadA = page.locator(".reload-a, button.reload-a, [data-submit='load-detail-a']").first();
+
+    const t0 = Date.now();
+    await reloadB.click();
+    await expect(page.locator("#detail-count-output")).toContainText("180", {
+      timeout: TIMEOUT,
+    });
+    expect(Date.now() - t0).toBeLessThan(REPLACE_BUDGET_MS);
+
+    // Tree MIP bucket must survive detail replace (still readonly)
+    await expect(treeAct).toBeDisabled({ timeout: TIMEOUT });
+    await expect(treeAct).toHaveAttribute("data-readonly", "true");
+    await expect(page.locator("#tree-label-output")).toContainText("Tree Node");
+
+    // Payload B has edit=true → detail act enabled
+    await expect(page.locator("#detail-edit-output")).toContainText("true", {
+      timeout: TIMEOUT,
+    });
+    await expect(detailAct).toBeEnabled({ timeout: TIMEOUT });
+
+    const t1 = Date.now();
+    await reloadA.click();
+    await expect(page.locator("#detail-count-output")).toContainText("200", {
+      timeout: TIMEOUT,
+    });
+    expect(Date.now() - t1).toBeLessThan(REPLACE_BUDGET_MS);
+    await expect(detailAct).toBeDisabled({ timeout: TIMEOUT });
+    await expect(treeAct).toBeDisabled();
+  });
+});

@@ -150,20 +150,28 @@ repeatInstanceIds = {};
             mipBindIndex = {};
             return true;
         }
-        var _ensureMipBindIndexBucket = function(rootKey) {
-            var key = String(rootKey || '');
+        /* TEST-TRACE: #7 slice A — drop one instance bucket only; helps tests/supplemental/mip-perf.spec.ts detail replace */
+        var clearMipBindIndexForInstance = function(instanceId) {
+            var key = String(instanceId || '');
+            if (key &amp;&amp; (key in mipBindIndex)) {
+                delete mipBindIndex[key];
+            }
+            return true;
+        }
+        var _ensureMipBindIndexBucket = function(bucketKey) {
+            var key = String(bucketKey || '');
             if (!mipBindIndex[key]) {
-                /* relevant/readonly: nodeId → bind index; relevantVal/readonlyVal: nodeId → boolean */
+                /* bucket key = instance id; node maps use generate-id within that instance doc */
                 mipBindIndex[key] = { relevant: {}, readonly: {}, relevantVal: {}, readonlyVal: {}, built: false };
             }
             return mipBindIndex[key];
         }
-        var isMipBindIndexBuilt = function(rootKey) {
-            var bucket = mipBindIndex[String(rootKey || '')];
+        var isMipBindIndexBuilt = function(bucketKey) {
+            var bucket = mipBindIndex[String(bucketKey || '')];
             return !!(bucket &amp;&amp; bucket.built === true);
         }
-        var markMipBindIndexBuilt = function(rootKey) {
-            _ensureMipBindIndexBucket(rootKey).built = true;
+        var markMipBindIndexBuilt = function(bucketKey) {
+            _ensureMipBindIndexBucket(bucketKey).built = true;
             return true;
         }
         /* Store 1-based index into bindings[] (not XDM nodes — safer JS round-trip). */
@@ -249,8 +257,8 @@ repeatInstanceIds = {};
                 
         var setInstance = function(name, value) {
             instances[name] = value;
-            /* TEST-TRACE: instance replace invalidates MIP bind node index; helps tests/supplemental/mip-perf.spec.ts */
-            mipBindIndex = {};
+            /* TEST-TRACE: #7 slice A — invalidate only this instance MIP bucket; helps tests/supplemental/mip-perf.spec.ts */
+            clearMipBindIndexForInstance(name);
         } 
                 
         var getInstance = function(name) {

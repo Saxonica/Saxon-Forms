@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  #7 A+B: detail instance replace must not thrash tree MIP bucket;
+  large detail property list stresses membership-only rebuild.
+-->
+<xf:xform
+    xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:d="urn:test:mip-perf">
+
+  <xf:model id="m-mip-replace">
+    <!-- Stable tree instance (should keep MIP bucket across detail replace) -->
+    <xf:instance id="tree">
+      <tree xmlns="urn:test:mip-perf">
+        <flags><locked>true</locked></flags>
+        <node id="n1"><label>Tree Node</label></node>
+      </tree>
+    </xf:instance>
+
+    <xf:instance id="detail">
+      <detail xmlns="">
+        <section open="true" edit="false">
+          <prop n="0"><label>seed</label><value>0</value></prop>
+        </section>
+      </detail>
+    </xf:instance>
+
+    <xf:instance id="ui">
+      <ui xmlns="">
+        <which>a</which>
+      </ui>
+    </xf:instance>
+
+    <xf:bind nodeset="instance('tree')/d:node"
+             readonly="instance('tree')/d:flags/d:locked = 'true'"/>
+    <xf:bind nodeset="instance('detail')/section"
+             relevant="@open = 'true'"
+             readonly="@edit != 'true'"/>
+
+    <xf:submission id="load-detail-a"
+                   method="get"
+                   resource="/data/mip-detail-large.xml"
+                   replace="instance"
+                   instance="detail"
+                   serialization="none"/>
+    <xf:submission id="load-detail-b"
+                   method="get"
+                   resource="/data/mip-detail-large-b.xml"
+                   replace="instance"
+                   instance="detail"
+                   serialization="none"/>
+
+    <xf:action ev:event="xforms-ready">
+      <xf:send submission="load-detail-a"/>
+    </xf:action>
+  </xf:model>
+
+  <div id="mip-replace-root">
+    <div id="tree-panel">
+      <span id="tree-label-output">
+        <xf:output ref="instance('tree')/d:node/d:label" class="tree-label"/>
+      </span>
+      <xf:trigger class="tree-act" ref="instance('tree')/d:node">
+        <xf:label>Tree Act</xf:label>
+      </xf:trigger>
+    </div>
+
+    <div id="detail-panel">
+      <span id="detail-count-output">
+        <xf:output value="count(instance('detail')/section/prop)" class="detail-count"/>
+      </span>
+      <span id="detail-edit-output">
+        <xf:output ref="instance('detail')/section/@edit" class="detail-edit"/>
+      </span>
+      <xf:trigger class="detail-act" ref="instance('detail')/section/prop[1]/value">
+        <xf:label>Detail Act</xf:label>
+      </xf:trigger>
+      <!-- Outputs only: stress MIP/membership on large nodeset without 400 input refresh slots -->
+      <xf:repeat id="prop-repeat" nodeset="instance('detail')/section/prop">
+        <div class="prop-row">
+          <span class="prop-label"><xf:output ref="label"/></span>
+          <span class="prop-value"><xf:output ref="value"/></span>
+        </div>
+      </xf:repeat>
+    </div>
+
+    <div id="replace-controls">
+      <xf:submit submission="load-detail-a" class="reload-a">
+        <xf:label>Load A</xf:label>
+      </xf:submit>
+      <xf:submit submission="load-detail-b" class="reload-b">
+        <xf:label>Load B</xf:label>
+      </xf:submit>
+    </div>
+  </div>
+</xf:xform>
