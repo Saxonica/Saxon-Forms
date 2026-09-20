@@ -4977,6 +4977,8 @@
                 )"/>
             
             <xsl:message use-when="$debugMode"><xsl:sequence select="$log-label"/> $this-instance-id = '<xsl:sequence select="$this-instance-id"/>'</xsl:message>            
+            <!-- TEST-TRACE: gate output refresh by dirtyInstances; helps tests/supplemental/mip-perf.spec.ts -->
+            <xsl:if test="js:isDirtyOutput($this-instance-id, $ref-expression, $value-expression)">
             <!-- 
                 If value returned from unmodified XPath is a boolean
                 the string value is '' for false() or 'true' for true()
@@ -5008,8 +5010,8 @@
                 then
                     replace(
                         replace(normalize-space($ref-for-fallback),
-                            '^instance\s*\(\s*''[^'']+''\s*\)\s*/?', ''),
-                        '^instance\s*\(\s*&quot;[^&quot;]+&quot;\s*\)\s*/?', '')
+                            '^instance\\s*\\(\\s*''[^'']+''\\s*\\)\\s*/?', ''),
+                        '^instance\\s*\\(\\s*&quot;[^&quot;]+&quot;\\s*\\)\\s*/?', '')
                 else ()"/>
             <xsl:variable name="value-fallback" as="xs:string?" select="
                 if (exists($ref-local-fallback) and $ref-local-fallback ne '' and exists(xforms:instance($this-instance-id)))
@@ -5037,7 +5039,6 @@
                     then ()
                     else string($data-type-item[1])
                 )"/>
-            
             <xsl:variable name="itemset-item" as="item()*" select="xforms:safe-map-get($this-output,'itemset')"/>
             <xsl:variable name="itemset" as="element(xforms:itemset)?" select="if ($itemset-item[1] instance of element(xforms:itemset)) then $itemset-item[1] else ()"/>
                         
@@ -5057,9 +5058,6 @@
                     </xsl:if>
                     
                     <xsl:sequence select="js:setValue($this-key,$value)"/>
-                    
-                    
-                    
                 </xsl:when>
                 <xsl:when test="exists($associated-form-control) and $associated-form-control/@data-xf-component = 'true'">
                     <xsl:sequence select="js:setValue($this-key,$value)"/>
@@ -5072,11 +5070,8 @@
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:message use-when="$debugMode">[refreshOutputs-JS] Can't find form control with ID '<xsl:sequence select="$this-key"/>'</xsl:message>
-                    <xsl:sequence select="js:removeOutput($this-key)"/>
                 </xsl:otherwise>
             </xsl:choose>
-            
-            <!-- update class (value may include XPath) -->
             
             <xsl:variable name="xforms-class-item" as="item()*" select="xforms:safe-map-get($this-output,'@class')"/>
             <xsl:variable name="xforms-class" as="xs:string?" select="
@@ -5183,6 +5178,7 @@
                     <ixsl:set-attribute name="class" select="$htmlClass" object="$associated-form-control/parent::*"/>
                 </xsl:if>
             </xsl:if>
+            </xsl:if><!-- end js:isDirtyOutput guard -->
             <xsl:catch>
                 <xsl:message>[refreshOutputs-JS] WARNING: skipping output key '<xsl:value-of select="$this-key"/>' due to refresh error code=<xsl:value-of select="$err:code"/> description=<xsl:value-of select="$err:description"/></xsl:message>
                 <xsl:sequence select="js:removeOutput($this-key)"/>
@@ -5311,84 +5307,96 @@
     <xsl:template name="refreshRelevantFields-JS">
         <xsl:message use-when="$debugMode">[refreshRelevantFields-JS] START</xsl:message>
         
-        <!-- TEST-TRACE: #7 refresh all data-ref controls via getRelevantStatus (direct + ancestor MIPs);
-             not only @data-relevant; helps tests/supplemental/mip-perf.spec.ts and trigger-mips.spec.ts -->
-        <xsl:for-each select="ixsl:page()//*[@data-ref][@instance-context]">
-            <xsl:variable name="context-node" as="node()?" select="xforms:evaluate-xpath-with-instance-id(string(@data-ref),string(@instance-context),())[1]"/>
-            <xsl:variable name="relevantStatus" as="xs:boolean">
-                <xsl:choose>
-                    <xsl:when test="exists($context-node)">
-                        <!-- Empty tunnel binding → ancestor/self bind walk (uses MIP index) -->
-                        <xsl:call-template name="getRelevantStatus">
-                            <xsl:with-param name="xformsControl" select="."/>
-                            <xsl:with-param name="instanceField" select="$context-node"/>
-                            <xsl:with-param name="binding" as="element(xforms:bind)*" select="()" tunnel="yes"/>
-                        </xsl:call-template>
-                    </xsl:when>
-                    <xsl:when test="exists(@data-relevant)">
-                        <xsl:sequence select="false()"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:sequence select="true()"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:variable>
-            <!-- 
-                div containing span, input, etc. with its label (HTML <label> generated from <xforms:label>)
-            -->
-            <xsl:variable name="htmlWrapper" as="element()?" select="./parent::*"/>
-            <!-- TEST-TRACE: bare xf:trigger renders button/a without control wrapper;
-                 do not hide parent toolbar/container; helps tests/supplemental/trigger-mips.spec.ts -->
-            <xsl:variable name="is-trigger-control" as="xs:boolean" select="
-                (local-name() = ('button','a')) and contains(concat(' ', normalize-space(string(@class)), ' '), ' xforms-trigger ')"/>
-            
-            <xsl:choose>
-                <xsl:when test="$relevantStatus">
-                    <xsl:if test="ixsl:style(.)?display = 'none'">
-                        <xsl:message use-when="$debugMode">[refreshRelevantFields-JS] removing display="none"</xsl:message>
-                        <ixsl:remove-property name="style.display" object="."/>
-                        <ixsl:remove-attribute name="style" object="."/>
-                    </xsl:if>
+        <!-- TEST-TRACE: #7 refresh data-ref controls via getRelevantStatus (direct + ancestor MIPs);
+             gated by hasRelevantBinds and dirtyInstances; helps tests/supplemental/mip-perf.spec.ts and trigger-mips.spec.ts -->
+        <xsl:if test="js:hasRelevantBinds() or exists(ixsl:page()//*[@data-relevant])">
+            <xsl:variable name="is-dirty-filtering-active" as="xs:boolean" select="js:hasDirtyInstances()"/>
+            <xsl:for-each select="ixsl:page()//*[@data-ref][@instance-context]">
+                <xsl:variable name="ctrl-inst" as="xs:string" select="string(@instance-context)"/>
+                <xsl:variable name="skip-clean-instance" as="xs:boolean" select="
+                    $is-dirty-filtering-active and not(js:isDirtyInstance($ctrl-inst)) and not(exists(@data-relevant))"/>
+                <xsl:variable name="skip-no-binds" as="xs:boolean" select="
+                    not(js:hasRelevantBindsForInstance($ctrl-inst)) and not(exists(@data-relevant))"/>
+                
+                <xsl:if test="not($skip-clean-instance) and not($skip-no-binds)">
+                    <xsl:variable name="context-node" as="node()?" select="xforms:evaluate-xpath-with-instance-id(string(@data-ref),$ctrl-inst,())[1]"/>
+                    <xsl:variable name="relevantStatus" as="xs:boolean">
+                        <xsl:choose>
+                            <xsl:when test="exists($context-node)">
+                                <!-- Empty tunnel binding → ancestor/self bind walk (uses MIP index) -->
+                                <xsl:call-template name="getRelevantStatus">
+                                    <xsl:with-param name="xformsControl" select="."/>
+                                    <xsl:with-param name="instanceField" select="$context-node"/>
+                                    <xsl:with-param name="binding" as="element(xforms:bind)*" select="()" tunnel="yes"/>
+                                </xsl:call-template>
+                            </xsl:when>
+                            <xsl:when test="exists(@data-relevant)">
+                                <xsl:sequence select="false()"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:sequence select="true()"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:variable>
                     <!-- 
-                        Change setting on parent as well
-                        HTML for <xf:output> includes parent <span> containing rendering of label
+                        div containing span, input, etc. with its label (HTML <label> generated from <xforms:label>)
                     -->
-                    <xsl:if test="not($is-trigger-control) and exists($htmlWrapper) and ixsl:style($htmlWrapper)?display = 'none'">
-                        <xsl:message use-when="$debugMode">[refreshRelevantFields-JS] removing display="none" from parent</xsl:message>
-                        <ixsl:remove-property name="style.display" object="$htmlWrapper"/>
-                        <ixsl:remove-attribute name="style" object="$htmlWrapper"/>
-                    </xsl:if>
-                </xsl:when>
-                <xsl:otherwise>
-                    <ixsl:set-style name="display" select="'none'" object="."/>
-                    <xsl:if test="not($is-trigger-control) and exists($htmlWrapper)">
-                        <ixsl:set-style name="display" select="'none'" object="$htmlWrapper"/>
-                    </xsl:if>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:for-each>
+                    <xsl:variable name="htmlWrapper" as="element()?" select="./parent::*"/>
+                    <!-- TEST-TRACE: bare xf:trigger renders button/a without control wrapper;
+                         do not hide parent toolbar/container; helps tests/supplemental/trigger-mips.spec.ts -->
+                    <xsl:variable name="is-trigger-control" as="xs:boolean" select="
+                        (local-name() = ('button','a')) and contains(concat(' ', normalize-space(string(@class)), ' '), ' xforms-trigger ')"/>
+                    
+                    <xsl:choose>
+                        <xsl:when test="$relevantStatus">
+                            <xsl:if test="ixsl:style(.)?display = 'none'">
+                                <xsl:message use-when="$debugMode">[refreshRelevantFields-JS] removing display="none"</xsl:message>
+                                <ixsl:remove-property name="style.display" object="."/>
+                                <ixsl:remove-attribute name="style" object="."/>
+                            </xsl:if>
+                            <!-- 
+                                Change setting on parent as well
+                                HTML for <xf:output> includes parent <span> containing rendering of label
+                            -->
+                            <xsl:if test="not($is-trigger-control) and exists($htmlWrapper) and ixsl:style($htmlWrapper)?display = 'none'">
+                                <xsl:message use-when="$debugMode">[refreshRelevantFields-JS] removing display="none" from parent</xsl:message>
+                                <ixsl:remove-property name="style.display" object="$htmlWrapper"/>
+                                <ixsl:remove-attribute name="style" object="$htmlWrapper"/>
+                            </xsl:if>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <ixsl:set-style name="display" select="'none'" object="."/>
+                            <xsl:if test="not($is-trigger-control) and exists($htmlWrapper)">
+                                <ixsl:set-style name="display" select="'none'" object="$htmlWrapper"/>
+                            </xsl:if>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:if>
         
         <!-- reevaluate xf:group wrappers that rely on @ref existence -->
         <xsl:for-each select="ixsl:page()//*[@data-group-ref and @data-instance-context]">
             <xsl:variable name="group-ref" as="xs:string" select="string(@data-group-ref)"/>
             <xsl:variable name="group-instance-context" as="xs:string" select="string(@data-instance-context)"/>
-            <xsl:variable name="group-context-nodes" as="item()*" select="xforms:evaluate-xpath-with-instance-id($group-ref,$group-instance-context,())"/>
-            <xsl:variable name="group-relevant" as="xs:boolean" select="exists($group-context-nodes)"/>
-            <xsl:choose>
-                <xsl:when test="$group-relevant">
-                    <xsl:if test="ixsl:style(.)?display = 'none'">
-                        <ixsl:remove-property name="style.display" object="."/>
-                        <ixsl:remove-attribute name="style" object="."/>
-                    </xsl:if>
-                </xsl:when>
-                <xsl:otherwise>
-                    <ixsl:set-style name="display" select="'none'" object="."/>
-                </xsl:otherwise>
-            </xsl:choose>
+            <xsl:if test="not(js:hasDirtyInstances()) or js:isDirtyInstance($group-instance-context)">
+                <xsl:variable name="group-context-nodes" as="item()*" select="xforms:evaluate-xpath-with-instance-id($group-ref,$group-instance-context,())"/>
+                <xsl:variable name="group-relevant" as="xs:boolean" select="exists($group-context-nodes)"/>
+                <xsl:choose>
+                    <xsl:when test="$group-relevant">
+                        <xsl:if test="ixsl:style(.)?display = 'none'">
+                            <ixsl:remove-property name="style.display" object="."/>
+                            <ixsl:remove-attribute name="style" object="."/>
+                        </xsl:if>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <ixsl:set-style name="display" select="'none'" object="."/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:if>
         </xsl:for-each>
         
         <xsl:message use-when="$debugMode">[refreshRelevantFields-JS] END</xsl:message>
-        
      </xsl:template>
 
     <xd:doc scope="component">
@@ -5399,63 +5407,73 @@
     <!-- TEST-TRACE: live readonly refresh for triggers; helps tests/supplemental/trigger-mips.spec.ts -->
     <xsl:template name="refreshReadonlyFields-JS">
         <xsl:message use-when="$debugMode">[refreshReadonlyFields-JS] START</xsl:message>
-        <xsl:for-each select="ixsl:page()//(*:button|*:a)[contains(concat(' ', normalize-space(string(@class)), ' '), ' xforms-trigger ')][@data-ref][@instance-context]">
-            <xsl:variable name="context-node" as="node()?" select="xforms:evaluate-xpath-with-instance-id(string(@data-ref),string(@instance-context),())[1]"/>
-            <xsl:variable name="readonly-status" as="xs:boolean">
-                <xsl:choose>
-                    <!-- Prefer full ancestor walk when a live instance node is available -->
-                    <xsl:when test="exists($context-node)">
-                        <xsl:call-template name="getReadonlyStatus">
-                            <xsl:with-param name="instanceField" as="node()?" select="$context-node"/>
-                        </xsl:call-template>
-                    </xsl:when>
-                    <xsl:when test="exists(@data-readonly-expr) and exists($context-node)">
-                        <xsl:try>
-                            <xsl:sequence select="boolean(xforms:evaluate-xpath-with-context-node(string(@data-readonly-expr),$context-node,()))"/>
-                            <xsl:catch><xsl:sequence select="false()"/></xsl:catch>
-                        </xsl:try>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:sequence select="@data-readonly = 'true'"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:variable>
-            <xsl:variable name="is-anchor" as="xs:boolean" select="local-name() = 'a'"/>
-            <xsl:choose>
-                <xsl:when test="$readonly-status">
-                    <ixsl:set-attribute name="data-readonly" select="'true'" object="."/>
+        <xsl:if test="js:hasReadonlyBinds() or exists(ixsl:page()//(*:button|*:a)[contains(concat(' ', normalize-space(string(@class)), ' '), ' xforms-trigger ')][@data-readonly or @data-readonly-expr])">
+            <xsl:variable name="is-dirty-filtering-active" as="xs:boolean" select="js:hasDirtyInstances()"/>
+            <xsl:for-each select="ixsl:page()//(*:button|*:a)[contains(concat(' ', normalize-space(string(@class)), ' '), ' xforms-trigger ')][@data-ref][@instance-context]">
+                <xsl:variable name="ctrl-inst" as="xs:string" select="string(@instance-context)"/>
+                <xsl:variable name="skip-clean-instance" as="xs:boolean" select="
+                    $is-dirty-filtering-active and not(js:isDirtyInstance($ctrl-inst)) and not(exists(@data-readonly-expr))"/>
+                <xsl:variable name="skip-no-binds" as="xs:boolean" select="
+                    not(js:hasReadonlyBindsForInstance($ctrl-inst)) and not(exists(@data-readonly-expr)) and not(exists(@data-readonly))"/>
+                <xsl:if test="not($skip-clean-instance) and not($skip-no-binds)">
+                    <xsl:variable name="context-node" as="node()?" select="xforms:evaluate-xpath-with-instance-id(string(@data-ref),$ctrl-inst,())[1]"/>
+                    <xsl:variable name="readonly-status" as="xs:boolean">
+                        <xsl:choose>
+                            <!-- Prefer full ancestor walk when a live instance node is available -->
+                            <xsl:when test="exists($context-node)">
+                                <xsl:call-template name="getReadonlyStatus">
+                                    <xsl:with-param name="instanceField" as="node()?" select="$context-node"/>
+                                </xsl:call-template>
+                            </xsl:when>
+                            <xsl:when test="exists(@data-readonly-expr) and exists($context-node)">
+                                <xsl:try>
+                                    <xsl:sequence select="boolean(xforms:evaluate-xpath-with-context-node(string(@data-readonly-expr),$context-node,()))"/>
+                                    <xsl:catch><xsl:sequence select="false()"/></xsl:catch>
+                                </xsl:try>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:sequence select="@data-readonly = 'true'"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:variable>
+                    <xsl:variable name="is-anchor" as="xs:boolean" select="local-name() = 'a'"/>
                     <xsl:choose>
-                        <xsl:when test="$is-anchor">
-                            <ixsl:set-attribute name="aria-disabled" select="'true'" object="."/>
-                            <ixsl:set-attribute name="tabindex" select="'-1'" object="."/>
-                            <xsl:variable name="class-tokens" as="xs:string*" select="tokenize(normalize-space(string(@class)), '\s+')"/>
-                            <xsl:if test="not($class-tokens = 'xforms-disabled')">
-                                <ixsl:set-attribute name="class" select="string-join(($class-tokens, 'xforms-disabled'), ' ')" object="."/>
-                            </xsl:if>
+                        <xsl:when test="$readonly-status">
+                            <ixsl:set-attribute name="data-readonly" select="'true'" object="."/>
+                            <xsl:choose>
+                                <xsl:when test="$is-anchor">
+                                    <ixsl:set-attribute name="aria-disabled" select="'true'" object="."/>
+                                    <ixsl:set-attribute name="tabindex" select="'-1'" object="."/>
+                                    <xsl:variable name="class-tokens" as="xs:string*" select="tokenize(normalize-space(string(@class)), '\s+')"/>
+                                    <xsl:if test="not($class-tokens = 'xforms-disabled')">
+                                        <ixsl:set-attribute name="class" select="string-join(($class-tokens, 'xforms-disabled'), ' ')" object="."/>
+                                    </xsl:if>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <ixsl:set-attribute name="disabled" select="'disabled'" object="."/>
+                                    <ixsl:set-property name="disabled" select="true()" object="."/>
+                                </xsl:otherwise>
+                            </xsl:choose>
                         </xsl:when>
                         <xsl:otherwise>
-                            <ixsl:set-attribute name="disabled" select="'disabled'" object="."/>
-                            <ixsl:set-property name="disabled" select="true()" object="."/>
+                            <ixsl:remove-attribute name="data-readonly" object="."/>
+                            <xsl:choose>
+                                <xsl:when test="$is-anchor">
+                                    <ixsl:remove-attribute name="aria-disabled" object="."/>
+                                    <ixsl:remove-attribute name="tabindex" object="."/>
+                                    <xsl:variable name="class-tokens" as="xs:string*" select="tokenize(normalize-space(string(@class)), '\s+')[. ne 'xforms-disabled']"/>
+                                    <ixsl:set-attribute name="class" select="string-join($class-tokens, ' ')" object="."/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <ixsl:remove-attribute name="disabled" object="."/>
+                                    <ixsl:set-property name="disabled" select="false()" object="."/>
+                                </xsl:otherwise>
+                            </xsl:choose>
                         </xsl:otherwise>
                     </xsl:choose>
-                </xsl:when>
-                <xsl:otherwise>
-                    <ixsl:remove-attribute name="data-readonly" object="."/>
-                    <xsl:choose>
-                        <xsl:when test="$is-anchor">
-                            <ixsl:remove-attribute name="aria-disabled" object="."/>
-                            <ixsl:remove-attribute name="tabindex" object="."/>
-                            <xsl:variable name="class-tokens" as="xs:string*" select="tokenize(normalize-space(string(@class)), '\s+')[. ne 'xforms-disabled']"/>
-                            <ixsl:set-attribute name="class" select="string-join($class-tokens, ' ')" object="."/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <ixsl:remove-attribute name="disabled" object="."/>
-                            <ixsl:set-property name="disabled" select="false()" object="."/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:for-each>
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:if>
         <xsl:message use-when="$debugMode">[refreshReadonlyFields-JS] END</xsl:message>
     </xsl:template>
     
@@ -5734,7 +5752,7 @@
             <xsl:if test="$isWhileStillTrue">
                 <xsl:call-template name="applyActions"/>
             </xsl:if>
-            <xsl:if test="$handler-status = 'outermost' and not($event = ('xforms-rebuild','xforms-recalculate','xforms-revalidate','xforms-refresh','xforms-reset'))">
+            <xsl:if test="$handler-status = 'outermost' and not($isWhileStillTrue) and not($event = ('xforms-rebuild','xforms-recalculate','xforms-revalidate','xforms-refresh','xforms-reset'))">
                 <xsl:message>[DIAG outermost-call] from action=<xsl:value-of select="$action-name"/> handler-status=<xsl:value-of select="$handler-status"/> event=<xsl:value-of select="$event"/></xsl:message>
                 <xsl:call-template name="outermost-action-handler"/>
             </xsl:if>

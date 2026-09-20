@@ -49,6 +49,13 @@
         /* TEST-TRACE: SAXON-LIMITATIONS #7 — per instance-root bind→node index for relevant/readonly
            ancestor walks; helps tests/supplemental/mip-perf.spec.ts and trigger-mips / ch06. */
         var mipBindIndex = {};
+        var hasRelevantBindsFlag = false;
+        var hasReadonlyBindsFlag = false;
+        var globalRelevantBindsFlag = false;
+        var globalReadonlyBindsFlag = false;
+        var instanceRelevantBinds = {};
+        var instanceReadonlyBinds = {};
+        var actionNestingDepth = 0;
         /* TEST-TRACE: persist validity/required MIP state between revalidate and refresh;
            helps tests/supplemental/saxon-forms-validation.spec.ts. */
         var validationMIPs = {};
@@ -99,6 +106,13 @@ repeatInstanceIds = {};
             elementsContextUsingIndexFunction = {};
             dirtyInstances = {};
             mipBindIndex = {};
+            hasRelevantBindsFlag = false;
+            hasReadonlyBindsFlag = false;
+            globalRelevantBindsFlag = false;
+            globalReadonlyBindsFlag = false;
+            instanceRelevantBinds = {};
+            instanceReadonlyBinds = {};
+            actionNestingDepth = 0;
             validationMIPs = {};
             visitedControls = {};
             forceFullValidationFeedback = false;
@@ -140,9 +154,59 @@ repeatInstanceIds = {};
             bindings.push(value);
             /* TEST-TRACE: bind registry change invalidates MIP node index; helps tests/supplemental/mip-perf.spec.ts */
             mipBindIndex = {};
+            try {
+                var hasRel = false;
+                var hasRo = false;
+                var inst = '';
+                if (value) {
+                    if (typeof value.getAttribute === 'function') {
+                        hasRel = !!value.getAttribute('relevant');
+                        hasRo = !!value.getAttribute('readonly');
+                        inst = String(value.getAttribute('instance-context') || '');
+                    } else if (value.attributes) {
+                        hasRel = !!(value.attributes.relevant || (value.attributes.getNamedItem &amp;&amp; value.attributes.getNamedItem('relevant')));
+                        hasRo = !!(value.attributes.readonly || (value.attributes.getNamedItem &amp;&amp; value.attributes.getNamedItem('readonly')));
+                        var instAttr = value.attributes['instance-context'] || (value.attributes.getNamedItem &amp;&amp; value.attributes.getNamedItem('instance-context'));
+                        inst = instAttr ? String(instAttr.value || instAttr) : '';
+                    }
+                }
+                if (hasRel) {
+                    hasRelevantBindsFlag = true;
+                    if (inst) instanceRelevantBinds[inst] = true;
+                    else globalRelevantBindsFlag = true;
+                }
+                if (hasRo) {
+                    hasReadonlyBindsFlag = true;
+                    if (inst) instanceReadonlyBinds[inst] = true;
+                    else globalReadonlyBindsFlag = true;
+                }
+            } catch(e) {
+                hasRelevantBindsFlag = true;
+                hasReadonlyBindsFlag = true;
+                globalRelevantBindsFlag = true;
+                globalReadonlyBindsFlag = true;
+            }
         } 
         var getBindings = function() {
             return bindings;
+        }
+        var hasRelevantBinds = function() {
+            return hasRelevantBindsFlag === true;
+        }
+        var hasReadonlyBinds = function() {
+            return hasReadonlyBindsFlag === true;
+        }
+        var hasRelevantBindsForInstance = function(instanceId) {
+            if (!hasRelevantBindsFlag) return false;
+            if (globalRelevantBindsFlag) return true;
+            var id = String(instanceId || '');
+            return !id || instanceRelevantBinds[id] === true;
+        }
+        var hasReadonlyBindsForInstance = function(instanceId) {
+            if (!hasReadonlyBindsFlag) return false;
+            if (globalReadonlyBindsFlag) return true;
+            var id = String(instanceId || '');
+            return !id || instanceReadonlyBinds[id] === true;
         }
         /* TEST-TRACE: #7 MIP bind index API; first-bind-wins per generate-id(node);
            helps tests/supplemental/mip-perf.spec.ts, trigger-mips.spec.ts, tests/w3c/ch06.spec.ts */
@@ -559,6 +623,36 @@ repeatInstanceIds = {};
                 
         var getOutputKeys = function() {
             return Object.keys(outputs);
+        }
+        /* TEST-TRACE: check whether output needs refresh based on dirtyInstances;
+           helps tests/supplemental/mip-perf.spec.ts */
+        var isDirtyOutput = function(instanceId, refExpr, valExpr) {
+            if (!hasDirtyInstances()) return true;
+            var inst = String(instanceId || '');
+            if (inst &amp;&amp; dirtyInstances[inst]) return true;
+            var str = String(refExpr || '') + ' ' + String(valExpr || '');
+            if (str.indexOf('instance(') !== -1) {
+                var re = /instance\s*\(\s*['\x22]([^'\x22]+)['\x22]\s*\)/g;
+                var m;
+                while ((m = re.exec(str)) !== null) {
+                    if (dirtyInstances[m[1]]) return true;
+                }
+            }
+            return !inst;
+        }
+        var pushActionContext = function() {
+            actionNestingDepth++;
+            return actionNestingDepth;
+        }
+        var popActionContext = function() {
+            if (actionNestingDepth > 0) actionNestingDepth--;
+            return actionNestingDepth;
+        }
+        var getActionNestingDepth = function() {
+            return actionNestingDepth;
+        }
+        var isTopLevelActionContext = function() {
+            return actionNestingDepth === 0;
         }
                 
         // repeats is a map of HTML IDs to xf:repeat elements

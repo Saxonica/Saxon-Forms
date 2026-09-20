@@ -172,3 +172,26 @@ test.describe("MIP perf — detail instance replace (A+B)", () => {
     await expect(treeAct).toBeDisabled();
   });
 });
+
+test.describe("MIP perf — dirty gating & coalesced refresh", () => {
+  test("single instance mutation only refreshes dirty outputs and stays under fast budget", async ({
+    page,
+  }) => {
+    await gotoReplaceReady(page);
+
+    const treeLabel = page.locator("#tree-label-output");
+    await expect(treeLabel).toContainText("Tree Node");
+
+    const t0 = Date.now();
+    // Click reload B (updates detail only, tree untouched)
+    const reloadB = page.locator(".reload-b, button.reload-b, [data-submit='load-detail-b']").first();
+    await reloadB.click();
+    await expect(page.locator("#detail-count-output")).toContainText("180", {
+      timeout: TIMEOUT,
+    });
+    const elapsed = Date.now() - t0;
+    expect(elapsed).toBeLessThan(REPLACE_BUDGET_MS);
+    // Tree label output remains intact
+    await expect(treeLabel).toContainText("Tree Node");
+  });
+});
