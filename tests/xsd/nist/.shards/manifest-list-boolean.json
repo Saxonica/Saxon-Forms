@@ -1,0 +1,31 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_list-boolean": {
+      "valid_groups": [
+        "list-boolean-length",
+        "list-boolean-length-1",
+        "list-boolean-length-2",
+        "list-boolean-length-3",
+        "list-boolean-length-4",
+        "list-boolean-maxLength",
+        "list-boolean-maxLength-1",
+        "list-boolean-maxLength-2",
+        "list-boolean-maxLength-3",
+        "list-boolean-maxLength-4",
+        "list-boolean-minLength",
+        "list-boolean-minLength-1",
+        "list-boolean-minLength-2",
+        "list-boolean-minLength-3",
+        "list-boolean-minLength-4",
+        "list-boolean-pattern",
+        "list-boolean-pattern-1",
+        "list-boolean-pattern-2",
+        "list-boolean-pattern-3",
+        "list-boolean-pattern-4",
+        "list-boolean-whiteSpace"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

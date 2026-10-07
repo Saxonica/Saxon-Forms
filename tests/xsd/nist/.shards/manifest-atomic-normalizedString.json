@@ -1,0 +1,52 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_atomic-normalizedString": {
+      "valid_groups": [
+        "atomic-normalizedString-enumeration",
+        "atomic-normalizedString-enumeration-1",
+        "atomic-normalizedString-enumeration-2",
+        "atomic-normalizedString-enumeration-3",
+        "atomic-normalizedString-enumeration-4",
+        "atomic-normalizedString-length",
+        "atomic-normalizedString-length-1",
+        "atomic-normalizedString-length-2",
+        "atomic-normalizedString-length-3",
+        "atomic-normalizedString-length-4",
+        "atomic-normalizedString-maxLength",
+        "atomic-normalizedString-maxLength-1",
+        "atomic-normalizedString-maxLength-2",
+        "atomic-normalizedString-maxLength-3",
+        "atomic-normalizedString-maxLength-4",
+        "atomic-normalizedString-minLength",
+        "atomic-normalizedString-minLength-1",
+        "atomic-normalizedString-minLength-2",
+        "atomic-normalizedString-minLength-3",
+        "atomic-normalizedString-minLength-4",
+        "atomic-normalizedString-pattern",
+        "atomic-normalizedString-pattern-1",
+        "atomic-normalizedString-pattern-2",
+        "atomic-normalizedString-pattern-3",
+        "atomic-normalizedString-pattern-4",
+        "atomic-normalizedString-whiteSpace",
+        "atomic-normalizedString-whiteSpace-1",
+        "atomic-normalizedString-length-5",
+        "atomic-normalizedString-length-6",
+        "atomic-normalizedString-length-7",
+        "atomic-normalizedString-length-8",
+        "atomic-normalizedString-length-9",
+        "atomic-normalizedString-maxLength-5",
+        "atomic-normalizedString-maxLength-6",
+        "atomic-normalizedString-maxLength-7",
+        "atomic-normalizedString-maxLength-8",
+        "atomic-normalizedString-maxLength-9",
+        "atomic-normalizedString-minLength-5",
+        "atomic-normalizedString-minLength-6",
+        "atomic-normalizedString-minLength-7",
+        "atomic-normalizedString-minLength-8",
+        "atomic-normalizedString-minLength-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

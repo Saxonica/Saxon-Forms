@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SAXON-LIMITATIONS #7: large synthetic tree stressing relevant/readonly ancestor walks.
+  ~400 leaf controls under deep groups; shared ancestor MIPs; refresh via setvalue.
+-->
+<xf:xform
+    xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:d="urn:test:mip-perf">
+
+  <xf:model id="m-mip-perf">
+    <xf:instance id="data">
+      <root xmlns="urn:test:mip-perf">
+        <flags>
+          <section-open>true</section-open>
+          <can-edit>false</can-edit>
+        </flags>
+        <section>
+          <group n="1">
+            <item n="1"><label>g1-i1</label><value>1</value></item>
+            <item n="2"><label>g1-i2</label><value>2</value></item>
+            <item n="3"><label>g1-i3</label><value>3</value></item>
+            <item n="4"><label>g1-i4</label><value>4</value></item>
+            <item n="5"><label>g1-i5</label><value>5</value></item>
+            <item n="6"><label>g1-i6</label><value>6</value></item>
+            <item n="7"><label>g1-i7</label><value>7</value></item>
+            <item n="8"><label>g1-i8</label><value>8</value></item>
+            <item n="9"><label>g1-i9</label><value>9</value></item>
+            <item n="10"><label>g1-i10</label><value>10</value></item>
+            <item n="11"><label>g1-i11</label><value>11</value></item>
+            <item n="12"><label>g1-i12</label><value>12</value></item>
+            <item n="13"><label>g1-i13</label><value>13</value></item>
+            <item n="14"><label>g1-i14</label><value>14</value></item>
+            <item n="15"><label>g1-i15</label><value>15</value></item>
+            <item n="16"><label>g1-i16</label><value>16</value></item>
+            <item n="17"><label>g1-i17</label><value>17</value></item>
+            <item n="18"><label>g1-i18</label><value>18</value></item>
+            <item n="19"><label>g1-i19</label><value>19</value></item>
+            <item n="20"><label>g1-i20</label><value>20</value></item>
+          </group>
+          <group n="2">
+            <item n="1"><label>g2-i1</label><value>1</value></item>
+            <item n="2"><label>g2-i2</label><value>2</value></item>
+            <item n="3"><label>g2-i3</label><value>3</value></item>
+            <item n="4"><label>g2-i4</label><value>4</value></item>
+            <item n="5"><label>g2-i5</label><value>5</value></item>
+            <item n="6"><label>g2-i6</label><value>6</value></item>
+            <item n="7"><label>g2-i7</label><value>7</value></item>
+            <item n="8"><label>g2-i8</label><value>8</value></item>
+            <item n="9"><label>g2-i9</label><value>9</value></item>
+            <item n="10"><label>g2-i10</label><value>10</value></item>
+            <item n="11"><label>g2-i11</label><value>11</value></item>
+            <item n="12"><label>g2-i12</label><value>12</value></item>
+            <item n="13"><label>g2-i13</label><value>13</value></item>
+            <item n="14"><label>g2-i14</label><value>14</value></item>
+            <item n="15"><label>g2-i15</label><value>15</value></item>
+            <item n="16"><label>g2-i16</label><value>16</value></item>
+            <item n="17"><label>g2-i17</label><value>17</value></item>
+            <item n="18"><label>g2-i18</label><value>18</value></item>
+            <item n="19"><label>g2-i19</label><value>19</value></item>
+            <item n="20"><label>g2-i20</label><value>20</value></item>
+          </group>
+          <group n="3">
+            <item n="1"><label>g3-i1</label><value>1</value></item>
+            <item n="2"><label>g3-i2</label><value>2</value></item>
+            <item n="3"><label>g3-i3</label><value>3</value></item>
+            <item n="4"><label>g3-i4</label><value>4</value></item>
+            <item n="5"><label>g3-i5</label><value>5</value></item>
+            <item n="6"><label>g3-i6</label><value>6</value></item>
+            <item n="7"><label>g3-i7</label><value>7</value></item>
+            <item n="8"><label>g3-i8</label><value>8</value></item>
+            <item n="9"><label>g3-i9</label><value>9</value></item>
+            <item n="10"><label>g3-i10</label><value>10</value></item>
+            <item n="11"><label>g3-i11</label><value>11</value></item>
+            <item n="12"><label>g3-i12</label><value>12</value></item>
+            <item n="13"><label>g3-i13</label><value>13</value></item>
+            <item n="14"><label>g3-i14</label><value>14</value></item>
+            <item n="15"><label>g3-i15</label><value>15</value></item>
+            <item n="16"><label>g3-i16</label><value>16</value></item>
+            <item n="17"><label>g3-i17</label><value>17</value></item>
+            <item n="18"><label>g3-i18</label><value>18</value></item>
+            <item n="19"><label>g3-i19</label><value>19</value></item>
+            <item n="20"><label>g3-i20</label><value>20</value></item>
+          </group>
+          <group n="4">
+            <item n="1"><label>g4-i1</label><value>1</value></item>
+            <item n="2"><label>g4-i2</label><value>2</value></item>
+            <item n="3"><label>g4-i3</label><value>3</value></item>
+            <item n="4"><label>g4-i4</label><value>4</value></item>
+            <item n="5"><label>g4-i5</label><value>5</value></item>
+            <item n="6"><label>g4-i6</label><value>6</value></item>
+            <item n="7"><label>g4-i7</label><value>7</value></item>
+            <item n="8"><label>g4-i8</label><value>8</value></item>
+            <item n="9"><label>g4-i9</label><value>9</value></item>
+            <item n="10"><label>g4-i10</label><value>10</value></item>
+            <item n="11"><label>g4-i11</label><value>11</value></item>
+            <item n="12"><label>g4-i12</label><value>12</value></item>
+            <item n="13"><label>g4-i13</label><value>13</value></item>
+            <item n="14"><label>g4-i14</label><value>14</value></item>
+            <item n="15"><label>g4-i15</label><value>15</value></item>
+            <item n="16"><label>g4-i16</label><value>16</value></item>
+            <item n="17"><label>g4-i17</label><value>17</value></item>
+            <item n="18"><label>g4-i18</label><value>18</value></item>
+            <item n="19"><label>g4-i19</label><value>19</value></item>
+            <item n="20"><label>g4-i20</label><value>20</value></item>
+          </group>
+          <group n="5">
+            <item n="1"><label>g5-i1</label><value>1</value></item>
+            <item n="2"><label>g5-i2</label><value>2</value></item>
+            <item n="3"><label>g5-i3</label><value>3</value></item>
+            <item n="4"><label>g5-i4</label><value>4</value></item>
+            <item n="5"><label>g5-i5</label><value>5</value></item>
+            <item n="6"><label>g5-i6</label><value>6</value></item>
+            <item n="7"><label>g5-i7</label><value>7</value></item>
+            <item n="8"><label>g5-i8</label><value>8</value></item>
+            <item n="9"><label>g5-i9</label><value>9</value></item>
+            <item n="10"><label>g5-i10</label><value>10</value></item>
+            <item n="11"><label>g5-i11</label><value>11</value></item>
+            <item n="12"><label>g5-i12</label><value>12</value></item>
+            <item n="13"><label>g5-i13</label><value>13</value></item>
+            <item n="14"><label>g5-i14</label><value>14</value></item>
+            <item n="15"><label>g5-i15</label><value>15</value></item>
+            <item n="16"><label>g5-i16</label><value>16</value></item>
+            <item n="17"><label>g5-i17</label><value>17</value></item>
+            <item n="18"><label>g5-i18</label><value>18</value></item>
+            <item n="19"><label>g5-i19</label><value>19</value></item>
+            <item n="20"><label>g5-i20</label><value>20</value></item>
+          </group>
+          <group n="6">
+            <item n="1"><label>g6-i1</label><value>1</value></item>
+            <item n="2"><label>g6-i2</label><value>2</value></item>
+            <item n="3"><label>g6-i3</label><value>3</value></item>
+            <item n="4"><label>g6-i4</label><value>4</value></item>
+            <item n="5"><label>g6-i5</label><value>5</value></item>
+            <item n="6"><label>g6-i6</label><value>6</value></item>
+            <item n="7"><label>g6-i7</label><value>7</value></item>
+            <item n="8"><label>g6-i8</label><value>8</value></item>
+            <item n="9"><label>g6-i9</label><value>9</value></item>
+            <item n="10"><label>g6-i10</label><value>10</value></item>
+            <item n="11"><label>g6-i11</label><value>11</value></item>
+            <item n="12"><label>g6-i12</label><value>12</value></item>
+            <item n="13"><label>g6-i13</label><value>13</value></item>
+            <item n="14"><label>g6-i14</label><value>14</value></item>
+            <item n="15"><label>g6-i15</label><value>15</value></item>
+            <item n="16"><label>g6-i16</label><value>16</value></item>
+            <item n="17"><label>g6-i17</label><value>17</value></item>
+            <item n="18"><label>g6-i18</label><value>18</value></item>
+            <item n="19"><label>g6-i19</label><value>19</value></item>
+            <item n="20"><label>g6-i20</label><value>20</value></item>
+          </group>
+          <group n="7">
+            <item n="1"><label>g7-i1</label><value>1</value></item>
+            <item n="2"><label>g7-i2</label><value>2</value></item>
+            <item n="3"><label>g7-i3</label><value>3</value></item>
+            <item n="4"><label>g7-i4</label><value>4</value></item>
+            <item n="5"><label>g7-i5</label><value>5</value></item>
+            <item n="6"><label>g7-i6</label><value>6</value></item>
+            <item n="7"><label>g7-i7</label><value>7</value></item>
+            <item n="8"><label>g7-i8</label><value>8</value></item>
+            <item n="9"><label>g7-i9</label><value>9</value></item>
+            <item n="10"><label>g7-i10</label><value>10</value></item>
+            <item n="11"><label>g7-i11</label><value>11</value></item>
+            <item n="12"><label>g7-i12</label><value>12</value></item>
+            <item n="13"><label>g7-i13</label><value>13</value></item>
+            <item n="14"><label>g7-i14</label><value>14</value></item>
+            <item n="15"><label>g7-i15</label><value>15</value></item>
+            <item n="16"><label>g7-i16</label><value>16</value></item>
+            <item n="17"><label>g7-i17</label><value>17</value></item>
+            <item n="18"><label>g7-i18</label><value>18</value></item>
+            <item n="19"><label>g7-i19</label><value>19</value></item>
+            <item n="20"><label>g7-i20</label><value>20</value></item>
+          </group>
+          <group n="8">
+            <item n="1"><label>g8-i1</label><value>1</value></item>
+            <item n="2"><label>g8-i2</label><value>2</value></item>
+            <item n="3"><label>g8-i3</label><value>3</value></item>
+            <item n="4"><label>g8-i4</label><value>4</value></item>
+            <item n="5"><label>g8-i5</label><value>5</value></item>
+            <item n="6"><label>g8-i6</label><value>6</value></item>
+            <item n="7"><label>g8-i7</label><value>7</value></item>
+            <item n="8"><label>g8-i8</label><value>8</value></item>
+            <item n="9"><label>g8-i9</label><value>9</value></item>
+            <item n="10"><label>g8-i10</label><value>10</value></item>
+            <item n="11"><label>g8-i11</label><value>11</value></item>
+            <item n="12"><label>g8-i12</label><value>12</value></item>
+            <item n="13"><label>g8-i13</label><value>13</value></item>
+            <item n="14"><label>g8-i14</label><value>14</value></item>
+            <item n="15"><label>g8-i15</label><value>15</value></item>
+            <item n="16"><label>g8-i16</label><value>16</value></item>
+            <item n="17"><label>g8-i17</label><value>17</value></item>
+            <item n="18"><label>g8-i18</label><value>18</value></item>
+            <item n="19"><label>g8-i19</label><value>19</value></item>
+            <item n="20"><label>g8-i20</label><value>20</value></item>
+          </group>
+          <group n="9">
+            <item n="1"><label>g9-i1</label><value>1</value></item>
+            <item n="2"><label>g9-i2</label><value>2</value></item>
+            <item n="3"><label>g9-i3</label><value>3</value></item>
+            <item n="4"><label>g9-i4</label><value>4</value></item>
+            <item n="5"><label>g9-i5</label><value>5</value></item>
+            <item n="6"><label>g9-i6</label><value>6</value></item>
+            <item n="7"><label>g9-i7</label><value>7</value></item>
+            <item n="8"><label>g9-i8</label><value>8</value></item>
+            <item n="9"><label>g9-i9</label><value>9</value></item>
+            <item n="10"><label>g9-i10</label><value>10</value></item>
+            <item n="11"><label>g9-i11</label><value>11</value></item>
+            <item n="12"><label>g9-i12</label><value>12</value></item>
+            <item n="13"><label>g9-i13</label><value>13</value></item>
+            <item n="14"><label>g9-i14</label><value>14</value></item>
+            <item n="15"><label>g9-i15</label><value>15</value></item>
+            <item n="16"><label>g9-i16</label><value>16</value></item>
+            <item n="17"><label>g9-i17</label><value>17</value></item>
+            <item n="18"><label>g9-i18</label><value>18</value></item>
+            <item n="19"><label>g9-i19</label><value>19</value></item>
+            <item n="20"><label>g9-i20</label><value>20</value></item>
+          </group>
+          <group n="10">
+            <item n="1"><label>g10-i1</label><value>1</value></item>
+            <item n="2"><label>g10-i2</label><value>2</value></item>
+            <item n="3"><label>g10-i3</label><value>3</value></item>
+            <item n="4"><label>g10-i4</label><value>4</value></item>
+            <item n="5"><label>g10-i5</label><value>5</value></item>
+            <item n="6"><label>g10-i6</label><value>6</value></item>
+            <item n="7"><label>g10-i7</label><value>7</value></item>
+            <item n="8"><label>g10-i8</label><value>8</value></item>
+            <item n="9"><label>g10-i9</label><value>9</value></item>
+            <item n="10"><label>g10-i10</label><value>10</value></item>
+            <item n="11"><label>g10-i11</label><value>11</value></item>
+            <item n="12"><label>g10-i12</label><value>12</value></item>
+            <item n="13"><label>g10-i13</label><value>13</value></item>
+            <item n="14"><label>g10-i14</label><value>14</value></item>
+            <item n="15"><label>g10-i15</label><value>15</value></item>
+            <item n="16"><label>g10-i16</label><value>16</value></item>
+            <item n="17"><label>g10-i17</label><value>17</value></item>
+            <item n="18"><label>g10-i18</label><value>18</value></item>
+            <item n="19"><label>g10-i19</label><value>19</value></item>
+            <item n="20"><label>g10-i20</label><value>20</value></item>
+          </group>
+        </section>
+      </root>
+    </xf:instance>
+
+    <!-- Ancestor MIPs driven by flags (one bind per nodeset — engine bind cardinality 0..1) -->
+    <xf:bind nodeset="instance('data')/d:section"
+             relevant="instance('data')/d:flags/d:section-open = 'true'"
+             readonly="instance('data')/d:flags/d:can-edit != 'true'"/>
+    <xf:bind nodeset="instance('data')/d:section/d:group/d:item/d:value"
+             type="xs:string"/>
+  </xf:model>
+
+  <div id="mip-perf-root">
+    <div id="toolbar">
+      <span id="section-open-output">
+        <xf:output ref="instance('data')/d:flags/d:section-open" class="section-open-out"/>
+      </span>
+      <span id="can-edit-output">
+        <xf:output ref="instance('data')/d:flags/d:can-edit" class="can-edit-out"/>
+      </span>
+      <xf:trigger class="hide-section">
+        <xf:label>Hide</xf:label>
+        <xf:action ev:event="DOMActivate">
+          <xf:setvalue ref="instance('data')/d:flags/d:section-open">false</xf:setvalue>
+        </xf:action>
+      </xf:trigger>
+      <xf:trigger class="show-section">
+        <xf:label>Show</xf:label>
+        <xf:action ev:event="DOMActivate">
+          <xf:setvalue ref="instance('data')/d:flags/d:section-open">true</xf:setvalue>
+        </xf:action>
+      </xf:trigger>
+      <xf:trigger class="enable-edit">
+        <xf:label>Unlock</xf:label>
+        <xf:action ev:event="DOMActivate">
+          <xf:setvalue ref="instance('data')/d:flags/d:can-edit">true</xf:setvalue>
+        </xf:action>
+      </xf:trigger>
+      <xf:trigger class="disable-edit">
+        <xf:label>Lock</xf:label>
+        <xf:action ev:event="DOMActivate">
+          <xf:setvalue ref="instance('data')/d:flags/d:can-edit">false</xf:setvalue>
+        </xf:action>
+      </xf:trigger>
+      <!-- Bound trigger: inherits section relevant + readonly MIPs via ref on a leaf -->
+      <xf:trigger class="leaf-act" ref="instance('data')/d:section/d:group[@n='1']/d:item[@n='1']/d:value">
+        <xf:label>Act</xf:label>
+        <xf:action ev:event="DOMActivate">
+          <xf:setvalue ref="instance('data')/d:section/d:group[@n='1']/d:item[@n='1']/d:value">acted</xf:setvalue>
+        </xf:action>
+      </xf:trigger>
+    </div>
+
+    <div id="tree">
+      <xf:repeat id="group-repeat" nodeset="instance('data')/d:section/d:group">
+        <div class="group-block">
+          <xf:repeat id="item-repeat" nodeset="d:item">
+            <div class="item-row">
+              <span class="item-label"><xf:output ref="d:label"/></span>
+              <xf:input ref="d:value" class="item-value">
+                <xf:label>v</xf:label>
+              </xf:input>
+            </div>
+          </xf:repeat>
+        </div>
+      </xf:repeat>
+    </div>
+  </div>
+</xf:xform>

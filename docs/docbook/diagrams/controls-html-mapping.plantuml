@@ -1,0 +1,70 @@
+@startuml
+title XForms controls to HTML element mapping
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+package "XForms Controls\n(saxon-xforms.xsl)" {
+  [xforms:input\nget-html mode] as XF_INPUT
+  [xforms:output\nget-html mode] as XF_OUTPUT
+  [xforms:textarea\nget-html mode] as XF_TEXTAREA
+  [xforms:select\nget-html mode] as XF_SELECT
+  [xforms:select1\nget-html mode] as XF_SELECT1
+  [xforms:range\nget-html mode] as XF_RANGE
+  [xforms:upload\nget-html mode] as XF_UPLOAD
+  [xforms:trigger\nget-html mode] as XF_TRIGGER
+  [xforms:submit\ntemplate] as XF_SUBMIT
+}
+
+package "Container Controls" {
+  [xforms:group\nget-html mode] as XF_GROUP
+  [xforms:repeat\ntemplate] as XF_REPEAT
+  [xforms:switch\ntemplate] as XF_SWITCH
+  [xforms:case\nget-html mode] as XF_CASE
+}
+
+package "HTML Output Elements" {
+  [<input type="text|date|...">] as H_INPUT
+  [<span class="xforms-output">] as H_OUTPUT
+  [<textarea>] as H_TEXTAREA
+  [<select multiple>] as H_SELECT
+  [<select> | <input type="radio">] as H_SELECT1
+  [<input type="range">] as H_RANGE
+  [<input type="file">] as H_FILE
+  [<button data-action>] as H_BUTTON
+  [<button data-submit>] as H_SUBMIT
+  [<div class="xforms-group">] as H_GROUP
+  [<div data-repeatable-context>] as H_REPEAT
+  [<div class="xforms-switch">] as H_SWITCH
+}
+
+package "DOM Event Handlers\n(ixsl:on* mode templates)" {
+  [ixsl:onchange\n(saxon-xforms.xsl)] as EV_CHANGE
+  [ixsl:onclick\n(saxon-xforms.xsl)] as EV_CLICK
+  [ixsl:onkeyup\n(saxon-xforms.xsl)] as EV_KEYUP
+  [ixsl:oninput\n(saxon-xforms.xsl)] as EV_INPUT
+}
+
+XF_INPUT --> H_INPUT
+XF_OUTPUT --> H_OUTPUT
+XF_TEXTAREA --> H_TEXTAREA
+XF_SELECT --> H_SELECT
+XF_SELECT1 --> H_SELECT1
+XF_RANGE --> H_RANGE
+XF_UPLOAD --> H_FILE
+XF_TRIGGER --> H_BUTTON
+XF_SUBMIT --> H_SUBMIT
+XF_GROUP --> H_GROUP
+XF_REPEAT --> H_REPEAT
+XF_SWITCH --> H_SWITCH
+XF_CASE --> H_SWITCH
+
+H_INPUT --> EV_CHANGE : onchange
+H_INPUT --> EV_KEYUP : onkeyup (incremental)
+H_RANGE --> EV_INPUT : oninput (incremental)
+H_SELECT --> EV_CHANGE : onchange
+H_SELECT1 --> EV_CHANGE : onchange
+H_TEXTAREA --> EV_CHANGE : onchange
+H_BUTTON --> EV_CLICK : onclick
+H_SUBMIT --> EV_CLICK : onclick
+H_REPEAT --> EV_CLICK : onclick (index update)
+@enduml

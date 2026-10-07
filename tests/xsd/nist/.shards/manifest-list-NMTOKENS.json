@@ -1,0 +1,51 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_list-NMTOKENS": {
+      "valid_groups": [
+        "list-NMTOKENS-enumeration",
+        "list-NMTOKENS-enumeration-1",
+        "list-NMTOKENS-enumeration-2",
+        "list-NMTOKENS-enumeration-3",
+        "list-NMTOKENS-enumeration-4",
+        "list-NMTOKENS-length",
+        "list-NMTOKENS-length-1",
+        "list-NMTOKENS-length-2",
+        "list-NMTOKENS-length-3",
+        "list-NMTOKENS-length-4",
+        "list-NMTOKENS-maxLength",
+        "list-NMTOKENS-maxLength-1",
+        "list-NMTOKENS-maxLength-2",
+        "list-NMTOKENS-maxLength-3",
+        "list-NMTOKENS-maxLength-4",
+        "list-NMTOKENS-minLength",
+        "list-NMTOKENS-minLength-1",
+        "list-NMTOKENS-minLength-2",
+        "list-NMTOKENS-minLength-3",
+        "list-NMTOKENS-minLength-4",
+        "list-NMTOKENS-pattern",
+        "list-NMTOKENS-pattern-1",
+        "list-NMTOKENS-pattern-2",
+        "list-NMTOKENS-pattern-3",
+        "list-NMTOKENS-pattern-4",
+        "list-NMTOKENS-whiteSpace",
+        "list-NMTOKENS-length-5",
+        "list-NMTOKENS-length-6",
+        "list-NMTOKENS-length-7",
+        "list-NMTOKENS-length-8",
+        "list-NMTOKENS-length-9",
+        "list-NMTOKENS-maxLength-5",
+        "list-NMTOKENS-maxLength-6",
+        "list-NMTOKENS-maxLength-7",
+        "list-NMTOKENS-maxLength-8",
+        "list-NMTOKENS-maxLength-9",
+        "list-NMTOKENS-minLength-5",
+        "list-NMTOKENS-minLength-6",
+        "list-NMTOKENS-minLength-7",
+        "list-NMTOKENS-minLength-8",
+        "list-NMTOKENS-minLength-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

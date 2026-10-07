@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Perf-optimisation regression test XForm.
+  Exercises: dirty-instance tracking (6a), append-splice (6b),
+  DOMActivate repeat-index update, index()-based insert origin,
+  and delete with splice invalidation.
+-->
+<xf:xform
+    xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:d="urn:test:data">
+
+  <xf:model id="m-perf">
+
+    <!-- Source entries (read-only) -->
+    <xf:instance id="source">
+      <catalog xmlns="urn:test:data">
+        <entry id="e-1"><label>Alpha</label></entry>
+        <entry id="e-2"><label>Beta</label></entry>
+        <entry id="e-3"><label>Gamma</label></entry>
+        <entry id="e-4"><label>Delta</label></entry>
+        <entry id="e-5"><label>Epsilon</label></entry>
+      </catalog>
+    </xf:instance>
+
+    <!-- Target collection (populated by user) -->
+    <xf:instance id="target">
+      <collection xmlns="urn:test:data"/>
+    </xf:instance>
+
+    <!-- Calculated state -->
+    <xf:instance id="ui">
+      <ui xmlns="">
+        <target-count/>
+        <source-count/>
+      </ui>
+    </xf:instance>
+
+    <xf:bind nodeset="instance('ui')/target-count"
+             calculate="count(instance('target')/d:entry)"/>
+    <xf:bind nodeset="instance('ui')/source-count"
+             calculate="count(instance('source')/d:entry)"/>
+
+  </xf:model>
+
+  <div id="perf-test-root">
+
+    <!-- Source list (bound to 'source' instance) -->
+    <div id="source-section">
+      <h2>Source</h2>
+      <span id="source-count-output">
+        <xf:output ref="instance('ui')/source-count"/>
+      </span>
+      <xf:repeat id="source-repeat" nodeset="instance('source')/d:entry">
+        <div class="source-item">
+          <span class="source-id"><xf:output ref="@id"/></span>
+          <span class="source-label"><xf:output ref="d:label"/></span>
+          <xf:trigger class="add-btn" appearance="minimal">
+            <xf:label>+</xf:label>
+            <xf:action ev:event="DOMActivate">
+              <xf:insert context="instance('target')"
+                         nodeset="d:entry"
+                         origin="instance('source')/d:entry[index('source-repeat')]"
+                         at="last()"
+                         position="after"/>
+            </xf:action>
+          </xf:trigger>
+        </div>
+      </xf:repeat>
+    </div>
+
+    <!-- Target list (bound to 'target' instance) -->
+    <div id="target-section">
+      <h2>Target</h2>
+      <span id="target-count-output">
+        <xf:output ref="instance('ui')/target-count"/>
+      </span>
+      <xf:repeat id="target-repeat" nodeset="instance('target')/d:entry">
+        <div class="target-item">
+          <span class="target-id"><xf:output ref="@id"/></span>
+          <span class="target-label"><xf:output ref="d:label"/></span>
+          <xf:trigger class="remove-btn" appearance="minimal">
+            <xf:label>✕</xf:label>
+            <xf:action ev:event="DOMActivate">
+              <xf:delete nodeset="instance('target')/d:entry"
+                         at="index('target-repeat')"/>
+            </xf:action>
+          </xf:trigger>
+        </div>
+      </xf:repeat>
+    </div>
+
+  </div>
+
+</xf:xform>

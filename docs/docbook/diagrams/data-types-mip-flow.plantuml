@@ -1,0 +1,45 @@
+@startuml
+title Data types and MIP propagation flow
+autonumber
+
+participant "xforms:bind\n(model definition)" as BIND
+participant "xforms-rebuild\n(src/saxon-xforms.xsl)" as REBUILD
+participant "add-context mode\n(src/saxon-xforms.xsl)" as ADDCTX
+participant "xforms-recalculate\n(src/saxon-xforms.xsl)" as RECALC
+participant "recalculate-binding\n(src/saxon-xforms.xsl)" as RECALC_BIND
+participant "xforms-revalidate\n(src/saxon-xforms.xsl)" as REVAL
+participant "xsd-helpers.xsl\nxsdh:is-type-valid\nxsdh:canonical-type" as XSD
+collections "validationMIPs JS registry\n(instanceId|ref -> valid,required)" as VMIP
+participant "DOM Controls" as DOM
+
+== Rebuild Phase ==
+BIND -> REBUILD : binds parsed from model
+REBUILD -> ADDCTX : add-context mode\nresolve @nodeset to instance nodes
+ADDCTX -> ADDCTX : annotate bind with\n@instance-context\n@nodeset (absolute)
+
+== Recalculate Phase ==
+RECALC -> RECALC_BIND : for each bind
+RECALC_BIND -> RECALC_BIND : evaluate @calculate\n(try/catch for type coercion)
+RECALC_BIND -> RECALC_BIND : evaluate @relevant\n(boolean coercion)
+RECALC_BIND -> RECALC_BIND : evaluate @readonly\n(boolean, inherits from parent)
+RECALC_BIND -> RECALC_BIND : evaluate @required\n(boolean)
+RECALC_BIND -> RECALC_BIND : evaluate @constraint\n(boolean expression)
+
+== Revalidate Phase ==
+REVAL -> REVAL : check-required-fields\nfor each required=true() binding
+REVAL -> REVAL : check-constraints-on-fields\nevaluate constraint expressions
+REVAL -> REVAL : check-required-bindings\nvalidate non-empty + required
+REVAL -> REVAL : check-instance-xsi-types\nvalidate xsi:type attributes
+REVAL -> XSD : xsdh:canonical-type()\nnormalize type QNames
+REVAL -> XSD : xsdh:is-type-valid()\nvalidate value against XSD type
+REVAL -> VMIP : clearValidationMIPs()\nstart new cycle
+REVAL -> VMIP : setValidationMIP(instanceId, ref,\nvalid, required)
+
+== Refresh Phase (MIP Projection to DOM) ==
+VMIP --> REVAL : getValidationMIPValid/Required
+REVAL -> DOM : refreshOutputs-JS\nupdate output values + project\nxforms-valid/invalid +\nxforms-required/optional
+REVAL -> DOM : refreshRelevantFields-JS\nshow/hide based on relevant
+REVAL -> DOM : getRelevantStatus\ngetHtmlClass\napply readonly/required CSS classes
+REVAL -> DOM : apply class to control and wrapper\nfor input/select/textarea
+REVAL -> DOM : dispatch xforms-valid\nor xforms-invalid events
+@enduml

@@ -1,0 +1,36 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_atomic-base64Binary": {
+      "valid_groups": [
+        "atomic-base64Binary-enumeration",
+        "atomic-base64Binary-enumeration-1",
+        "atomic-base64Binary-enumeration-2",
+        "atomic-base64Binary-enumeration-3",
+        "atomic-base64Binary-enumeration-4",
+        "atomic-base64Binary-length",
+        "atomic-base64Binary-length-1",
+        "atomic-base64Binary-length-2",
+        "atomic-base64Binary-length-3",
+        "atomic-base64Binary-length-4",
+        "atomic-base64Binary-maxLength",
+        "atomic-base64Binary-maxLength-1",
+        "atomic-base64Binary-maxLength-2",
+        "atomic-base64Binary-maxLength-3",
+        "atomic-base64Binary-maxLength-4",
+        "atomic-base64Binary-minLength",
+        "atomic-base64Binary-minLength-1",
+        "atomic-base64Binary-minLength-2",
+        "atomic-base64Binary-minLength-3",
+        "atomic-base64Binary-minLength-4",
+        "atomic-base64Binary-pattern",
+        "atomic-base64Binary-pattern-1",
+        "atomic-base64Binary-pattern-2",
+        "atomic-base64Binary-pattern-3",
+        "atomic-base64Binary-pattern-4",
+        "atomic-base64Binary-whiteSpace"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

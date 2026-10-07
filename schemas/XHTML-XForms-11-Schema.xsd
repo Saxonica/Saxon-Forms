@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" elementFormDefault="qualified">
+	<xsd:group name="Host.Language.Content">
+		<xsd:choice>
+			<xsd:any namespace="##any" processContents="lax"/>
+		</xsd:choice>
+	</xsd:group>
+
+	<xsd:element name="html">
+		<xsd:complexType mixed="true">
+			<xsd:group ref="xhtml:Host.Language.Content" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:anyAttribute namespace="##any" processContents="lax"/>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>

@@ -1,0 +1,71 @@
+Changes from version Leigh L. Klotz, Jr. <Leigh.Klotz@Xerox.com>
+http://lists.w3.org/Archives/Public/public-forms/2008Jun/0023.html
++ added mediatype to output
++ added attribute context to Nodeset.Binding.attrib [later removed]
++ added attribute context { XPathExpression }? to Single.Node.Binding.attrib [later removed]
+
+Changes for integration with XHTML2 by Markus Gylling <markus.gylling@gmail.com>
++ remove start element
++ make chameleon (remove xforms ns)
++ use prefixed define names
+
+Changes for first update after XForms 1.1 Recommendation 2009-12-08
++ added new group xforms.label.attrib to xforms.label for host integration
++ added new comment to xforms.instance about attribute src
++ allowed xforms.List.UI.Common.content xforms.UI.Common.content in either order in select and select1
++ added simple types xforms.versionNumber and xforms.versionList with correct list content model
++ changed model attribute version to xforms.versionList
++ changed submission attribute version to xforms.versionList
++ added type xforms.anyForeignElement with content model to be filled in by host or namespaced version
++ added extension element to xforms.UI.Common.content, model, and bind
++ changed load content model allow both resource attribute and element
++ changed dispatch content model not to require @name or name
++ changed dispatch content model to allow both targetid and target
++ changed content model of output to add xforms.UI.Common.content
++ changed content model of xforms.load.content to match Recommendation
++ added context attribute to delete
++ added context and origin attributes to insert 
++ changed insert attribute position and "at" to be optional
++ changed delete to attribute "at" be optional
++ changed toggle element to allow both case attribute and element
++ added value attribute to toggle element case child element
++ changed setfous element to allow both control attribute and element
++ added value attribute to setfocus element control child element
++ added xforms.resource as common pattern
++ changed submission children to interleave 
++ changed submission resource, @resource, and @action to require one but allow all
++ added parenthesis in xforms.ActionName
++ changed datatypes xsd to "http://www.w3.org/2001/XMLSchema-datatypes"
++ changed submission method to add multipart-post
++ changed @if and @while from xforms.ValueTemplate to XPathExpression
++ changed xforms.ValueTemplate to @value XPathExpression? & xsd:string and replaced open-coded versions
++ added xforms.ValueTemplate.IDREF @value and/or xsd:IDREF and replaced open-coded versions
++ changed submission/method from XPathExpression to xforms.ValueTemplate
++ changed setvalue to use xforms.ValueTemplate
++ changed dispatch to use interleave
++ added @nodeset and @combine to element header
++ changed toggle to move case to content from attrs, and change child element case to xforms.ValueTemplate.IDREF
++ changed submission header element to allow one or more value child elements
++ added "test" to submission attribute replace
++ added indent attribute to submission
++ renamed xforms.mediatype to xforms.upload.mediatype 
++ added xforms.output.mediatype for output/mediatype
++ changed includenamespaceprefixes to list of zero or more of NMTOKEN or "#default"
++ added xs and xsd namespaces and moved xsd:schema to xs:schema
++ added attributes to placeholder for xs:schema
+
+Changes since 2009-12-11
++ changed instance content to at most a single child element
++ added an attribute group for message-related child elements (label hint help alert message)
++ added empty xforms.ui.messages.common attribute group
++ changed name of UI.xforms.Common.attrib to xforms.UI.Common.attrib
++ changed to move move text out of repeat, group, and case content and leave in xforms+xhtml integration.
++ added xforms.message.Text.content and xforms.label.Text.content for message and label, containing text.
+  If host integration adds text to xforms.UI.Inline.content, these must be overridden to be empty since you cannot have
+  two text patterns in a RelaxNG interleave.
+
+Changes since 2010-01-13
++ removed unnecessary ^ from regular expression pattern in xforms.ActionName [ISO/IEC JTC1/SC34/WG1 comment]
++ replaced &= with = on patterns defined in this file. [ISO/IEC JTC1/SC34/WG1 comment]
++ added attibute id to xforms.Common.attrib, as defined by recommendation.
++ Moved changes from RNC file to CHANGELOG.txt

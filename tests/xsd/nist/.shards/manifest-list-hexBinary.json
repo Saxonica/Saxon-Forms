@@ -1,0 +1,36 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_list-hexBinary": {
+      "valid_groups": [
+        "list-hexBinary-enumeration",
+        "list-hexBinary-enumeration-1",
+        "list-hexBinary-enumeration-2",
+        "list-hexBinary-enumeration-3",
+        "list-hexBinary-enumeration-4",
+        "list-hexBinary-length",
+        "list-hexBinary-length-1",
+        "list-hexBinary-length-2",
+        "list-hexBinary-length-3",
+        "list-hexBinary-length-4",
+        "list-hexBinary-maxLength",
+        "list-hexBinary-maxLength-1",
+        "list-hexBinary-maxLength-2",
+        "list-hexBinary-maxLength-3",
+        "list-hexBinary-maxLength-4",
+        "list-hexBinary-minLength",
+        "list-hexBinary-minLength-1",
+        "list-hexBinary-minLength-2",
+        "list-hexBinary-minLength-3",
+        "list-hexBinary-minLength-4",
+        "list-hexBinary-pattern",
+        "list-hexBinary-pattern-1",
+        "list-hexBinary-pattern-2",
+        "list-hexBinary-pattern-3",
+        "list-hexBinary-pattern-4",
+        "list-hexBinary-whiteSpace"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

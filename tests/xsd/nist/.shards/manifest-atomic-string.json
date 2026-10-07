@@ -1,0 +1,53 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_atomic-string": {
+      "valid_groups": [
+        "atomic-string-enumeration",
+        "atomic-string-enumeration-1",
+        "atomic-string-enumeration-2",
+        "atomic-string-enumeration-3",
+        "atomic-string-enumeration-4",
+        "atomic-string-length",
+        "atomic-string-length-1",
+        "atomic-string-length-2",
+        "atomic-string-length-3",
+        "atomic-string-length-4",
+        "atomic-string-maxLength",
+        "atomic-string-maxLength-1",
+        "atomic-string-maxLength-2",
+        "atomic-string-maxLength-3",
+        "atomic-string-maxLength-4",
+        "atomic-string-minLength",
+        "atomic-string-minLength-1",
+        "atomic-string-minLength-2",
+        "atomic-string-minLength-3",
+        "atomic-string-minLength-4",
+        "atomic-string-pattern",
+        "atomic-string-pattern-1",
+        "atomic-string-pattern-2",
+        "atomic-string-pattern-3",
+        "atomic-string-pattern-4",
+        "atomic-string-whiteSpace",
+        "atomic-string-whiteSpace-1",
+        "atomic-string-whiteSpace-2",
+        "atomic-string-length-5",
+        "atomic-string-length-6",
+        "atomic-string-length-7",
+        "atomic-string-length-8",
+        "atomic-string-length-9",
+        "atomic-string-maxLength-5",
+        "atomic-string-maxLength-6",
+        "atomic-string-maxLength-7",
+        "atomic-string-maxLength-8",
+        "atomic-string-maxLength-9",
+        "atomic-string-minLength-5",
+        "atomic-string-minLength-6",
+        "atomic-string-minLength-7",
+        "atomic-string-minLength-8",
+        "atomic-string-minLength-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

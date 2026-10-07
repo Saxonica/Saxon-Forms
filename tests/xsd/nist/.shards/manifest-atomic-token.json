@@ -1,0 +1,51 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_atomic-token": {
+      "valid_groups": [
+        "atomic-token-enumeration",
+        "atomic-token-enumeration-1",
+        "atomic-token-enumeration-2",
+        "atomic-token-enumeration-3",
+        "atomic-token-enumeration-4",
+        "atomic-token-length",
+        "atomic-token-length-1",
+        "atomic-token-length-2",
+        "atomic-token-length-3",
+        "atomic-token-length-4",
+        "atomic-token-maxLength",
+        "atomic-token-maxLength-1",
+        "atomic-token-maxLength-2",
+        "atomic-token-maxLength-3",
+        "atomic-token-maxLength-4",
+        "atomic-token-minLength",
+        "atomic-token-minLength-1",
+        "atomic-token-minLength-2",
+        "atomic-token-minLength-3",
+        "atomic-token-minLength-4",
+        "atomic-token-pattern",
+        "atomic-token-pattern-1",
+        "atomic-token-pattern-2",
+        "atomic-token-pattern-3",
+        "atomic-token-pattern-4",
+        "atomic-token-whiteSpace",
+        "atomic-token-length-5",
+        "atomic-token-length-6",
+        "atomic-token-length-7",
+        "atomic-token-length-8",
+        "atomic-token-length-9",
+        "atomic-token-maxLength-5",
+        "atomic-token-maxLength-6",
+        "atomic-token-maxLength-7",
+        "atomic-token-maxLength-8",
+        "atomic-token-maxLength-9",
+        "atomic-token-minLength-5",
+        "atomic-token-minLength-6",
+        "atomic-token-minLength-7",
+        "atomic-token-minLength-8",
+        "atomic-token-minLength-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

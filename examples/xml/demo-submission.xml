@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:demo="urn:saxon-xforms:demo">
+    <xf:model id="submission-model">
+        <xf:instance id="submission-data">
+            <demo:data>
+                <demo:payload>Hello from submission demo</demo:payload>
+                <demo:status>Not submitted yet.</demo:status>
+            </demo:data>
+        </xf:instance>
+
+        <xf:submission id="submit-ok"
+            method="post"
+            replace="none"
+            ref="instance('submission-data')"
+            resource="/api/submit-ok" />
+
+        <xf:submission id="submit-fail"
+            method="post"
+            replace="none"
+            ref="instance('submission-data')"
+            resource="/api/submit-fail" />
+
+        <xf:action ev:event="xforms-submit-done" ev:observer="submit-ok">
+            <xf:setvalue ref="instance('submission-data')/demo:status">Submission succeeded.</xf:setvalue>
+        </xf:action>
+
+        <xf:action ev:event="xforms-submit-error" ev:observer="submit-fail">
+            <xf:setvalue ref="instance('submission-data')/demo:status">Submission failed.</xf:setvalue>
+        </xf:action>
+    </xf:model>
+
+    <xf:textarea ref="instance('submission-data')/demo:payload" class="demo-input">
+        <xf:label>Payload:</xf:label>
+    </xf:textarea>
+
+    <xf:submit submission="submit-ok">
+        <xf:label>Submit success path</xf:label>
+    </xf:submit>
+
+    <xf:submit submission="submit-fail">
+        <xf:label>Submit failure path</xf:label>
+    </xf:submit>
+
+    <xf:output ref="instance('submission-data')/demo:status" class="block demo-output" />
+</xf:xform>

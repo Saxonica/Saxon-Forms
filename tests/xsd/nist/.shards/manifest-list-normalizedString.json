@@ -1,0 +1,51 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_list-normalizedString": {
+      "valid_groups": [
+        "list-normalizedString-enumeration",
+        "list-normalizedString-enumeration-1",
+        "list-normalizedString-enumeration-2",
+        "list-normalizedString-enumeration-3",
+        "list-normalizedString-enumeration-4",
+        "list-normalizedString-length",
+        "list-normalizedString-length-1",
+        "list-normalizedString-length-2",
+        "list-normalizedString-length-3",
+        "list-normalizedString-length-4",
+        "list-normalizedString-maxLength",
+        "list-normalizedString-maxLength-1",
+        "list-normalizedString-maxLength-2",
+        "list-normalizedString-maxLength-3",
+        "list-normalizedString-maxLength-4",
+        "list-normalizedString-minLength",
+        "list-normalizedString-minLength-1",
+        "list-normalizedString-minLength-2",
+        "list-normalizedString-minLength-3",
+        "list-normalizedString-minLength-4",
+        "list-normalizedString-pattern",
+        "list-normalizedString-pattern-1",
+        "list-normalizedString-pattern-2",
+        "list-normalizedString-pattern-3",
+        "list-normalizedString-pattern-4",
+        "list-normalizedString-whiteSpace",
+        "list-normalizedString-length-5",
+        "list-normalizedString-length-6",
+        "list-normalizedString-length-7",
+        "list-normalizedString-length-8",
+        "list-normalizedString-length-9",
+        "list-normalizedString-maxLength-5",
+        "list-normalizedString-maxLength-6",
+        "list-normalizedString-maxLength-7",
+        "list-normalizedString-maxLength-8",
+        "list-normalizedString-maxLength-9",
+        "list-normalizedString-minLength-5",
+        "list-normalizedString-minLength-6",
+        "list-normalizedString-minLength-7",
+        "list-normalizedString-minLength-8",
+        "list-normalizedString-minLength-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

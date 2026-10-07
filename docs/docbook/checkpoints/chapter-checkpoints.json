@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "description": "Chapter-by-chapter validation checkpoints for the DocBook implementation guide.",
+  "chapters": [
+    {
+      "id": "chapter-introduction",
+      "title": "Introduction to SaxonForms",
+      "source": "docs/docbook/chapters/01-introduction.xml",
+      "w3c_specs": [],
+      "sequence_diagrams": [],
+      "validation": {
+        "docbook_command": "npm run docs:docbook:validate",
+        "targeted_test_command": null,
+        "full_regression_command": "npm run test:gate"
+      },
+      "review_prompts": [
+        "Is the terminology consistent with implementation files and tests?",
+        "Do the use-cases match developer and QA workflows?"
+      ]
+    },
+    {
+      "id": "chapter-saxonforms-and-saxonjs",
+      "title": "SaxonForms and SaxonJS",
+      "source": "docs/docbook/chapters/02-saxonforms-and-saxonjs.xml",
+      "w3c_specs": [],
+      "sequence_diagrams": [],
+      "validation": {
+        "docbook_command": "npm run docs:docbook:validate",
+        "targeted_test_command": null,
+        "full_regression_command": "npm run test:gate"
+      },
+      "review_prompts": [
+        "Are subsystem boundaries clear and consistent across diagrams?",
+        "Are one-hop DOM/JS interactions represented explicitly?"
+      ]
+    },
+    {
+      "id": "chapter-processing-model",
+      "title": "Processing Model (Ch. 4)",
+      "source": "docs/docbook/chapters/03-processing-model.xml",
+      "w3c_specs": [
+        "tests/xforms/w3c/ch04.spec.ts"
+      ],
+      "sequence_diagrams": [
+        "sequence-processing-cycle"
+      ],
+      "validation": {
+        "docbook_command": "npm run docs:docbook:validate",
+        "targeted_test_command": "npm run test:e2e -- tests/xforms/w3c/ch04.spec.ts tests/xforms/w3c/sequence-trace.spec.ts",
+        "full_regression_command": "npm run test:gate"
+      },
+      "review_prompts": [
+        "Does the lifecycle sequence match runtime event dispatch order?",
+        "Are chapter statements traceable to assertions in ch04 and [SEQTRACE]-based sequence tests?"
+      ]
+    },
+    {
+      "id": "chapter-data-types-and-mips",
+      "title": "Data Types and MIPs (Ch. 5-6)",
+      "source": "docs/docbook/chapters/04-data-types-and-mips.xml",
+      "w3c_specs": [
+        "tests/xforms/w3c/ch05.spec.ts",
+        "tests/xforms/w3c/ch06.spec.ts"
+      ],
+      "sequence_diagrams": [],
+      "validation": {
+        "docbook_command": "npm run docs:docbook:validate",
+        "targeted_test_command": "npm run test:e2e -- tests/xforms/w3c/ch05.spec.ts tests/xforms/w3c/ch06.spec.ts",
+        "full_regression_command": "npm run test:gate"
+      },
+      "review_prompts": [
+        "Are type-coercion and MIP propagation claims backed by chapter tests?",
+        "Are known gaps/resolutions represented accurately?"
+      ]
+    },
+    {
+      "id": "chapter-xpath-and-controls",
+      "title": "XPath and Controls (Ch. 7-9)",
+      "source": "docs/docbook/chapters/05-xpath-and-controls.xml",
+      "w3c_specs": [
+        "tests/xforms/w3c/ch07.spec.ts",
+        "tests/xforms/w3c/ch08.spec.ts",
+        "tests/xforms/w3c/ch09.spec.ts"
+      ],
+      "sequence_diagrams": [],
+      "validation": {
+        "docbook_command": "npm run docs:docbook:validate",
+        "targeted_test_command": "npm run test:e2e -- tests/xforms/w3c/ch07.spec.ts tests/xforms/w3c/ch08.spec.ts tests/xforms/w3c/ch09.spec.ts",
+        "full_regression_command": "npm run test:gate"
+      },
+      "review_prompts": [
+        "Do XPath mapping details reflect current function rewrite behavior?",
+        "Are control mappings and edge cases aligned with chapter tests?"
+      ]
+    },
+    {
+      "id": "chapter-actions-and-submission",
+      "title": "Actions and Submission (Ch. 10-11)",
+      "source": "docs/docbook/chapters/06-actions-and-submission.xml",
+      "w3c_specs": [
+        "tests/xforms/w3c/ch10.spec.ts",
+        "tests/xforms/w3c/ch11.spec.ts"
+      ],
+      "sequence_diagrams": [
+        "sequence-action-dispatch",
+        "sequence-submission"
+      ],
+      "validation": {
+        "docbook_command": "npm run docs:docbook:validate",
+        "targeted_test_command": "npm run test:e2e -- tests/xforms/w3c/ch10.spec.ts tests/xforms/w3c/ch11.spec.ts tests/xforms/w3c/sequence-trace.spec.ts",
+        "full_regression_command": "npm run test:gate"
+      },
+      "review_prompts": [
+        "Does action context/scoping behavior match implementation and tests?",
+        "Does submission flow coverage include serialization and response-update semantics with [SEQTRACE] template evidence?"
+      ]
+    },
+    {
+      "id": "chapter-conformance",
+      "title": "Conformance",
+      "source": "docs/docbook/chapters/07-conformance.xml",
+      "w3c_specs": [
+        "tests/xforms/w3c/STATUS.md"
+      ],
+      "sequence_diagrams": [],
+      "validation": {
+        "docbook_command": "npm run docs:docbook:validate",
+        "targeted_test_command": null,
+        "full_regression_command": "npm run test:gate"
+      },
+      "review_prompts": [
+        "Do conformance claims match latest gate/baseline evidence?",
+        "Are implementation-defined behaviors documented with test impact?"
+      ]
+    },
+    {
+      "id": "chapter-additional-topics",
+      "title": "Additional Topics",
+      "source": "docs/docbook/chapters/08-additional-topics.xml",
+      "w3c_specs": [],
+      "sequence_diagrams": [],
+      "validation": {
+        "docbook_command": "npm run docs:docbook:validate",
+        "targeted_test_command": null,
+        "full_regression_command": "npm run test:gate"
+      },
+      "review_prompts": [
+        "Are reusable component and accessibility sections concrete enough for implementation work?",
+        "Are BPMN references aligned with current workflow diagrams?"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform
+    xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:ev="http://www.w3.org/2001/xml-events">
+    <xf:model id="native-fiddle-model">
+        <xf:instance id="native-fiddle-state">
+            <state xmlns="">
+                <xformsSource><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform
+    xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:ev="http://www.w3.org/2001/xml-events">
+    <xf:model id="demo-model">
+        <xf:instance id="demo-data">
+            <data xmlns="">
+                <name>World</name>
+            </data>
+        </xf:instance>
+    </xf:model>
+    <div class="native-fiddle-nested-form">
+        <h2>Simple form</h2>
+        <xf:input ref="instance('demo-data')/name" incremental="true">
+            <xf:label>Name</xf:label>
+        </xf:input>
+        <p>Hello, <xf:output ref="instance('demo-data')/name"/></p>
+    </div>
+</xf:xform>]]></xformsSource>
+            </state>
+        </xf:instance>
+        <xf:action ev:event="xforms-ready">
+            <xf:script>window.nativeXFormsFiddle.refresh();</xf:script>
+        </xf:action>
+    </xf:model>
+    <div class="native-fiddle-layout">
+        <div class="native-fiddle-toolbar">
+            <xf:trigger id="native-fiddle-refresh">
+                <xf:label>Refresh XForms</xf:label>
+                <xf:script ev:event="DOMActivate">window.nativeXFormsFiddle.refresh();</xf:script>
+            </xf:trigger>
+            <xf:trigger id="native-fiddle-reset">
+                <xf:label>Reset source</xf:label>
+                <xf:script ev:event="DOMActivate">window.nativeXFormsFiddle.resetSource();</xf:script>
+            </xf:trigger>
+        </div>
+        <div class="native-fiddle-grid">
+            <div class="native-fiddle-pane">
+                <h2>XForms source (XForms textarea)</h2>
+                <div id="native-fiddle-source-panel">
+                    <xf:textarea id="native-fiddle-xforms-source"
+                        ref="instance('native-fiddle-state')/xformsSource"
+                        class="native-fiddle-source-editor"
+                        incremental="false">
+                        <xf:label>Source</xf:label>
+                    </xf:textarea>
+                </div>
+            </div>
+            <div class="native-fiddle-pane">
+                <h2>Rendered XForms</h2>
+                <iframe id="native-fiddle-render-target" class="native-fiddle-render-target" title="Native XForms nested render"></iframe>
+            </div>
+        </div>
+        <div class="native-fiddle-console-pane">
+            <h2>Console output</h2>
+            <pre id="native-fiddle-console" class="native-fiddle-console"></pre>
+        </div>
+    </div>
+</xf:xform>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="saxon-forms-docbook" default="help" basedir=".">
+    <property name="repo.root" location="${basedir}/../.."/>
+    <property name="ant4docbook.home" location="${repo.root}/ant4docbook-0.10.0"/>
+    <property name="book.file" location="${basedir}/book.xml"/>
+    <property name="build.root" location="${repo.root}/builds/docs-docbook"/>
+    <property name="html.out" location="${build.root}/saxonforms-implementation.html"/>
+    <property name="pdf.out" location="${build.root}/saxonforms-implementation.pdf"/>
+    <property name="xinclude.out" location="${build.root}/saxonforms-implementation.xinclude.xml"/>
+    <property name="pdf.parameters.file" location="${basedir}/pdf.properties"/>
+    <property name="ant4docbook.keepTempFiles" value="false"/>
+    <property name="ant4docbook.dtd.validating" value="false"/>
+    <!--
+      fop-batik-svg-spi.jar is provisioned by scripts/run-docbook-build.mjs.
+      It registers Apache FOP's Batik SVG ImagePreloader SPI entries that are
+      present as classes in ant4docbook-0.10.0.jar but missing from that jar's
+      META-INF/services registry. Listed first so ServiceLoader can see them.
+    -->
+    <path id="ant4docbook.classpath">
+        <pathelement location="${ant4docbook.home}/3rd-party/fop-batik-svg-spi.jar"/>
+        <pathelement location="${ant4docbook.home}/ant4docbook-0.10.0.jar"/>
+        <pathelement location="${ant4docbook.home}/ant4x-0.11.0.jar"/>
+        <pathelement location="${ant4docbook.home}/bidjic-0.7.0.jar"/>
+        <fileset dir="${ant4docbook.home}/3rd-party" includes="**/*.jar"/>
+    </path>
+    <target name="help" description="Print DocBook build usage">
+        <echo message="Usage: ant -f docs/docbook/build.xml [target]"/>
+        <echo message=""/>
+        <echo message="Targets:"/>
+        <echo message="  docbook-validate  Resolve XInclude and produce intermediate XML for structural validation"/>
+        <echo message="  docbook-html      Generate HTML output from DocBook sources"/>
+        <echo message="  docbook-pdf       Generate PDF output from DocBook sources"/>
+        <echo message="  docbook-all       Run validation + HTML + PDF generation"/>
+        <echo message="  clean             Remove generated DocBook build artifacts"/>
+    </target>
+    <target name="prepare">
+        <mkdir dir="${build.root}"/>
+    </target>
+    <target name="check-ant4docbook" depends="prepare">
+        <available file="${ant4docbook.home}/ant4docbook-0.10.0.jar" property="ant4docbook.jar.present"/>
+        <fail unless="ant4docbook.jar.present" message="Missing ${ant4docbook.home}/ant4docbook-0.10.0.jar. Ensure ant4docbook-0.10.0 is present in repository root."/>
+        <available file="${ant4docbook.home}/3rd-party/fop-batik-svg-spi.jar" property="fop.batik.svg.spi.present"/>
+        <fail unless="fop.batik.svg.spi.present" message="Missing ${ant4docbook.home}/3rd-party/fop-batik-svg-spi.jar. Run 'npm run docs:docbook:build' (or node scripts/run-docbook-build.mjs) so the FOP Batik SVG SPI overlay is provisioned before invoking Ant directly."/>
+        <available classname="net.sourceforge.ant4docbook.taskdefs.DocbookTask" classpathref="ant4docbook.classpath" property="ant4docbook.available"/>
+        <fail unless="ant4docbook.available" message="Failed to load ant4docbook task class. Check ant4docbook jars under ${ant4docbook.home}."/>
+    </target>
+    <target name="init-task" depends="check-ant4docbook">
+        <taskdef name="dbk" classname="net.sourceforge.ant4docbook.taskdefs.DocbookTask" classpathref="ant4docbook.classpath"/>
+    </target>
+    <target name="docbook-validate" depends="init-task" description="Resolve xinclude and produce intermediate XML for review">
+        <dbk file="${book.file}" tofile="${xinclude.out}"/>
+        <echo message="Generated intermediate file: ${xinclude.out}"/>
+    </target>
+    <target name="docbook-html" depends="init-task" description="Generate HTML documentation">
+        <dbk file="${book.file}" tofile="${html.out}"/>
+        <echo message="Generated HTML file: ${html.out}"/>
+    </target>
+    <target name="docbook-pdf" depends="init-task" description="Generate PDF documentation">
+        <dbk file="${book.file}" tofile="${pdf.out}" parameters="${pdf.parameters.file}"/>
+        <echo message="Generated PDF file: ${pdf.out}"/>
+    </target>
+    <target name="docbook-all" depends="docbook-validate,docbook-html,docbook-pdf" description="Run validation and generate HTML/PDF outputs"/>
+    <target name="clean" description="Remove generated documentation artifacts">
+        <delete dir="${build.root}"/>
+    </target>
+</project>

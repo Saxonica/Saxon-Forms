@@ -1,0 +1,646 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xmlns="http://docbook.org/ns/docbook" id="chapter-xpath-and-controls" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <title>XPath and Controls</title>
+    <para>This chapter maps XForms XPath semantics to XPath 3.1 execution in SaxonForms and explains control rendering and interaction patterns for standard and custom controls.</para>
+
+    <section id="chapter-xpath-mapping">
+        <title>XPath expression mapping</title>
+        <para>SaxonForms translates XForms XPath expressions into XPath 3.1 at evaluation time through a function-rewriting pipeline. The central rewriting function is <literal>xforms:impose()</literal> in <literal>src/xforms-function-library.xsl</literal>, which rewrites XForms function calls to their <literal>xforms:</literal>-prefixed XSLT equivalents so SaxonJS can evaluate them natively.</para>
+
+        <section id="chapter-xpath-function-rewriting">
+            <title>Function rewriting (<literal>xforms:impose</literal>)</title>
+            <para>When a binding expression or calculate attribute is evaluated, <literal>xforms:impose()</literal> performs string-level substitution of XForms function names to their <literal>xforms:</literal> namespace counterparts. For example, <literal>instance('foo')</literal> is rewritten to <literal>xforms:instance('foo')</literal>, which resolves to the XSLT function <literal>xforms:instance()</literal> in <literal>src/xforms-function-library.xsl</literal>.</para>
+            <para>The <literal>xforms:resolve-index()</literal> function in <literal>src/xforms-function-library.xsl</literal> handles repeat index substitution: expressions containing <literal>index('repeatId')</literal> are replaced with the current integer index value before evaluation. This avoids runtime resolution issues where <literal>index()</literal> would need repeat context that is unavailable in a static XPath 3.1 call.</para>
+        </section>
+
+        <section id="chapter-xpath-context-resolution">
+            <title>Context resolution in repeat and action scopes</title>
+            <para>XPath evaluation is dispatched through <literal>xforms:evaluate-xpath-with-context-node()</literal> in <literal>src/saxon-xforms.xsl</literal>, which accepts the expression string, a context node from the bound instance, and the namespace context for prefix resolution. The related <literal>xforms:evaluate-xpath-with-instance-id()</literal> function resolves the instance element first.</para>
+            <para>Within repeats, context resolution relies on positional information. The
+                    <literal>xforms:resolveXPathStrings()</literal> function in
+                    <literal>src/saxon-xforms.xsl</literal> resolves relative paths against the
+                current repeat context node. The
+                    <literal>position()</literal>/<literal>last()</literal> substitution
+                pre-computes positional values in bind calculate expressions before
+                evaluation.</para>
+        </section>
+
+        <section id="chapter-xpath-function-library">
+            <title>XForms function library</title>
+            <para>XForms 1.1 adds functions beyond the XPath 1.0 core library (see
+                    <ulink url="https://www.w3.org/TR/xforms11/#expr-lib">XForms 1.1 §7.6+</ulink>).
+                SaxonForms either rewrites those bare names to <literal>xforms:</literal> XSLT
+                functions, rewrites them by expression transform, or leaves them to native SaxonJS
+                XPath 3.1 evaluation. This section inventories every XForms 1.1-defined additional
+                function. It does not catalog the full XPath 1.0 core set or extra XPath 3.1-only
+                features.</para>
+
+            <para>Implementation packages:</para>
+            <itemizedlist>
+                <listitem><para><literal>src/xforms-function-library.xsl</literal> — rewrite gate
+                            (<literal>xforms:impose</literal>, <literal>$xform-functions</literal>),
+                        runtime/context functions, and NaN-safe numeric wrappers.</para></listitem>
+                <listitem><para><literal>src/xforms-xpath-functions.xsl</literal> — pure XPath 3.1
+                        implementations of most remaining XForms 1.1 functions, plus JS-bridged
+                            <literal>digest</literal>/<literal>hmac</literal>.</para></listitem>
+            </itemizedlist>
+
+            <section id="chapter-xpath-function-disposition">
+                <title>Disposition model</title>
+                <para>Each XForms 1.1 additional function has one disposition:</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>Implemented</term>
+                        <listitem><para>Bare name is listed in <literal>$xform-functions</literal>, so
+                                    <literal>xforms:impose()</literal> rewrites
+                                    <literal>name(…)</literal> to <literal>xforms:name(…)</literal>,
+                                and an <literal>xsl:function name="xforms:name"</literal> exists.
+                                Wrappers that delegate to XPath 3.1 still count as Implemented when
+                                the rewrite and wrapper adjust XForms semantics (for example NaN on
+                                empty <literal>min</literal>/<literal>max</literal>).</para></listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>Rewritten (non-function)</term>
+                        <listitem><para>No <literal>xsl:function</literal>;
+                                    <literal>xforms:impose()</literal> rewrites the call site to an
+                                XPath 3.1 expression (used for <literal>current()</literal>).</para></listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>Fall-through</term>
+                        <listitem><para>Name is not registered for rewrite. Evaluation uses the native
+                                SaxonJS default function namespace (XPath 3.1 F&amp;O). Divergences
+                                versus the XForms 1.1 definition are listed only for these
+                                entries.</para></listitem>
+                    </varlistentry>
+                </variablelist>
+                <para>XPath 1.0 core names that XForms inherits (<literal>count</literal>,
+                        <literal>sum</literal>, <literal>string</literal>, <literal>boolean</literal>,
+                        <literal>number</literal>, <literal>true</literal>/<literal>false</literal>,
+                    string functions, and so on) are not rewritten. They execute as native XPath 3.1
+                    equivalents. Common empty-sequence and type-error differences versus XPath 1.0
+                    / XForms-era expectations are summarized under fall-through notes; SaxonForms
+                    also wraps some MIP calculate evaluation in try/catch so empty-string arithmetic
+                    yields NaN rather than a hard type error (see Conformance).</para>
+            </section>
+
+            <section id="chapter-xpath-function-inventory">
+                <title>Inventory by XForms 1.1 section</title>
+                <para>Columns: function, XForms 1.1 section, disposition, implementation location,
+                    primary W3C ch07 test ids when present.</para>
+
+                <section id="chapter-xpath-fn-boolean">
+                    <title>7.6 Boolean functions</title>
+                    <informaltable>
+                        <tgroup cols="5">
+                            <colspec colname="fn"/>
+                            <colspec colname="spec"/>
+                            <colspec colname="disp"/>
+                            <colspec colname="impl"/>
+                            <colspec colname="tests"/>
+                            <thead>
+                                <row>
+                                    <entry>Function</entry>
+                                    <entry>Spec</entry>
+                                    <entry>Disposition</entry>
+                                    <entry>Implementation</entry>
+                                    <entry>ch07 tests</entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry><literal>boolean-from-string()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-boolean-from-string">7.6.1</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:boolean-from-string</literal> in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.6.1.a</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>is-card-number()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-is-card-number">7.6.2</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:is-card-number</literal> (Luhn) in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.6.2.a</entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </informaltable>
+                </section>
+
+                <section id="chapter-xpath-fn-number">
+                    <title>7.7 Number functions</title>
+                    <informaltable>
+                        <tgroup cols="5">
+                            <colspec colname="fn"/>
+                            <colspec colname="spec"/>
+                            <colspec colname="disp"/>
+                            <colspec colname="impl"/>
+                            <colspec colname="tests"/>
+                            <thead>
+                                <row>
+                                    <entry>Function</entry>
+                                    <entry>Spec</entry>
+                                    <entry>Disposition</entry>
+                                    <entry>Implementation</entry>
+                                    <entry>ch07 tests</entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry><literal>avg()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-avg">7.7.1</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:avg</literal> in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.7.1.a, 7.7.1.b</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>min()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-min">7.7.2</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:min</literal> in
+                                            <literal>src/xforms-function-library.xsl</literal></entry>
+                                    <entry>7.7.2.a, 7.7.2.b</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>max()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-max">7.7.3</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:max</literal> in
+                                            <literal>src/xforms-function-library.xsl</literal></entry>
+                                    <entry>7.7.3.a, 7.7.3.b</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>count-non-empty()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-count-non-empty">7.7.4</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:count-non-empty</literal> in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.7.4.a</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>index()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-index">7.7.5</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:index</literal> (+ often pre-substituted by
+                                            <literal>xforms:resolve-index</literal>) in
+                                            <literal>src/xforms-function-library.xsl</literal></entry>
+                                    <entry>7.7.5.a, 7.7.5.b</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>power()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-power">7.7.6</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:power</literal> → <literal>math:pow</literal>
+                                        in <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.7.6.a</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>random()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-random">7.7.7</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:random</literal> (0- and 1-arg; seed ignored)
+                                        via JS <literal>Math.random</literal> in
+                                            <literal>src/xforms-function-library.xsl</literal></entry>
+                                    <entry>7.7.7.a</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>compare()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-compare">7.7.8</ulink></entry>
+                                    <entry>Fall-through</entry>
+                                    <entry>Not in <literal>$xform-functions</literal>; no
+                                            <literal>xforms:compare</literal>. Native
+                                            <literal>fn:compare</literal>.</entry>
+                                    <entry>7.7.8.a</entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </informaltable>
+                </section>
+
+                <section id="chapter-xpath-fn-string">
+                    <title>7.8 String functions</title>
+                    <informaltable>
+                        <tgroup cols="5">
+                            <colspec colname="fn"/>
+                            <colspec colname="spec"/>
+                            <colspec colname="disp"/>
+                            <colspec colname="impl"/>
+                            <colspec colname="tests"/>
+                            <thead>
+                                <row>
+                                    <entry>Function</entry>
+                                    <entry>Spec</entry>
+                                    <entry>Disposition</entry>
+                                    <entry>Implementation</entry>
+                                    <entry>ch07 tests</entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry><literal>if()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-if">7.8.1</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:if</literal> in
+                                            <literal>src/xforms-function-library.xsl</literal></entry>
+                                    <entry>7.8.1.a</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>property()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-property">7.8.2</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:property</literal> in
+                                            <literal>src/xforms-xpath-functions.xsl</literal>
+                                        (<literal>version</literal>=1.1,
+                                            <literal>conformance-level</literal>=full)</entry>
+                                    <entry>7.8.2.a–d</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>digest()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-digest">7.8.3</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:digest</literal> (2-/3-arg) →
+                                            <literal>js:computeDigest</literal> in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.8.3.a, 7.8.3.b, 7.8.3.f</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>hmac()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-hmac">7.8.4</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:hmac</literal> (3-/4-arg) →
+                                            <literal>js:computeHmac</literal> in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.8.4.a, 7.8.4.b, 7.8.4.f</entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </informaltable>
+                </section>
+
+                <section id="chapter-xpath-fn-datetime">
+                    <title>7.9 Date and time functions</title>
+                    <informaltable>
+                        <tgroup cols="5">
+                            <colspec colname="fn"/>
+                            <colspec colname="spec"/>
+                            <colspec colname="disp"/>
+                            <colspec colname="impl"/>
+                            <colspec colname="tests"/>
+                            <thead>
+                                <row>
+                                    <entry>Function</entry>
+                                    <entry>Spec</entry>
+                                    <entry>Disposition</entry>
+                                    <entry>Implementation</entry>
+                                    <entry>ch07 tests</entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry><literal>local-date()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-local-date">7.9.1</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:local-date</literal> in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.9.1.a</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>local-dateTime()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-local-dateTime">7.9.2</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:local-dateTime</literal> in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.9.2.a</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>now()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-now">7.9.3</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:now</literal> in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.9.3.a</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>days-from-date()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-days-from-date">7.9.4</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:days-from-date</literal> in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.9.4.a–c</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>days-to-date()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-days-to-date">7.9.5</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:days-to-date</literal> in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.9.5.a</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>seconds-from-dateTime()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-seconds-from-dateTime">7.9.6</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:seconds-from-dateTime</literal> (epoch
+                                        seconds) in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.9.6.a</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>seconds-to-dateTime()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-seconds-to-dateTime">7.9.7</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:seconds-to-dateTime</literal> in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.9.7.a</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>adjust-dateTime-to-timezone()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-adjust-dateTime-to-timezone">7.9.8</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:adjust-dateTime-to-timezone</literal> (string
+                                        I/O; 0-arg → empty string) in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.9.8.a</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>seconds()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-seconds">7.9.9</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:seconds</literal> (duration dayTime total) in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.9.9.a</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>months()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-months">7.9.10</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:months</literal> in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.9.10.a</entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </informaltable>
+                </section>
+
+                <section id="chapter-xpath-fn-nodeset">
+                    <title>7.10 Node-set functions</title>
+                    <informaltable>
+                        <tgroup cols="5">
+                            <colspec colname="fn"/>
+                            <colspec colname="spec"/>
+                            <colspec colname="disp"/>
+                            <colspec colname="impl"/>
+                            <colspec colname="tests"/>
+                            <thead>
+                                <row>
+                                    <entry>Function</entry>
+                                    <entry>Spec</entry>
+                                    <entry>Disposition</entry>
+                                    <entry>Implementation</entry>
+                                    <entry>ch07 tests</entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry><literal>instance()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-instance">7.10.1</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:instance</literal> (0-/1-arg) via JS instance
+                                        store in
+                                            <literal>src/xforms-function-library.xsl</literal></entry>
+                                    <entry>7.10.1.a</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>current()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-current">7.10.2</ulink></entry>
+                                    <entry>Rewritten (non-function)</entry>
+                                    <entry><literal>xforms:impose</literal> rewrites to
+                                            <literal>let $__xf_current := . return (…)</literal> in
+                                            <literal>src/xforms-function-library.xsl</literal>; not
+                                        XSLT <literal>fn:current</literal></entry>
+                                    <entry>7.10.2.a, 7.10.2.b</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>id()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-id">7.10.3</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:id</literal> (<literal>fn:id</literal> +
+                                            <literal>@xml:id</literal> +
+                                            <literal>xsi:type</literal> ID) in
+                                            <literal>src/xforms-function-library.xsl</literal></entry>
+                                    <entry>7.10.3.a–c</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>context()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-context">7.10.4</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:context</literal> in
+                                            <literal>src/xforms-function-library.xsl</literal></entry>
+                                    <entry>7.10.4.a</entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </informaltable>
+                </section>
+
+                <section id="chapter-xpath-fn-object">
+                    <title>7.11 Object functions</title>
+                    <informaltable>
+                        <tgroup cols="5">
+                            <colspec colname="fn"/>
+                            <colspec colname="spec"/>
+                            <colspec colname="disp"/>
+                            <colspec colname="impl"/>
+                            <colspec colname="tests"/>
+                            <thead>
+                                <row>
+                                    <entry>Function</entry>
+                                    <entry>Spec</entry>
+                                    <entry>Disposition</entry>
+                                    <entry>Implementation</entry>
+                                    <entry>ch07 tests</entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry><literal>choose()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-choose">7.11.1</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:choose</literal> in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.11.1.a</entry>
+                                </row>
+                                <row>
+                                    <entry><literal>event()</literal></entry>
+                                    <entry><ulink url="https://www.w3.org/TR/xforms11/#fn-event">7.11.2</ulink></entry>
+                                    <entry>Implemented</entry>
+                                    <entry><literal>xforms:event</literal> via JS event-context map in
+                                            <literal>src/xforms-xpath-functions.xsl</literal></entry>
+                                    <entry>7.11.2.a (also ch04)</entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </informaltable>
+                </section>
+            </section>
+
+            <section id="chapter-xpath-function-fallthrough">
+                <title>Fall-through divergence notes</title>
+                <para>Only fall-through names are compared here. Extra XPath 3.1 capabilities are
+                    assumed and not listed.</para>
+
+                <section id="chapter-xpath-fallthrough-compare">
+                    <title><literal>compare()</literal> (XForms 1.1 §7.7.8 → XPath 3.1
+                            <literal>fn:compare</literal>)</title>
+                    <para>XForms 1.1 defines
+                            <literal>number compare(string, string)</literal>: return
+                            <literal>-1</literal>, <literal>0</literal>, or <literal>1</literal> from
+                        lexicographic comparison using Unicode code point values.</para>
+                    <para>XPath 3.1 <ulink url="https://www.w3.org/TR/xpath-functions-31/#func-compare"
+                                ><literal>fn:compare</literal></ulink> is
+                            <literal>xs:integer? compare(xs:string?, xs:string?)</literal> with an
+                        optional third collation argument. Divergences that matter for authors:</para>
+                    <itemizedlist>
+                        <listitem><para><emphasis>Empty arguments</emphasis> — XPath returns the empty
+                                sequence if either argument is the empty sequence. XForms 1.1 is
+                                specified in the XPath 1.0 type system (string arguments always have a
+                                string value); empty-node string-value is <literal>""</literal>, not
+                                empty sequence. Forms that pass true empty sequences can therefore
+                                see empty results under fall-through where a pure XForms processor
+                                would still return a number.</para></listitem>
+                        <listitem><para><emphasis>Collation</emphasis> — XForms requires Unicode code
+                                point order. XPath uses the default (or explicit) collation. For the
+                                BMP code-point-equal cases exercised by W3C 7.7.8.a this matches in
+                                practice; collation-sensitive locales can diverge.</para></listitem>
+                        <listitem><para><emphasis>Arity</emphasis> — XPath accepts an optional collation
+                                URI third argument. XForms has only the two-string form. Extra-arg
+                                calls are an XPath extension relative to XForms 1.1, not a SaxonForms
+                                rewrite.</para></listitem>
+                    </itemizedlist>
+                    <para>There is no SaxonForms wrapper today; improving strict XForms code-point
+                        semantics would mean adding <literal>compare</literal> to
+                            <literal>$xform-functions</literal> and an
+                            <literal>xforms:compare</literal> implementation.</para>
+                </section>
+
+                <section id="chapter-xpath-fallthrough-xpath10-core">
+                    <title>Inherited XPath 1.0 core names (summary)</title>
+                    <para>Unrewritten core names evaluate as XPath 3.1. Divergences authors most often
+                        hit versus XPath 1.0 / XForms-era expectations:</para>
+                    <itemizedlist>
+                        <listitem><para><emphasis>Empty sequences and arithmetic</emphasis> — XPath 3.1
+                                type errors replace many XPath 1.0 NaN results. MIP calculate paths in
+                                SaxonForms mitigate this with try/catch → NaN (implementation-defined;
+                                see Conformance).</para></listitem>
+                        <listitem><para><emphasis><literal>sum</literal> on empty</emphasis> — XPath 3.1
+                                    <literal>fn:sum(())</literal> returns <literal>0</literal> by
+                                default (optional second argument); XPath 1.0 returned
+                                <literal>0</literal> as well for empty node-sets, so this is usually
+                                compatible.</para></listitem>
+                        <listitem><para><emphasis>Node-set vs sequence</emphasis> — duplicate nodes and
+                                atomization follow XPath 3.1 rules when expressions are richer than
+                                XPath 1.0 PathExpr.</para></listitem>
+                    </itemizedlist>
+                    <para>These core names are fall-through by design; they are not individually
+                        wrapped unless an XForms additional function of the same local name exists
+                        (as with <literal>avg</literal>/<literal>min</literal>/<literal>max</literal>
+                        / <literal>id</literal>).</para>
+                </section>
+            </section>
+
+            <section id="chapter-xpath-function-impl-notes">
+                <title>Implementation notes (Implemented / Rewritten, not fall-through)</title>
+                <para>These callouts document intentional wrapper behavior. They are not fall-through
+                    divergences, because calls are rewritten to <literal>xforms:*</literal>.</para>
+                <itemizedlist>
+                    <listitem><para><literal>min</literal>/<literal>max</literal>/<literal>avg</literal>
+                            — empty or non-numeric input yields <literal>NaN</literal> (XForms 1.1),
+                            not XPath 3.1 empty sequence / type error from bare
+                                <literal>fn:min</literal>/<literal>fn:max</literal>/<literal>fn:avg</literal>.</para></listitem>
+                    <listitem><para><literal>id</literal> — unions standard <literal>fn:id</literal>
+                            results with <literal>@xml:id</literal> and elements typed
+                                <literal>xsd:ID</literal> via <literal>xsi:type</literal>.</para></listitem>
+                    <listitem><para><literal>if</literal> — XForms function form
+                                <literal>if(test, a, b)</literal> with string-oriented XForms 1.1
+                            signature; distinct from XPath <literal>if (test) then a else b</literal>.
+                            As an XSLT function, both branch arguments are evaluated before the call
+                            (no short-circuit at the function boundary).</para></listitem>
+                    <listitem><para><literal>choose</literal> — XForms requires both result arguments to
+                            be evaluated; matches function-call evaluation. Prefer XPath
+                                <literal>if then else</literal> when short-circuit matters.</para></listitem>
+                    <listitem><para><literal>power</literal> — delegates to
+                            <literal>math:pow</literal>.</para></listitem>
+                    <listitem><para><literal>adjust-dateTime-to-timezone</literal> — string in/out; 0-arity
+                            overload returns <literal>""</literal>. Distinct from typed F&amp;O
+                                <literal>fn:adjust-dateTime-to-timezone</literal> signatures even though
+                            the one-arg path calls that function internally after casting.</para></listitem>
+                    <listitem><para><literal>seconds-from-dateTime</literal> — XForms epoch-seconds
+                            semantics. Same local name as XPath 3.1
+                                <literal>fn:seconds-from-dateTime</literal> (seconds component of a
+                                <literal>xs:dateTime</literal>). Rewrite registration ensures bare
+                            XForms calls use the XForms meaning.</para></listitem>
+                    <listitem><para><literal>current()</literal> — rewrite captures outermost context item;
+                            not XSLT <literal>fn:current()</literal>.</para></listitem>
+                    <listitem><para><literal>digest</literal>/<literal>hmac</literal> — require the JS crypto
+                            bridge (<literal>@noble/hashes</literal> / available subtle crypto). Empty
+                            string when the library is unavailable; secure context needed in
+                            browsers.</para></listitem>
+                    <listitem><para><literal>random</literal> — optional seed parameter accepted and ignored;
+                            always <literal>Math.random()</literal>.</para></listitem>
+                    <listitem><para><literal>context</literal> — current implementation returns
+                                <literal>.</literal> (context item). Full XForms action/UI context-node
+                            semantics still depend on how the evaluator sets the XPath context when the
+                            expression runs.</para></listitem>
+                </itemizedlist>
+            </section>
+        </section>
+    </section>
+
+    <section id="chapter-controls-mapping">
+        <title>Controls and rendering model</title>
+        <para>SaxonForms maps each XForms control element to an HTML element via <literal>get-html</literal> mode templates. The control rendering entry point is the control-match template in <literal>src/saxon-xforms.xsl</literal>, which processes all XForms control elements and delegates to <literal>get-html</literal> mode for HTML output generation.</para>
+        <para>The diagram below maps each XForms control to its HTML output element and the DOM event handlers that wire interactive behavior back into the action dispatch pipeline.</para>
+        <mediaobject>
+            <imageobject>
+                <imagedata fileref="../diagrams/controls-html-mapping.svg" format="SVG" width="100%" scalefit="1"/>
+            </imageobject>
+        </mediaobject>
+
+        <section id="chapter-controls-core">
+            <title>Core form controls</title>
+            <para>Each core control template resolves its data binding via the <literal>get-properties</literal> mode template in <literal>src/saxon-xforms.xsl</literal>, which returns a map containing the bound nodeset, instance context, and matching bind element. Key control templates:</para>
+            <itemizedlist>
+                <listitem><para><literal>xforms:input</literal> template in <literal>src/saxon-xforms.xsl</literal> — Renders <literal>&lt;input&gt;</literal> with type derived from XSD type (<literal>xs:date</literal> → <literal>type="date"</literal>, <literal>xs:boolean</literal> → <literal>type="checkbox"</literal>). Supports incremental mode via <literal>ixsl:onkeyup</literal> handlers.</para></listitem>
+                <listitem><para><literal>xforms:output</literal> template in <literal>src/saxon-xforms.xsl</literal> — Renders <literal>&lt;span&gt;</literal> with computed value. Supports <literal>@mediatype</literal> for image rendering and <literal>@value</literal> attribute for XPath expression evaluation.</para></listitem>
+                <listitem><para><literal>xforms:select</literal>/<literal>xforms:select1</literal> templates in <literal>src/saxon-xforms.xsl</literal> — Render <literal>&lt;select&gt;</literal> (multi/single). Handle <literal>xforms:item</literal>, <literal>xforms:choices</literal>, and <literal>xforms:itemset</literal> child elements. Non-incremental select uses blur/focusout handlers for deferred update.</para></listitem>
+                <listitem><para><literal>xforms:textarea</literal> template in <literal>src/saxon-xforms.xsl</literal> — Renders <literal>&lt;textarea&gt;</literal>.</para></listitem>
+                <listitem><para><literal>xforms:range</literal> template in <literal>src/saxon-xforms.xsl</literal> — Renders <literal>&lt;input type="range"&gt;</literal>. Incremental mode uses <literal>ixsl:oninput</literal> handlers.</para></listitem>
+                <listitem><para><literal>xforms:upload</literal> template in <literal>src/saxon-xforms.xsl</literal> — Renders <literal>&lt;input type="file"&gt;</literal>. File content is parsed via <literal>readFileAsXML()</literal> in <literal>xforms-javascript-library.xsl</literal> and inserted into the bound instance node.</para></listitem>
+                <listitem><para><literal>xforms:trigger</literal> template in <literal>src/saxon-xforms.xsl</literal> — Renders <literal>&lt;button&gt;</literal> or <literal>&lt;a&gt;</literal> with <literal>data-action</literal> attribute. Onclick dispatches <literal>DOMActivate</literal>.</para></listitem>
+                <listitem><para><literal>xforms:submit</literal> template in <literal>src/saxon-xforms.xsl</literal> — Renders <literal>&lt;button data-submit&gt;</literal>. Onclick triggers submission flow.</para></listitem>
+            </itemizedlist>
+        </section>
+
+        <section id="chapter-controls-container">
+            <title>Container controls</title>
+            <itemizedlist>
+                <listitem><para><literal>xforms:group</literal> template in <literal>src/saxon-xforms.xsl</literal> — Renders <literal>&lt;div class="xforms-group"&gt;</literal>. Supports <literal>@ref</literal> for scoped context and <literal>relevant</literal> hiding.</para></listitem>
+                <listitem><para><literal>xforms:repeat</literal> template in <literal>src/saxon-xforms.xsl</literal> — Renders iterable <literal>&lt;div data-repeatable-context&gt;</literal> with <literal>data-repeat-item</literal> children. Repeat index is tracked and updated on click events. Refresh is handled by <literal>refreshRepeats-JS</literal>.</para></listitem>
+                <listitem><para><literal>xforms:switch</literal>/<literal>xforms:case</literal> templates in <literal>src/saxon-xforms.xsl</literal> — Render <literal>&lt;div class="xforms-switch"&gt;</literal> with cases shown/hidden. The <literal>action-toggle</literal> template controls case visibility. Known issue: toggle inside repeat affects all iterations (9.3.1.f).</para></listitem>
+            </itemizedlist>
+        </section>
+
+        <section id="chapter-controls-custom">
+            <title>Custom controls and fork enhancements</title>
+            <para>The fork adds several controls and behaviors not present in upstream Saxon-Forms:</para>
+            <itemizedlist>
+                <listitem><para><literal>xf:script</literal> action (<literal>action-script</literal> template in <literal>src/saxon-xforms.xsl</literal>) — XForms 2.0 script execution via <literal>ixsl:call(window, 'eval', ...)</literal>.</para></listitem>
+                <listitem><para><literal>xf:load</literal> action (<literal>action-load</literal> template in <literal>src/saxon-xforms.xsl</literal>) — Supports <literal>show="new"</literal>, <literal>show="replace"</literal>, and <literal>javascript:</literal> URI scheme.</para></listitem>
+                <listitem><para>Namespace prefix propagation — XPaths can use prefixes declared on <literal>&lt;xf:xform&gt;</literal> (e.g., <literal>o:catalog</literal> instead of <literal>*:catalog</literal>). Implemented via <literal>addNamespaceDeclarationsToDocument()</literal> in <literal>src/saxon-xforms.xsl</literal>.</para></listitem>
+            </itemizedlist>
+        </section>
+    </section>
+</chapter>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xmlns="http://docbook.org/ns/docbook" id="chapter-saxonforms-and-saxonjs" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <title>SaxonForms and SaxonJS</title>
+    <para>This chapter defines subsystem boundaries between browser APIs, the SaxonJS runtime, and
+        SaxonForms XSLT packages. </para>
+
+    <section id="chapter-saxonforms-and-saxonjs-component-view">
+        <title>Component architecture</title>
+        <para>SaxonForms operates within three major subsystems: the browser environment (DOM, event loop, JavaScript runtime), the SaxonJS 3 Interactive XSLT engine, and the SaxonForms XSLT runtime itself. The component diagram below is the anchor model for all other diagrams — package, sequence, and class representations stay consistent with these component boundaries.</para>
+        <mediaobject>
+            <imageobject>
+                <imagedata fileref="../diagrams/component-overview.svg" format="SVG" width="100%" scalefit="1"/>
+            </imageobject>
+        </mediaobject>
+
+        <section id="chapter-saxonforms-and-saxonjs-subsystems">
+            <title>Subsystem roles</title>
+            <variablelist>
+                <varlistentry><term>Browser Environment</term><listitem><para>Provides the HTML/DOM tree that SaxonForms renders into, the DOM event loop that delivers native events (onclick, onchange, onkeyup), and the JavaScript runtime used for operations that require JS interop: HTTP fetch via <literal>ixsl:promise</literal>, file reading via <literal>readFileAsXML()</literal>, focus management via <literal>setFocus()</literal>, and script evaluation.</para></listitem></varlistentry>
+                <varlistentry><term>SaxonJS 3</term><listitem><para>The Interactive XSLT engine that loads the compiled SEF transform and executes it. SaxonJS provides the <literal>ixsl:*</literal> extension namespace: <literal>ixsl:page()</literal> for DOM access, <literal>ixsl:event()</literal> for the current event object, <literal>ixsl:call()</literal>/<literal>ixsl:set-property()</literal> for JavaScript interop, and <literal>ixsl:promise</literal> for async operations. It also provides the mode-based event dispatch mechanism (e.g., <literal>mode="ixsl:onclick"</literal>).</para></listitem></varlistentry>
+                <varlistentry><term>SaxonForms Runtime</term><listitem><para>The XSLT packages that implement XForms behavior. This subsystem contains the model state (instances, binds, MIPs), action dispatcher, submission adapter, function library, and XSD helpers. All XForms-specific logic resides here.</para></listitem></varlistentry>
+            </variablelist>
+        </section>
+
+        <section id="chapter-saxonforms-and-saxonjs-sef-pipeline">
+            <title>SEF compilation and runtime loading</title>
+            <para>The XSLT source is compiled offline into a SEF file using the
+                    <literal>xslt3</literal> command-line compiler from Saxonica. At runtime, a host
+                HTML page loads SaxonJS and invokes <literal>SaxonJS.transform2()</literal> with the
+                SEF location and the XForms document as input. This triggers the
+                    <literal>xformsjs-main</literal> named template in
+                    <literal>src/saxon-xforms.xsl</literal>, which is the entry point for all
+                SaxonForms processing.</para>
+            <para>The <literal>xformsjs-main</literal> template reads the page DOM via <literal>ixsl:page()</literal>, locates the XForms source document (either embedded or linked), resolves namespace declarations via <literal>addNamespaceDeclarationsToDocument()</literal> in <literal>src/saxon-xforms.xsl</literal>, extracts models and instances, builds the submission map, and initiates the model construction lifecycle.</para>
+        </section>
+    </section>
+
+    <section id="chapter-saxonforms-and-saxonjs-package-view">
+        <title>Package map</title>
+        <para>The package map shows the organization of XSLT source files and their relationships. All packages are consumed by <literal>saxon-xforms.xsl</literal> via <literal>xsl:use-package</literal>.</para>
+        <mediaobject>
+            <imageobject>
+                <imagedata fileref="../diagrams/package-map.svg" format="SVG" width="100%" scalefit="1"/>
+            </imageobject>
+        </mediaobject>
+
+        <section id="chapter-saxonforms-and-saxonjs-source-files">
+            <title>Source file inventory</title>
+            <variablelist>
+                <varlistentry><term>src/saxon-xforms.xsl</term><listitem><para>The main transform. Contains the entry point (<literal>xformsjs-main</literal>), model lifecycle templates (<literal>xforms-model-construct</literal>, <literal>xforms-rebuild</literal>, <literal>xforms-recalculate</literal>, <literal>xforms-revalidate</literal>, <literal>xforms-refresh</literal>), control rendering templates (<literal>get-html</literal> mode), action dispatch (<literal>applyActions</literal>, <literal>outermost-action-handler</literal>, all <literal>action-*</literal> named templates), submission logic (<literal>HTTPsubmit</literal>, <literal>xforms-submit</literal>), and DOM event handler templates (<literal>ixsl:on*</literal> modes).</para></listitem></varlistentry>
+                <varlistentry><term>src/xforms-function-library.xsl </term><listitem><para>Core runtime functions: <literal>xforms:impose()</literal> (XPath rewriting), <literal>xforms:instance()</literal>, <literal>xforms:index()</literal>, <literal>xforms:id()</literal>, <literal>xforms:min()</literal>/<literal>max()</literal>, <literal>xforms:random()</literal>, <literal>xforms:context()</literal>, <literal>xforms:if()</literal>.</para></listitem></varlistentry>
+                <varlistentry><term>src/xforms-xpath-functions.xsl </term><listitem><para>XForms specification functions: <literal>property()</literal>, <literal>boolean-from-string()</literal>, <literal>avg()</literal>, <literal>event()</literal>, date/time functions, cryptographic stubs (<literal>digest()</literal>, <literal>hmac()</literal>).</para></listitem></varlistentry>
+                <varlistentry><term>src/xsd-helpers.xsl </term><listitem><para>XSD type validation: <literal>xsdh:canonical-type()</literal> normalizes type QNames, <literal>xsdh:is-type-valid()</literal> validates values against XSD types.</para></listitem></varlistentry>
+                <varlistentry><term>src/packages/logger.xsl</term><listitem><para>Optional logging package with configurable log levels (<literal>sfp:logInfo</literal>, <literal>sfp:logDebug</literal>). Controlled by the <literal>$LOGLEVEL</literal> parameter.</para></listitem></varlistentry>
+            </variablelist>
+        </section>
+    </section>
+</chapter>

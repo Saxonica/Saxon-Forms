@@ -1,0 +1,51 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_list-QName": {
+      "valid_groups": [
+        "list-QName-enumeration",
+        "list-QName-enumeration-1",
+        "list-QName-enumeration-2",
+        "list-QName-enumeration-3",
+        "list-QName-enumeration-4",
+        "list-QName-length",
+        "list-QName-length-1",
+        "list-QName-length-2",
+        "list-QName-length-3",
+        "list-QName-length-4",
+        "list-QName-maxLength",
+        "list-QName-maxLength-1",
+        "list-QName-maxLength-2",
+        "list-QName-maxLength-3",
+        "list-QName-maxLength-4",
+        "list-QName-minLength",
+        "list-QName-minLength-1",
+        "list-QName-minLength-2",
+        "list-QName-minLength-3",
+        "list-QName-minLength-4",
+        "list-QName-pattern",
+        "list-QName-pattern-1",
+        "list-QName-pattern-2",
+        "list-QName-pattern-3",
+        "list-QName-pattern-4",
+        "list-QName-whiteSpace",
+        "list-QName-length-5",
+        "list-QName-length-6",
+        "list-QName-length-7",
+        "list-QName-length-8",
+        "list-QName-length-9",
+        "list-QName-maxLength-5",
+        "list-QName-maxLength-6",
+        "list-QName-maxLength-7",
+        "list-QName-maxLength-8",
+        "list-QName-maxLength-9",
+        "list-QName-minLength-5",
+        "list-QName-minLength-6",
+        "list-QName-minLength-7",
+        "list-QName-minLength-8",
+        "list-QName-minLength-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

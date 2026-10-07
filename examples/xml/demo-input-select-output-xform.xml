@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform 
+    xmlns:xf="http://www.w3.org/2002/xforms" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    >
+ 
+    <xf:model>
+        <xf:instance id="hello">
+            <demo:data xmlns:demo="urn:saxon-xforms:demo">
+                <demo:PersonGivenName>Mark</demo:PersonGivenName>
+                <demo:PetType>pet</demo:PetType>
+                <demo:PetDescription/>
+                <demo:CatName></demo:CatName>
+                <demo:CatNameForDisplayCheck></demo:CatNameForDisplayCheck>
+                <demo:FeedingTime>08:00</demo:FeedingTime>
+                <demo:FedToday>1</demo:FedToday>
+                <demo:FedTodayStatement></demo:FedTodayStatement>
+                <demo:MoodLevel>4</demo:MoodLevel>
+                <demo:PetPhoto></demo:PetPhoto>
+                <demo:Counter>0</demo:Counter>
+            </demo:data>
+        </xf:instance>
+        
+        <xf:bind nodeset="instance('hello')/demo:FeedingTime" type="xs:time" />
+        <xf:bind nodeset="instance('hello')/demo:FedToday" type="xs:boolean" />
+        <xf:bind nodeset="instance('hello')/demo:CatNameForDisplayCheck" calculate="instance('hello')/demo:CatName/text()"/>
+        <xf:bind nodeset="instance('hello')/demo:FedTodayStatement" calculate="
+            if ( 
+            xs:string(instance('hello')/demo:FedToday)  = '' 
+            )
+            then 'not'
+            else ''
+            "/>
+        <xf:bind nodeset="instance('hello')/demo:PetType" constraint="text() != 'pet'" />
+        
+        <xf:bind id="test-relevant" nodeset="instance('hello')/demo:CatNameForDisplayCheck" relevant="text() = 'Scout'"/>
+        
+        <xf:submission id="test" ref="instance('hello')" instance="hello" resource="/api/echo" method="post"/>
+        
+        
+    </xf:model>
+    
+    <xf:input ref="instance('hello')/demo:PersonGivenName" incremental="true" class="demo-input">
+        <xf:label>Please enter your first name: </xf:label>
+        <xf:hint>Also known as your given name</xf:hint>
+    </xf:input>
+
+    
+    <xf:select1 ref="instance('hello')/demo:PetType" incremental="true" class="demo-select">
+        <xf:label>Type of pet: </xf:label>
+        <xf:hint>Choose "Cat"!</xf:hint>
+        <xf:item>
+            <xf:label>[Pet]</xf:label>
+            <xf:value>pet</xf:value> 
+        </xf:item>
+        <xf:item>
+            <xf:label>Cat</xf:label>
+            <xf:value>cat</xf:value> 
+        </xf:item>
+        <xf:item>
+            <xf:label>Dog</xf:label>
+            <xf:value>dog</xf:value> 
+        </xf:item>
+        <xf:item>
+            <xf:label>Tortoise</xf:label>
+            <xf:value>tortoise</xf:value> 
+        </xf:item>
+    </xf:select1>
+        
+    
+ 
+    <xf:input ref="instance('hello')/demo:CatName" class="demo-input">
+        <xf:label>(Non-incremental) Please enter your pet's name: </xf:label>
+        <xf:hint>Or any old string</xf:hint>
+    </xf:input>
+    
+    <xf:textarea ref="instance('hello')/demo:PetDescription" class="demo-input">
+        <xf:label>Enter a description of your pet</xf:label>
+    </xf:textarea>
+    
+    <xf:input ref="instance('hello')/demo:FeedingTime" class="demo-input">
+        <xf:label>Enter pet's feeding time: </xf:label>
+        <xf:setvalue ref="../demo:FedToday" ev:event="xforms-value-changed" value="
+            if (normalize-space(string(../demo:FeedingTime)) = '')
+            then false()
+            else xs:time(string(../demo:FeedingTime)) &lt; current-time()
+            "/>
+    </xf:input>
+    
+    <xf:input ref="instance('hello')/demo:FedToday" class="demo-input">
+        <xf:label>Have you fed your pet today? </xf:label>
+    </xf:input>
+
+    <xf:range ref="instance('hello')/demo:MoodLevel" start="0" end="10" step="1" class="demo-input">
+        <xf:label>Pet mood level: </xf:label>
+        <xf:hint>0 = sleepy, 10 = ecstatic</xf:hint>
+    </xf:range>
+
+    <xf:upload ref="instance('hello')/demo:PetPhoto" mediatype="text/plain" accept=".txt,image/*" class="demo-input">
+        <xf:label>Upload a pet note or image: </xf:label>
+        <xf:hint>Try any local file</xf:hint>
+    </xf:upload>
+    
+    
+
+    <xf:output value="concat('Hello ', instance('hello')/demo:PersonGivenName  , '. Your ', instance('hello')/demo:PetType, ' is called ', instance('hello')/demo:CatName)" class="block demo-output"/>
+    
+    <xf:output value="concat('I feed my ', instance('hello')/demo:PetType, ' at ', instance('hello')/demo:FeedingTime)" class="block demo-output"/>
+    
+    <xf:output value="concat('My ', instance('hello')/demo:PetType, ' has ', instance('hello')/demo:FedTodayStatement , ' been fed today.')" class="block demo-output"/>
+
+    <xf:output value="concat('Mood level: ', instance('hello')/demo:MoodLevel)" class="block demo-output"/>
+
+    <xf:output value="concat('Uploaded payload length: ', string-length(instance('hello')/demo:PetPhoto))" class="block demo-output"/>
+    
+    <xf:output bind="test-relevant" value="concat('Display the description only when pet name is ''Scout'': ', instance('hello')/demo:PetDescription)" class="block demo-output"/>
+    
+    <xf:trigger>
+        <xf:label>Demo message</xf:label>
+        <xf:action ev:event="DOMActivate" while="number(instance('hello')/demo:Counter) &lt; 3">
+            <xf:setvalue ref="instance('hello')/demo:Counter" value="number(instance('hello')/demo:Counter) + 1"/>
+            <xf:message level="ephemeral">Here is your message (iteration #<xf:output ref="instance('hello')/demo:Counter/text()"/>)</xf:message>
+        </xf:action>
+    </xf:trigger>
+    
+    <xf:submit submission="test">
+        <xf:label>Submit</xf:label>
+    </xf:submit>
+    
+    <xf:trigger id="setvalue-test">
+        <xf:label>Set pet name to 'Scout'</xf:label>
+        <xf:setvalue ref="instance('hello')/demo:CatName" ev:event="DOMActivate">Scout</xf:setvalue>
+    </xf:trigger>
+    
+    
+</xf:xform>

@@ -1,0 +1,30 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_union-short": {
+      "valid_groups": [
+        "union-short-gYear-enumeration",
+        "union-short-gYear-enumeration-1",
+        "union-short-gYear-enumeration-2",
+        "union-short-gYear-enumeration-3",
+        "union-short-gYear-enumeration-4",
+        "union-short-gYear-pattern",
+        "union-short-gYear-pattern-1",
+        "union-short-gYear-pattern-2",
+        "union-short-gYear-pattern-3",
+        "union-short-gYear-pattern-4",
+        "union-short-gYear-enumeration-5",
+        "union-short-gYear-enumeration-6",
+        "union-short-gYear-enumeration-7",
+        "union-short-gYear-enumeration-8",
+        "union-short-gYear-enumeration-9",
+        "union-short-gYear-pattern-5",
+        "union-short-gYear-pattern-6",
+        "union-short-gYear-pattern-7",
+        "union-short-gYear-pattern-8",
+        "union-short-gYear-pattern-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

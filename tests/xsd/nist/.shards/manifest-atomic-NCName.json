@@ -1,0 +1,51 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_atomic-NCName": {
+      "valid_groups": [
+        "atomic-NCName-enumeration",
+        "atomic-NCName-enumeration-1",
+        "atomic-NCName-enumeration-2",
+        "atomic-NCName-enumeration-3",
+        "atomic-NCName-enumeration-4",
+        "atomic-NCName-length",
+        "atomic-NCName-length-1",
+        "atomic-NCName-length-2",
+        "atomic-NCName-length-3",
+        "atomic-NCName-length-4",
+        "atomic-NCName-maxLength",
+        "atomic-NCName-maxLength-1",
+        "atomic-NCName-maxLength-2",
+        "atomic-NCName-maxLength-3",
+        "atomic-NCName-maxLength-4",
+        "atomic-NCName-minLength",
+        "atomic-NCName-minLength-1",
+        "atomic-NCName-minLength-2",
+        "atomic-NCName-minLength-3",
+        "atomic-NCName-minLength-4",
+        "atomic-NCName-pattern",
+        "atomic-NCName-pattern-1",
+        "atomic-NCName-pattern-2",
+        "atomic-NCName-pattern-3",
+        "atomic-NCName-pattern-4",
+        "atomic-NCName-whiteSpace",
+        "atomic-NCName-length-5",
+        "atomic-NCName-length-6",
+        "atomic-NCName-length-7",
+        "atomic-NCName-length-8",
+        "atomic-NCName-length-9",
+        "atomic-NCName-maxLength-5",
+        "atomic-NCName-maxLength-6",
+        "atomic-NCName-maxLength-7",
+        "atomic-NCName-maxLength-8",
+        "atomic-NCName-maxLength-9",
+        "atomic-NCName-minLength-5",
+        "atomic-NCName-minLength-6",
+        "atomic-NCName-minLength-7",
+        "atomic-NCName-minLength-8",
+        "atomic-NCName-minLength-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

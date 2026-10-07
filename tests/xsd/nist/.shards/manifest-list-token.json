@@ -1,0 +1,51 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_list-token": {
+      "valid_groups": [
+        "list-token-enumeration",
+        "list-token-enumeration-1",
+        "list-token-enumeration-2",
+        "list-token-enumeration-3",
+        "list-token-enumeration-4",
+        "list-token-length",
+        "list-token-length-1",
+        "list-token-length-2",
+        "list-token-length-3",
+        "list-token-length-4",
+        "list-token-maxLength",
+        "list-token-maxLength-1",
+        "list-token-maxLength-2",
+        "list-token-maxLength-3",
+        "list-token-maxLength-4",
+        "list-token-minLength",
+        "list-token-minLength-1",
+        "list-token-minLength-2",
+        "list-token-minLength-3",
+        "list-token-minLength-4",
+        "list-token-pattern",
+        "list-token-pattern-1",
+        "list-token-pattern-2",
+        "list-token-pattern-3",
+        "list-token-pattern-4",
+        "list-token-whiteSpace",
+        "list-token-length-5",
+        "list-token-length-6",
+        "list-token-length-7",
+        "list-token-length-8",
+        "list-token-length-9",
+        "list-token-maxLength-5",
+        "list-token-maxLength-6",
+        "list-token-maxLength-7",
+        "list-token-maxLength-8",
+        "list-token-maxLength-9",
+        "list-token-minLength-5",
+        "list-token-minLength-6",
+        "list-token-minLength-7",
+        "list-token-minLength-8",
+        "list-token-minLength-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

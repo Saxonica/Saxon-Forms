@@ -1,0 +1,14 @@
+{
+  "suite_id": "supplemental-web-components",
+  "test_path": "tests/supplemental/web-components.spec.ts",
+  "config_path": "playwright.config.ts",
+  "last_updated": "2026-08-25T14:55:13.977Z",
+  "stats": {
+    "total": 16,
+    "passed": 14,
+    "failed": 0,
+    "flaky": 0,
+    "skipped": 2
+  },
+  "allowed_failures": []
+}

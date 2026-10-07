@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="Definitions_GitCommit"
+             targetNamespace="http://saxon-forms-fork.example.com/bpmn/git-commit"
+             exporter="Saxon-Forms BPMN Modeler"
+             exporterVersion="1.0">
+
+  <process id="Process_GitCommit" name="Git Commit Discipline" isExecutable="false">
+    <documentation>Small, frequent, atomic commits with mandatory regression-gate
+evidence. W3C regressions are always blocking; non-W3C regressions
+require explicit waiver justification.</documentation>
+
+    <!-- ===== Flow Nodes ===== -->
+
+    <startEvent id="StartEvent_GC" name="Commit Requested">
+      <outgoing>Flow_GC_Start</outgoing>
+    </startEvent>
+
+    <task id="Task_DefineSlice" name="Define Atomic Slice">
+      <documentation>Identify one logical, coherent change to commit.</documentation>
+      <incoming>Flow_GC_Start</incoming>
+      <outgoing>Flow_GC_ToCapture</outgoing>
+    </task>
+
+    <task id="Task_CaptureVCS_GC" name="Capture VCS Context">
+      <documentation>Record HEAD SHA, branch, tree state, and changed files.</documentation>
+      <incoming>Flow_GC_ToCapture</incoming>
+      <incoming>Flow_GC_FixMandatoryBack</incoming>
+      <incoming>Flow_GC_FixNonW3CBack</incoming>
+      <outgoing>Flow_GC_ToGate</outgoing>
+    </task>
+
+    <callActivity id="CallActivity_PreCommitGate" name="Run Pre-Commit Gate"
+                  calledElement="Process_RegressionGate">
+      <incoming>Flow_GC_ToGate</incoming>
+      <outgoing>Flow_GC_ToResult</outgoing>
+    </callActivity>
+
+    <exclusiveGateway id="Gateway_GateResult" name="Gate Result?"
+                      default="Flow_GC_Pass">
+      <incoming>Flow_GC_ToResult</incoming>
+      <outgoing>Flow_GC_Pass</outgoing>
+      <outgoing>Flow_GC_MandatoryReg</outgoing>
+      <outgoing>Flow_GC_NonW3C</outgoing>
+    </exclusiveGateway>
+
+    <!-- Fix-and-retry path: mandatory regression -->
+    <task id="Task_FixMandatory" name="Fix Mandatory Regression">
+      <incoming>Flow_GC_MandatoryReg</incoming>
+      <outgoing>Flow_GC_FixMandatoryBack</outgoing>
+    </task>
+
+    <!-- Fix-or-waive path: non-W3C regression -->
+    <exclusiveGateway id="Gateway_WaiverExplicit" name="Waiver Explicit?"
+                      default="Flow_GC_Waiver_No">
+      <incoming>Flow_GC_NonW3C</incoming>
+      <outgoing>Flow_GC_Waiver_No</outgoing>
+      <outgoing>Flow_GC_Waiver_Yes</outgoing>
+    </exclusiveGateway>
+
+    <task id="Task_FixNonW3C" name="Fix Non-W3C Regression">
+      <incoming>Flow_GC_Waiver_No</incoming>
+      <outgoing>Flow_GC_FixNonW3CBack</outgoing>
+    </task>
+
+    <task id="Task_DocJustification" name="Document Justification">
+      <documentation>Record explicit waiver rationale in run artifacts and PR notes.</documentation>
+      <incoming>Flow_GC_Waiver_Yes</incoming>
+      <outgoing>Flow_GC_DocToMerge</outgoing>
+    </task>
+
+    <!-- Merge: pass path + justified-waiver path -->
+    <exclusiveGateway id="Gateway_StageMerge" name="">
+      <incoming>Flow_GC_Pass</incoming>
+      <incoming>Flow_GC_DocToMerge</incoming>
+      <outgoing>Flow_GC_ToStageFiles</outgoing>
+    </exclusiveGateway>
+
+    <task id="Task_StageFiles" name="Stage Relevant Files">
+      <documentation>Use narrow staging; avoid bundling unrelated edits.</documentation>
+      <incoming>Flow_GC_ToStageFiles</incoming>
+      <outgoing>Flow_GC_ToValidate</outgoing>
+    </task>
+
+    <task id="Task_ValidateStaged" name="Validate Staged Set">
+      <incoming>Flow_GC_ToValidate</incoming>
+      <incoming>Flow_GC_UnstageBack</incoming>
+      <outgoing>Flow_GC_ToW3CCheck</outgoing>
+    </task>
+
+    <exclusiveGateway id="Gateway_W3CStaged" name="W3C Files Staged?"
+                      default="Flow_GC_NoW3C">
+      <incoming>Flow_GC_ToW3CCheck</incoming>
+      <outgoing>Flow_GC_W3CYes</outgoing>
+      <outgoing>Flow_GC_NoW3C</outgoing>
+    </exclusiveGateway>
+
+    <task id="Task_UnstageW3C" name="Unstage W3C Files">
+      <documentation>Unstage and revert any w3c-suite .xhtml edits.</documentation>
+      <incoming>Flow_GC_W3CYes</incoming>
+      <outgoing>Flow_GC_UnstageBack</outgoing>
+    </task>
+
+    <task id="Task_Commit" name="Commit with Provenance">
+      <documentation>Include Gate-Run, Gate-Head, and Gate-Tree trailer lines.</documentation>
+      <incoming>Flow_GC_NoW3C</incoming>
+      <outgoing>Flow_GC_ToPostCommit</outgoing>
+    </task>
+
+    <callActivity id="CallActivity_PostCommitGate" name="Run Post-Commit Gate"
+                  calledElement="Process_RegressionGate">
+      <incoming>Flow_GC_ToPostCommit</incoming>
+      <outgoing>Flow_GC_ToEvidence</outgoing>
+    </callActivity>
+
+    <task id="Task_RecordEvidence" name="Record Clean-Tree Evidence">
+      <documentation>Record committed SHA and clean-tree run directory as authoritative evidence.</documentation>
+      <incoming>Flow_GC_ToEvidence</incoming>
+      <outgoing>Flow_GC_ToEnd</outgoing>
+    </task>
+
+    <endEvent id="EndEvent_GC" name="Commit Complete">
+      <incoming>Flow_GC_ToEnd</incoming>
+    </endEvent>
+
+    <!-- ===== Sequence Flows ===== -->
+
+    <sequenceFlow id="Flow_GC_Start" sourceRef="StartEvent_GC"
+                  targetRef="Task_DefineSlice" />
+    <sequenceFlow id="Flow_GC_ToCapture" sourceRef="Task_DefineSlice"
+                  targetRef="Task_CaptureVCS_GC" />
+    <sequenceFlow id="Flow_GC_ToGate" sourceRef="Task_CaptureVCS_GC"
+                  targetRef="CallActivity_PreCommitGate" />
+    <sequenceFlow id="Flow_GC_ToResult" sourceRef="CallActivity_PreCommitGate"
+                  targetRef="Gateway_GateResult" />
+
+    <!-- Gate result branches -->
+    <sequenceFlow id="Flow_GC_Pass" name="Pass"
+                  sourceRef="Gateway_GateResult"
+                  targetRef="Gateway_StageMerge" />
+    <sequenceFlow id="Flow_GC_MandatoryReg" name="Mandatory Regression"
+                  sourceRef="Gateway_GateResult"
+                  targetRef="Task_FixMandatory" />
+    <sequenceFlow id="Flow_GC_NonW3C" name="Non-W3C Regression"
+                  sourceRef="Gateway_GateResult"
+                  targetRef="Gateway_WaiverExplicit" />
+
+    <!-- Fix loops -->
+    <sequenceFlow id="Flow_GC_FixMandatoryBack"
+                  sourceRef="Task_FixMandatory"
+                  targetRef="Task_CaptureVCS_GC" />
+    <sequenceFlow id="Flow_GC_Waiver_No" name="No"
+                  sourceRef="Gateway_WaiverExplicit"
+                  targetRef="Task_FixNonW3C" />
+    <sequenceFlow id="Flow_GC_Waiver_Yes" name="Yes"
+                  sourceRef="Gateway_WaiverExplicit"
+                  targetRef="Task_DocJustification" />
+    <sequenceFlow id="Flow_GC_FixNonW3CBack"
+                  sourceRef="Task_FixNonW3C"
+                  targetRef="Task_CaptureVCS_GC" />
+    <sequenceFlow id="Flow_GC_DocToMerge"
+                  sourceRef="Task_DocJustification"
+                  targetRef="Gateway_StageMerge" />
+
+    <!-- Stage → Validate → Commit -->
+    <sequenceFlow id="Flow_GC_ToStageFiles"
+                  sourceRef="Gateway_StageMerge"
+                  targetRef="Task_StageFiles" />
+    <sequenceFlow id="Flow_GC_ToValidate"
+                  sourceRef="Task_StageFiles"
+                  targetRef="Task_ValidateStaged" />
+    <sequenceFlow id="Flow_GC_ToW3CCheck"
+                  sourceRef="Task_ValidateStaged"
+                  targetRef="Gateway_W3CStaged" />
+    <sequenceFlow id="Flow_GC_W3CYes" name="Yes"
+                  sourceRef="Gateway_W3CStaged"
+                  targetRef="Task_UnstageW3C" />
+    <sequenceFlow id="Flow_GC_NoW3C" name="No"
+                  sourceRef="Gateway_W3CStaged"
+                  targetRef="Task_Commit" />
+    <sequenceFlow id="Flow_GC_UnstageBack"
+                  sourceRef="Task_UnstageW3C"
+                  targetRef="Task_ValidateStaged" />
+
+    <!-- Post-commit -->
+    <sequenceFlow id="Flow_GC_ToPostCommit"
+                  sourceRef="Task_Commit"
+                  targetRef="CallActivity_PostCommitGate" />
+    <sequenceFlow id="Flow_GC_ToEvidence"
+                  sourceRef="CallActivity_PostCommitGate"
+                  targetRef="Task_RecordEvidence" />
+    <sequenceFlow id="Flow_GC_ToEnd"
+                  sourceRef="Task_RecordEvidence"
+                  targetRef="EndEvent_GC" />
+  </process>
+
+  <!-- ================================================================
+       Diagram Interchange
+       ================================================================ -->
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_GitCommit" name="Git Commit Discipline">
+    <bpmndi:BPMNPlane id="BPMNPlane_GitCommit"
+                      bpmnElement="Process_GitCommit">
+
+      <!-- Main flow (y ≈ 260) -->
+
+      <bpmndi:BPMNShape id="Shape_StartEvent_GC" bpmnElement="StartEvent_GC">
+        <dc:Bounds x="160" y="242" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_DefineSlice" bpmnElement="Task_DefineSlice">
+        <dc:Bounds x="230" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_CaptureVCS_GC"
+                        bpmnElement="Task_CaptureVCS_GC">
+        <dc:Bounds x="370" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_CallActivity_PreCommitGate"
+                        bpmnElement="CallActivity_PreCommitGate">
+        <dc:Bounds x="520" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Gateway_GateResult"
+                        bpmnElement="Gateway_GateResult" isMarkerVisible="true">
+        <dc:Bounds x="660" y="235" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Gateway_StageMerge"
+                        bpmnElement="Gateway_StageMerge" isMarkerVisible="true">
+        <dc:Bounds x="1020" y="235" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_StageFiles" bpmnElement="Task_StageFiles">
+        <dc:Bounds x="1100" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_ValidateStaged"
+                        bpmnElement="Task_ValidateStaged">
+        <dc:Bounds x="1240" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Gateway_W3CStaged"
+                        bpmnElement="Gateway_W3CStaged" isMarkerVisible="true">
+        <dc:Bounds x="1380" y="235" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_Commit" bpmnElement="Task_Commit">
+        <dc:Bounds x="1500" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_CallActivity_PostCommitGate"
+                        bpmnElement="CallActivity_PostCommitGate">
+        <dc:Bounds x="1640" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_RecordEvidence"
+                        bpmnElement="Task_RecordEvidence">
+        <dc:Bounds x="1780" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_GC" bpmnElement="EndEvent_GC">
+        <dc:Bounds x="1920" y="242" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- Above main flow — mandatory fix + W3C unstage -->
+
+      <bpmndi:BPMNShape id="Shape_Task_FixMandatory"
+                        bpmnElement="Task_FixMandatory">
+        <dc:Bounds x="780" y="40" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_UnstageW3C" bpmnElement="Task_UnstageW3C">
+        <dc:Bounds x="1350" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Below main flow — non-W3C waiver handling -->
+
+      <bpmndi:BPMNShape id="Shape_Gateway_WaiverExplicit"
+                        bpmnElement="Gateway_WaiverExplicit"
+                        isMarkerVisible="true">
+        <dc:Bounds x="780" y="385" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_FixNonW3C" bpmnElement="Task_FixNonW3C">
+        <dc:Bounds x="755" y="490" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_DocJustification"
+                        bpmnElement="Task_DocJustification">
+        <dc:Bounds x="880" y="385" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Edges ===== -->
+
+      <!-- Happy path -->
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_Start" bpmnElement="Flow_GC_Start">
+        <di:waypoint x="196" y="260" />
+        <di:waypoint x="230" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_ToCapture" bpmnElement="Flow_GC_ToCapture">
+        <di:waypoint x="330" y="260" />
+        <di:waypoint x="370" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_ToGate" bpmnElement="Flow_GC_ToGate">
+        <di:waypoint x="470" y="260" />
+        <di:waypoint x="520" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_ToResult" bpmnElement="Flow_GC_ToResult">
+        <di:waypoint x="620" y="260" />
+        <di:waypoint x="660" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_Pass" bpmnElement="Flow_GC_Pass">
+        <di:waypoint x="710" y="260" />
+        <di:waypoint x="1020" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_ToStageFiles"
+                       bpmnElement="Flow_GC_ToStageFiles">
+        <di:waypoint x="1070" y="260" />
+        <di:waypoint x="1100" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_ToValidate"
+                       bpmnElement="Flow_GC_ToValidate">
+        <di:waypoint x="1200" y="260" />
+        <di:waypoint x="1240" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_ToW3CCheck"
+                       bpmnElement="Flow_GC_ToW3CCheck">
+        <di:waypoint x="1340" y="260" />
+        <di:waypoint x="1380" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_NoW3C" bpmnElement="Flow_GC_NoW3C">
+        <di:waypoint x="1430" y="260" />
+        <di:waypoint x="1500" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_ToPostCommit"
+                       bpmnElement="Flow_GC_ToPostCommit">
+        <di:waypoint x="1600" y="260" />
+        <di:waypoint x="1640" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_ToEvidence"
+                       bpmnElement="Flow_GC_ToEvidence">
+        <di:waypoint x="1740" y="260" />
+        <di:waypoint x="1780" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_ToEnd" bpmnElement="Flow_GC_ToEnd">
+        <di:waypoint x="1880" y="260" />
+        <di:waypoint x="1920" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Mandatory regression fix loop (above) -->
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_MandatoryReg"
+                       bpmnElement="Flow_GC_MandatoryReg">
+        <di:waypoint x="685" y="235" />
+        <di:waypoint x="685" y="80" />
+        <di:waypoint x="780" y="80" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_FixMandatoryBack"
+                       bpmnElement="Flow_GC_FixMandatoryBack">
+        <di:waypoint x="880" y="80" />
+        <di:waypoint x="900" y="80" />
+        <di:waypoint x="900" y="10" />
+        <di:waypoint x="420" y="10" />
+        <di:waypoint x="420" y="220" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Non-W3C regression branch (below) -->
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_NonW3C" bpmnElement="Flow_GC_NonW3C">
+        <di:waypoint x="685" y="285" />
+        <di:waypoint x="685" y="410" />
+        <di:waypoint x="780" y="410" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_Waiver_No"
+                       bpmnElement="Flow_GC_Waiver_No">
+        <di:waypoint x="805" y="435" />
+        <di:waypoint x="805" y="490" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_Waiver_Yes"
+                       bpmnElement="Flow_GC_Waiver_Yes">
+        <di:waypoint x="830" y="410" />
+        <di:waypoint x="880" y="425" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_FixNonW3CBack"
+                       bpmnElement="Flow_GC_FixNonW3CBack">
+        <di:waypoint x="755" y="530" />
+        <di:waypoint x="420" y="530" />
+        <di:waypoint x="420" y="300" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_DocToMerge"
+                       bpmnElement="Flow_GC_DocToMerge">
+        <di:waypoint x="980" y="425" />
+        <di:waypoint x="1045" y="425" />
+        <di:waypoint x="1045" y="285" />
+      </bpmndi:BPMNEdge>
+
+      <!-- W3C unstage loop (above) -->
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_W3CYes" bpmnElement="Flow_GC_W3CYes">
+        <di:waypoint x="1405" y="235" />
+        <di:waypoint x="1405" y="160" />
+        <di:waypoint x="1400" y="160" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GC_UnstageBack"
+                       bpmnElement="Flow_GC_UnstageBack">
+        <di:waypoint x="1350" y="120" />
+        <di:waypoint x="1290" y="120" />
+        <di:waypoint x="1290" y="220" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

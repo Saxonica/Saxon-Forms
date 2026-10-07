@@ -1,0 +1,31 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_atomic-double": {
+      "valid_groups": [
+        "atomic-double-enumeration",
+        "atomic-double-enumeration-1",
+        "atomic-double-enumeration-2",
+        "atomic-double-enumeration-3",
+        "atomic-double-enumeration-4",
+        "atomic-double-pattern",
+        "atomic-double-pattern-1",
+        "atomic-double-pattern-2",
+        "atomic-double-pattern-3",
+        "atomic-double-pattern-4",
+        "atomic-double-whiteSpace",
+        "atomic-double-enumeration-5",
+        "atomic-double-enumeration-6",
+        "atomic-double-enumeration-7",
+        "atomic-double-enumeration-8",
+        "atomic-double-enumeration-9",
+        "atomic-double-pattern-5",
+        "atomic-double-pattern-6",
+        "atomic-double-pattern-7",
+        "atomic-double-pattern-8",
+        "atomic-double-pattern-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

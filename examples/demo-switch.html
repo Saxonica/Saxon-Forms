@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+   <head>
+       <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+       <title>Switch and toggle | XForms demo</title>
+       <link rel="stylesheet" href="css/style.css" type="text/css" />
+       <script src="../Saxon-JS/SaxonJS3.rt.js"></script>
+          
+     <!-- <script>
+      window.onload = function() {
+        SaxonJS.transform({
+           "stylesheetLocation":"../sef/saxon-xforms.sef.xml",
+           "sourceLocation":"xml/demo-input-select-output-xform.xml",
+        })
+      }     
+      </script>-->
+          
+       <script>
+            window.onload = function() {
+                SaxonJS.transform({
+                    "stylesheetLocation":"../sef/saxon-xforms.sef.json",
+                    "sourceLocation":"xml/demo-switch.xml",
+                }, "async")
+            }     
+      </script>
+   </head>
+
+   <body>
+       <h1 id="title">XForms demo: switch</h1>
+       
+       <div class="demo-description">
+           <p>This page demonstrates:</p>
+           <ul>
+               
+               <li><a href="https://www.w3.org/TR/xforms11/#ui-switch-module">Switch module</a> with <a href="https://www.w3.org/TR/xforms11/#action-toggle">toggle action</a></li>
+           </ul>
+       </div>
+      
+      <div id="xForm"></div>
+    
+
+   </body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "suite_id": "w3c-ch08",
+  "test_path": "tests/xforms/w3c/ch08.spec.ts",
+  "config_path": "playwright.config.ts",
+  "last_updated": "2026-08-25T14:58:06.890Z",
+  "stats": {
+    "total": 59,
+    "passed": 45,
+    "failed": 2,
+    "flaky": 0,
+    "skipped": 12
+  },
+  "allowed_failures": [
+    "W3C Ch8 — UI [behavioral] › 8.1.1.b — 8.1.1.b non-relevant form control becoming relevant",
+    "W3C Ch8 — UI [behavioral] › 8.1.6.2.a — 8.1.6.2.a mediatype element"
+  ]
+}

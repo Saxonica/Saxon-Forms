@@ -1,0 +1,36 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_atomic-QName": {
+      "valid_groups": [
+        "atomic-QName-enumeration",
+        "atomic-QName-enumeration-1",
+        "atomic-QName-enumeration-2",
+        "atomic-QName-enumeration-3",
+        "atomic-QName-enumeration-4",
+        "atomic-QName-length",
+        "atomic-QName-length-1",
+        "atomic-QName-length-2",
+        "atomic-QName-length-3",
+        "atomic-QName-length-4",
+        "atomic-QName-maxLength",
+        "atomic-QName-maxLength-1",
+        "atomic-QName-maxLength-2",
+        "atomic-QName-maxLength-3",
+        "atomic-QName-maxLength-4",
+        "atomic-QName-minLength",
+        "atomic-QName-minLength-1",
+        "atomic-QName-minLength-2",
+        "atomic-QName-minLength-3",
+        "atomic-QName-minLength-4",
+        "atomic-QName-pattern",
+        "atomic-QName-pattern-1",
+        "atomic-QName-pattern-2",
+        "atomic-QName-pattern-3",
+        "atomic-QName-pattern-4",
+        "atomic-QName-whiteSpace"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

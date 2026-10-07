@@ -18,7 +18,8 @@
     exclude-result-prefixes="xs math xforms"
     extension-element-prefixes="ixsl" version="3.0">
     
-    <xsl:variable name="xform-functions" select="'if','instance', 'index', 'avg', 'foo', 'current-date', 'random'"/>
+    <!-- TEST-TRACE: register XForms function names for impose() rewriting; helps ch07 -->
+    <xsl:variable name="xform-functions" select="'if','instance', 'index', 'avg', 'context', 'id', 'current-date', 'random', 'property', 'boolean-from-string', 'count-non-empty', 'power', 'choose', 'event', 'is-card-number', 'now', 'local-date', 'local-dateTime', 'days-from-date', 'days-to-date', 'seconds-from-dateTime', 'seconds-to-dateTime', 'seconds', 'months', 'adjust-dateTime-to-timezone', 'digest', 'hmac', 'min', 'max'"/>
     
     <xsl:function name="xforms:impose" as="xs:string" visibility="public">
         <xsl:param name="input" as="xs:string" />
@@ -50,25 +51,60 @@
         </xsl:variable>
         
         <xsl:variable name="input2" as="xs:string" select="string-join($parts)"/>
+        <!-- TEST-TRACE: normalize accidental prefix-corruption (fn:xforms:* / xforms:xforms:*) after local-name rewrite pass; helps tests/supplemental/issues.spec.ts "Issue #33". -->
+        <xsl:variable name="input2a" as="xs:string" select="replace($input2, '(\i\c*:)\s*xforms:(\i\c*)\(', '$1$2(')"/>
         
-        <!-- handle case where XPath starts "/" (i.e. root node of default instance) -->
-        <xsl:variable name="input3" as="xs:string">
+        <!-- 
+            Handle absolute XPaths like /rootElement/path anywhere in the expression.
+            XForms instances are element nodes (not document nodes), so SaxonJS
+            raises XPDY0050 when evaluating '/' against a non-document context.
+            Strip the root element step and replace with root(.) which always
+            navigates to the tree root regardless of the current context depth.
+            E.g. /car/price  →  root(.)/price
+                 0.024 * /car/price  →  0.024 * root(.)/price
+                 /order/item/amount > 1000  →  root(.)/item/amount > 1000
+            This is critical for bind MIP expressions (relevant, calculate, etc.)
+            where the evaluation context is the bound node, not the instance root.
+            The lookbehind matches start-of-string or XPath operators/whitespace
+            that can precede an absolute path, but NOT '/' (to avoid //elem).
+        -->
+        <xsl:variable name="input3" as="xs:string" select="
+            replace($input2a, '(^|[\s(*+,=&lt;&gt;\[\-])(/\i\c*)(/)','$1root(.)$3')"/>
+
+        
+        <!-- 
+            Handle XForms current() function.
+            Rewrite current() as an XPath 3.0 let-expression that captures the
+            outermost context item (.), so that $__xf_current stays stable even
+            inside predicates where . would change.
+            See https://www.w3.org/TR/xforms11/#fn-current
+            TEST-TRACE: keep current() inside quoted string literals untouched; helps tests/supplemental/issues.spec.ts "Issue #32 — current() literal handling".
+        -->
+        <xsl:variable name="input4-core" as="xs:string">
+            <xsl:variable name="parts2" as="xs:string*">
+                <xsl:analyze-string select="$input3" regex="'([^']|'')*'|&quot;([^&quot;]|&quot;&quot;)*&quot;">
+                    <xsl:matching-substring>
+                        <xsl:sequence select="."/>
+                    </xsl:matching-substring>
+                    <xsl:non-matching-substring>
+                        <xsl:sequence select="replace(., 'current\s*\(\s*\)', '\$__xf_current')"/>
+                    </xsl:non-matching-substring>
+                </xsl:analyze-string>
+            </xsl:variable>
+            <xsl:sequence select="string-join($parts2)"/>
+        </xsl:variable>
+        <xsl:variable name="input4" as="xs:string">
             <xsl:choose>
-                <xsl:when test="matches($input2,'^\s*/')">
-                    <xsl:sequence select="replace($input2, '^\s/[^/]+', '.')"/>
+                <xsl:when test="$input4-core ne $input3">
+                    <xsl:sequence select="'let $__xf_current := . return (' || $input4-core || ')' " />
                 </xsl:when>
-                <!-- TEST - can we remove instance() at start of expression? -->
-                <!--<xsl:when test="matches($input2,'^\s*xforms:instance\s*\(\s*''[^'']+''\s*\)')">
-                    <xsl:sequence select="replace($input2, '^\s*xforms:instance\s*\(\s*''[^'']+''\s*\)', '.')"/>
-                </xsl:when>-->
                 <xsl:otherwise>
-                    <xsl:sequence select="$input2"/>
+                    <xsl:sequence select="$input3"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
-
         
-        <xsl:sequence select="$input3" />
+        <xsl:sequence select="$input4" />
     </xsl:function>
     
     <xsl:function name="xforms:resolve-index" as="xs:string" visibility="public">
@@ -89,21 +125,16 @@
         <xsl:sequence select="string-join($parts)" />
     </xsl:function>
     
-    <xsl:function name="xforms:foo" as="xs:boolean" visibility="public">
-        <xsl:param name="num" as="xs:integer" />
-        
-        <xsl:sequence select="$num lt 5" />
-        
-    </xsl:function>
-    
-    <xsl:function name="xforms:index" as="xs:integer" visibility="public">
+    <!-- TEST-TRACE: return xs:integer for registered repeats (preserves XPath predicate
+         semantics) or xs:double(NaN) for non-existent repeats per XForms 1.1 §7.7.5;
+         helps tests/w3c/ch07.spec.ts "7.7.5.b" -->
+    <xsl:function name="xforms:index" as="xs:anyAtomicType" visibility="public">
         <xsl:param name="repeatID" as="xs:string" />
                 
-        <!-- call to js:getRepeatIndex doesn't work on first pass for some reason -->
+        <xsl:variable name="registered" as="xs:boolean" select="js:isRepeatRegistered($repeatID)"/>
         <xsl:variable name="repeat-index" as="xs:double?" select="js:getRepeatIndex($repeatID)"/>
                 
-        <!-- assign value '0' if $repeat-index does not exist -->
-        <xsl:sequence select="if (exists($repeat-index)) then xs:integer($repeat-index) else 0"/>
+        <xsl:sequence select="if ($registered) then xs:integer(($repeat-index, 0)[1]) else xs:double('NaN')"/>
         
     </xsl:function>
     
@@ -113,6 +144,14 @@
         
         <xsl:sequence select="$randomNumber"/>
         
+    </xsl:function>
+    
+    <!-- TEST-TRACE: 1-arg overload of random(seed); XForms 1.1 7.7.7;
+         helps tests/w3c/ch07.spec.ts "7.7.7.a" -->
+    <xsl:function name="xforms:random" as="xs:double" visibility="public">
+        <xsl:param name="seed" as="item()"/>
+        <!-- seed parameter is accepted but ignored; JS Math.random() is always seeded by implementation -->
+        <xsl:sequence select="js:Math.random()"/>
     </xsl:function>
     
     <!-- This is almost an implementation of xforms:local-date(), but not quite, since TZ is missing
@@ -128,6 +167,18 @@
     <xsl:function name="xforms:instance" as="element()?" visibility="public">
         <xsl:param name="instance-id" as="xs:string"/>
         <xsl:sequence select="js:getInstance($instance-id)"/> 
+    </xsl:function>
+    
+    <!-- TEST-TRACE: 0-arg overload of instance(); XForms 1.1 7.10.1 says
+         instance() with no argument returns the default instance;
+         helps tests/w3c/ch07.spec.ts "7.10.1.a" -->
+    <xsl:function name="xforms:instance" as="element()?" visibility="public">
+        <xsl:sequence select="js:getDefaultInstance()"/>
+    </xsl:function>
+    
+    <!-- implement XForms context() function -->
+    <xsl:function name="xforms:context" as="item()*" visibility="public">
+        <xsl:sequence select="."/>
     </xsl:function>
     
     <xd:doc scope="component">
@@ -146,6 +197,113 @@
             </xsl:when>
             <xsl:otherwise>
                 <xsl:sequence select="$result-if-false"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+    
+    <!-- TEST-TRACE: XForms-compliant id() that recognizes xsi:type="xsd:ID";
+         standard XPath id() only uses DTD/schema IDs; XForms 1.1 §7.10.3
+         requires recognizing xsi:type annotations;
+         helps tests/w3c/ch07.spec.ts "7.10.3.c" -->
+    <xsl:function name="xforms:id" as="node()*" visibility="public">
+        <xsl:param name="arg" as="item()*"/>
+        <xsl:variable name="scope-node" as="node()?">
+            <xsl:try>
+                <xsl:sequence select="root(.)"/>
+                <xsl:catch>
+                    <xsl:sequence select="js:getDefaultInstance()"/>
+                </xsl:catch>
+            </xsl:try>
+        </xsl:variable>
+        <xsl:sequence select="xforms:id($arg, $scope-node)"/>
+    </xsl:function>
+    
+    <xsl:function name="xforms:id" as="node()*" visibility="public">
+        <xsl:param name="arg" as="item()*"/>
+        <xsl:param name="node" as="node()?"/>
+        
+        <xsl:variable name="id-values" as="xs:string*" select="
+            tokenize(
+                normalize-space(
+                    string-join(
+                        for $v in $arg return normalize-space(string($v)),
+                        ' '
+                    )
+                ),
+                '\s+'
+            )[. ne '']"/>
+        <xsl:variable name="scope-node" as="node()?">
+            <xsl:choose>
+                <xsl:when test="exists($node)">
+                    <xsl:sequence select="$node"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:try>
+                        <xsl:sequence select="root(.)"/>
+                        <xsl:catch>
+                            <xsl:sequence select="js:getDefaultInstance()"/>
+                        </xsl:catch>
+                    </xsl:try>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="scope-elements" as="element()*" select="
+            if (exists($scope-node))
+            then (
+                if ($scope-node instance of element())
+                then ($scope-node | $scope-node//*)
+                else $scope-node//*
+            )
+            else ()"/>
+        <xsl:variable name="standard-id" as="node()*" select="
+            if (exists($scope-node))
+            then fn:id(string-join($id-values,' '), $scope-node)
+            else ()"/>
+        <xsl:variable name="xml-id" as="node()*" select="
+            for $id in $id-values
+            return $scope-elements[@xml:id = $id]"/>
+        <xsl:variable name="xsi-typed-id" as="node()*" select="
+            for $id in $id-values
+            return $scope-elements[
+                @*[local-name() = 'type' and namespace-uri() = ('http://www.w3.org/2001/XMLSchema-instance','http://www.w3.org/XMLSchema-instance')]
+                [matches(normalize-space(string(.)), '(^|:)?ID$')]
+            ][normalize-space(string(.)) = $id]"/>
+        
+        <xsl:sequence select="$standard-id | $xml-id | $xsi-typed-id"/>
+    </xsl:function>
+    
+    <!-- TEST-TRACE: XForms-compliant min() wrapper; returns NaN for non-numeric
+         or empty nodesets instead of throwing XPath 3.1 type errors;
+         helps tests/w3c/ch07.spec.ts "7.7.2.b" -->
+    <xsl:function name="xforms:min" as="xs:anyAtomicType" visibility="public">
+        <xsl:param name="arg" as="item()*"/>
+        <xsl:choose>
+            <xsl:when test="empty($arg)">
+                <xsl:sequence select="xs:double('NaN')"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:try>
+                    <xsl:sequence select="fn:min($arg)"/>
+                    <xsl:catch><xsl:sequence select="xs:double('NaN')"/></xsl:catch>
+                </xsl:try>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+    
+    <!-- TEST-TRACE: XForms-compliant max() wrapper; returns NaN for non-numeric
+         or empty nodesets instead of throwing XPath 3.1 type errors;
+         helps tests/w3c/ch07.spec.ts "7.7.3.b" -->
+    <xsl:function name="xforms:max" as="xs:anyAtomicType" visibility="public">
+        <xsl:param name="arg" as="item()*"/>
+        <xsl:choose>
+            <xsl:when test="empty($arg)">
+                <xsl:sequence select="xs:double('NaN')"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:try>
+                    <xsl:sequence select="fn:max($arg)"/>
+                    <xsl:catch><xsl:sequence select="xs:double('NaN')"/></xsl:catch>
+                </xsl:try>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:function>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Saxon-Forms XHTML sourceNode Harness</title>
+    <script src="/lib/SaxonJS3.rt.js"></script>
+    <script>
+      window.addEventListener("DOMContentLoaded", function () {
+        fetch("/xforms/test-xhtml.xhtml")
+          .then(function (r) {
+            return r.text();
+          })
+          .then(function (xhtmlText) {
+            var parser = new DOMParser();
+            var xhtmlDoc = parser.parseFromString(xhtmlText, "application/xml");
+            var parseError = xhtmlDoc.querySelector("parsererror");
+            if (parseError) {
+              document.getElementById("xForm").textContent =
+                "XML parse error: " + parseError.textContent;
+              return;
+            }
+
+            SaxonJS.transform(
+              {
+                stylesheetLocation: "/sef/saxon-xforms.sef.json",
+                sourceNode: xhtmlDoc,
+              },
+              "async"
+            );
+          })
+          .catch(function (error) {
+            document.getElementById("xForm").textContent =
+              "Error loading XHTML source: " + error;
+          });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>XHTML sourceNode harness</h1>
+    <div id="xForm"></div>
+  </body>
+</html>

@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <xf:model id="schema-model">
+        <xf:instance id="purchase">
+            <purchase>
+                <orderId>ORD-1024</orderId>
+                <email>alice@example.com</email>
+                <orderDate>2026-05-20</orderDate>
+                <quantity>4</quantity>
+                <unitPrice>19.95</unitPrice>
+                <discountCode>SAVE10</discountCode>
+                <expedite>false</expedite>
+                <deliveryWindow>P2D</deliveryWindow>
+                <tags>priority wholesale</tags>
+                <status>pending</status>
+            </purchase>
+        </xf:instance>
+        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <xs:simpleType name="OrderIdType">
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[A-Z]{3}-[0-9]{4}" />
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="EmailType">
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[^@\s]+@[^@\s]+\.[A-Za-z]{2,}" />
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="QuantityType">
+                <xs:restriction base="xs:int">
+                    <xs:minInclusive value="1" />
+                    <xs:maxInclusive value="500" />
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="MoneyType">
+                <xs:restriction base="xs:decimal">
+                    <xs:minInclusive value="0.00" />
+                    <xs:fractionDigits value="2" />
+                    <xs:totalDigits value="8" />
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="DiscountCodeType">
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="|[A-Z0-9]{4,10}" />
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="DeliveryWindowType">
+                <xs:restriction base="xs:duration">
+                    <xs:minInclusive value="PT12H" />
+                    <xs:maxInclusive value="P7D" />
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="StatusType">
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="pending" />
+                    <xs:enumeration value="confirmed" />
+                    <xs:enumeration value="shipped" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:schema>
+        <xf:bind nodeset="instance('purchase')/orderId" type="OrderIdType" required="true()" />
+        <xf:bind nodeset="instance('purchase')/email" type="EmailType" required="true()" />
+        <xf:bind nodeset="instance('purchase')/orderDate" type="xs:date" required="true()" />
+        <xf:bind nodeset="instance('purchase')/quantity" type="QuantityType" required="true()" />
+        <xf:bind nodeset="instance('purchase')/unitPrice" type="MoneyType" required="true()" />
+        <xf:bind nodeset="instance('purchase')/discountCode" type="DiscountCodeType" />
+        <xf:bind nodeset="instance('purchase')/expedite" type="xs:boolean" />
+        <xf:bind nodeset="instance('purchase')/deliveryWindow" type="DeliveryWindowType"
+            required="true()" />
+        <xf:bind nodeset="instance('purchase')/tags" type="xs:NMTOKENS" required="true()"
+            constraint="count(tokenize(normalize-space(.), '\s+')) ge 2" />
+        <xf:bind nodeset="instance('purchase')/status" type="StatusType" required="true()" />
+        <xf:submission id="submit-purchase"
+            ref="instance('purchase')"
+            mediatype="application/xml"
+            method="post"
+            resource="/api/purchase" />
+    </xf:model>
+    <p>Fields are validated through schema-aware types and bind constraints.</p>
+    <xf:input ref="instance('purchase')/orderId">
+        <xf:label>Order ID:</xf:label>
+        <xf:hint>Pattern: AAA-1234</xf:hint>
+    </xf:input>
+    <br />
+    <xf:input ref="instance('purchase')/email">
+        <xf:label>Email:</xf:label>
+        <xf:hint>Must look like a valid email address.</xf:hint>
+    </xf:input>
+    <br />
+    <xf:input ref="instance('purchase')/orderDate">
+        <xf:label>Order Date:</xf:label>
+        <xf:hint>Type: xs:date</xf:hint>
+    </xf:input>
+    <br />
+    <xf:input ref="instance('purchase')/quantity">
+        <xf:label>Quantity:</xf:label>
+        <xf:hint>1 to 500</xf:hint>
+    </xf:input>
+    <br />
+    <xf:input ref="instance('purchase')/unitPrice">
+        <xf:label>Unit Price:</xf:label>
+        <xf:hint>Decimal with exactly 2 fraction digits.</xf:hint>
+    </xf:input>
+    <br />
+    <xf:input ref="instance('purchase')/discountCode">
+        <xf:label>Discount Code:</xf:label>
+        <xf:hint>Optional; uppercase letters/numbers, 4-10 chars.</xf:hint>
+    </xf:input>
+    <br />
+    <xf:select1 ref="instance('purchase')/expedite">
+        <xf:label>Expedite Shipping:</xf:label>
+        <xf:item>
+            <xf:label>false</xf:label>
+            <xf:value>false</xf:value>
+        </xf:item>
+        <xf:item>
+            <xf:label>true</xf:label>
+            <xf:value>true</xf:value>
+        </xf:item>
+    </xf:select1>
+    <br />
+    <xf:input ref="instance('purchase')/deliveryWindow">
+        <xf:label>Delivery Window:</xf:label>
+        <xf:hint>Duration between PT12H and P7D (for example P2D).</xf:hint>
+    </xf:input>
+    <br />
+    <xf:input ref="instance('purchase')/tags">
+        <xf:label>Tags:</xf:label>
+        <xf:hint>Space-separated NMTOKENS, at least 2 values.</xf:hint>
+    </xf:input>
+    <br />
+    <xf:select1 ref="instance('purchase')/status" appearance="minimal">
+        <xf:label>Status:</xf:label>
+        <xf:item>
+            <xf:label>pending</xf:label>
+            <xf:value>pending</xf:value>
+        </xf:item>
+        <xf:item>
+            <xf:label>confirmed</xf:label>
+            <xf:value>confirmed</xf:value>
+        </xf:item>
+        <xf:item>
+            <xf:label>shipped</xf:label>
+            <xf:value>shipped</xf:value>
+        </xf:item>
+    </xf:select1>
+    <br />
+    <xf:submit submission="submit-purchase">
+        <xf:label>Submit Purchase</xf:label>
+    </xf:submit>
+</xf:xform>

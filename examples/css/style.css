@@ -1,0 +1,552 @@
+.demo-description {
+    border-bottom: 1px solid;
+}
+
+.xforms-spec-link {
+    background-color: #f2f2f2;
+    font-family: Courier, sans-serif;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+
+.block {
+    display:block;
+}
+
+.repeat {
+    margin-left: 1em;
+}
+
+span.selected {
+    background-color: #e4eef0;
+}
+
+
+.message-error {
+    background-color: #ffcccc;
+    border: 2px solid #ff0000;
+    color: #000000;   
+    padding: 0.5em;
+}
+
+.message-warning {
+    background-color: #ffe0b3;
+    border: 2px solid #cc7a00;
+    color: #000000;   
+    padding: 0.5em;
+}
+.message-info {
+    background-color: #ccffcc;
+    color: #000000;   
+    padding: 0.5em;
+}
+
+/* XForms validation feedback */
+.xforms-input.xforms-invalid input,
+.xforms-select.xforms-invalid select,
+.xforms-textarea.xforms-invalid textarea,
+input.xforms-invalid,
+select.xforms-invalid,
+textarea.xforms-invalid {
+    border: 2px solid #96433D;
+    background-color: #fff2f2;
+}
+
+/*
+  Only surface the textual invalid message for the control the user is
+  actually interacting with (focused or hovered). Model-wide revalidation
+  marks every invalid control on each change; without this scoping the page
+  would show the message on all invalid fields at once. The hint is rendered
+  by the engine as the field's title (tooltip), so the message points there.
+*/
+.xforms-input.xforms-invalid:focus-within::after,
+.xforms-input.xforms-invalid:hover::after,
+.xforms-select.xforms-invalid:focus-within::after,
+.xforms-select.xforms-invalid:hover::after,
+.xforms-textarea.xforms-invalid:focus-within::after,
+.xforms-textarea.xforms-invalid:hover::after {
+    content: "Invalid value \2014 hover this field to read its hint.";
+    display: block;
+    margin-top: 0.2em;
+    font-size: 8pt;
+    font-weight: bold;
+    color: #96433D;
+}
+
+.xforms-input.xforms-valid input,
+.xforms-select.xforms-valid select,
+.xforms-textarea.xforms-valid textarea,
+input.xforms-valid,
+select.xforms-valid,
+textarea.xforms-valid {
+    border: 2px solid #2e7d32;
+    background-color: #f1fff1;
+}
+
+.xforms-input.xforms-required label::after,
+.xforms-select.xforms-required label::after,
+.xforms-textarea.xforms-required label::after {
+    content: " *";
+    color: #96433D;
+    font-weight: bold;
+}
+
+/* 
+Text blue: #3D5B96
+Dark blue: #c1cede
+Mid blue: #e4eef0 
+Light blue: #f6fffb
+mid green #B1CCC7
+rust #96433D
+*/
+
+
+
+/* used for frameset holders */
+.bgnd {
+	margin-top:0;
+	margin-left:0;
+	background: #f6fffb;
+	}
+
+/* used for menu */
+
+.menu {
+	background: #f6fffb;
+	margin-top:20;
+	margin-left:40;
+	SCROLLBAR-FACE-COLOR: #c1cede; 
+	SCROLLBAR-HIGHLIGHT-COLOR: #e4eef0; 
+	SCROLLBAR-SHADOW-COLOR: #e4eef0; 
+	SCROLLBAR-ARROW-COLOR: #f6fffb; 
+	SCROLLBAR-BASE-COLOR: #e4eef0;
+}
+
+/* used for content pages */
+
+.main {
+	background: #e4eef0;
+	margin-top:10px;
+	margin-left:5px;
+	margin-right:5px;
+	margin-bottom:20px;
+	SCROLLBAR-FACE-COLOR: #c1cede; 
+	SCROLLBAR-HIGHLIGHT-COLOR: #e4eef0; 
+	SCROLLBAR-SHADOW-COLOR: #e4eef0; 
+	SCROLLBAR-ARROW-COLOR: #f6fffb; 
+	SCROLLBAR-BASE-COLOR: #e4eef0;
+}
+
+/* used for menu links */
+/* a {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	font-style:normal;
+	color: #3D5B96;
+	font-weight: normal;
+	text-decoration: none;
+}*/
+
+a {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	font-style:normal;
+	color: #3D5B96;
+	font-weight: normal;
+	text-decoration: underline;
+}
+
+/* used for in body links */
+
+a.bodylink {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	font-style:normal;
+	color: #3D5B96;
+	font-weight: normal;
+	text-decoration: underline;
+}
+
+/* used for table of contents level 1 */
+/*
+a.toc1 {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12pt;
+	font-style:normal;
+	color: #3D5B96;
+	font-weight: bold;
+	text-decoration: none;
+}*/
+
+/* used for table of contents level 2 */
+
+a.toc2 {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+	font-style:normal;
+	color: #3D5B96;
+	font-weight: normal;
+	text-decoration: none;
+}
+
+/* used for menu heading */
+.title {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+	font-style:normal;
+	color: #3D5B96;
+	font-weight: bold;
+	text-decoration: none;
+	line-height: 1.3em;
+}
+
+/* used for main page headings */
+
+h1, h2, h3 {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-style: normal;
+	color: #3D5B96;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+
+h1 {
+	font-size: 14pt;
+}
+		
+h2 {
+	font-size: 11pt;
+	border-bottom : thin dashed #3D5B96;
+	padding-right : 5px;
+}
+
+
+h3 {
+	font-size: 10pt;
+}
+
+/* used for subheads in pref. to H2 etc, to limit underlining width */
+
+.subhead {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+	font-style: normal;
+	color: #3D5B96;
+	font-weight: bold;
+	text-decoration: none;
+	border-bottom : thin dashed #3D5B96;
+	padding-right : 5px;
+}
+
+/* used for standard text */
+
+p, div {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	font-style: normal;
+	color: #3D5B96;
+	font-weight: normal;
+	text-decoration: none;
+	line-height: 1.3em;
+	padding-right:15px;
+}
+
+code {
+		font-family: lucida sans typewriter, courier, monospace;
+	font-size: 8pt;
+	font-style: normal;
+	font-weight: normal;
+	text-decoration: none;
+	line-height: 1.3em;
+}
+
+ul {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	font-style: normal;
+	color: #3D5B96;
+	font-weight: normal;
+	text-decoration: none;
+}
+
+li {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	font-style: normal;
+	color: #3D5B96;
+	font-weight: normal;
+
+}
+
+th {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	font-style: normal;
+	color: #3D5B96;
+	font-weight: bold;
+	text-decoration: none;
+	line-height: 1.3em;
+	padding-left: 15px;
+	text-indent: -15px;
+	padding-right: 15px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+td {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 9pt;
+	font-style: normal;
+	color: #3D5B96;
+	font-weight: normal;
+	text-decoration: none;
+	line-height: 1.3em;
+	padding-left: 15px;
+	text-indent: -15px;
+	padding-right: 15px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+/* used for text in boxed areas */
+
+.boxed {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	font-style: normal;
+	color: #96433D;
+	font-weight: bold;
+	text-decoration: none;
+	margin-top:5px;
+	margin-bottom:5px;
+	background:#F5F5F5;
+}
+
+/* used for example code */
+
+.codeblock {
+    background: #B1CCC7;
+    /*background: #e4eef0;*/
+	font-family: lucida sans typewriter, courier, monospace;
+	font-size: 8pt;	
+	font-style: normal;
+	color: #96433D;
+	font-weight: normal;
+	text-decoration: none;
+	padding-right:15px;
+}
+
+/* used for example commands */
+
+.command {
+	font-size: 8pt;	
+	font-style: normal;
+	color: #96433D;
+	font-weight: bold;
+	text-decoration: none;
+	padding-right:15px;
+}
+
+
+
+/* used for links in boxed areas */
+
+a.rust {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	font-style:normal;
+	color: #96433D;
+	font-weight: bold;
+	text-decoration: underline;
+}
+
+/* used for links at the end of a page */
+
+a.nav {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 8pt;
+	font-style:normal;
+	color: #96433D;
+	font-weight: bold;
+}
+
+/* JS unit test index table */
+
+table.index tr.sectionTitle {
+	background: #e4eef0;
+}
+
+table.index tr.sectionEnd {
+    height: 15px;
+}
+
+table.index tr:hover {
+    background-color: #f5f5f5
+}
+
+table.index th, table.index td {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-style: normal;
+	color: #3D5B96;
+	font-weight: normal;
+	text-decoration: none;
+	line-height: 1.3em;
+	padding-left: 15px;
+	text-indent: 0px;
+	padding-right: 15px;
+}
+
+table.index tr.sectionTitle td {
+	font-size: 10pt;
+	font-weight: bold;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+table.index tr.sectionTitle:hover {
+    background-color: #e4eef0
+}
+
+table.index th {
+	font-size: 12pt;
+	font-weight: bold;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+table.index td {
+	font-size: 9pt;
+	padding-top: 1px;
+	padding-bottom: 1px;
+}
+
+/* used for text in box areas */
+
+.box {
+    padding:10px;
+	background:#F5F5F5;
+}
+
+span.link {
+    cursor: pointer;
+}
+
+div.target {
+   padding: 10px;
+   background-color: #f5f5f5;
+   border: 2px solid #c1cede;
+   margin: 10px;
+}
+
+.native-fiddle-page {
+    background: #f6fffb;
+}
+
+.native-fiddle-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.native-fiddle-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid #c1cede;
+    background: #e4eef0;
+}
+
+.native-fiddle-toolbar .xforms-trigger {
+    min-width: 140px;
+}
+
+.native-fiddle-toolbar button.xforms-trigger {
+    border: 1px solid #3D5B96;
+    background: #f6fffb;
+    color: #3D5B96;
+    font-size: 9pt;
+    font-weight: bold;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.native-fiddle-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+}
+
+.native-fiddle-pane {
+    border: 1px solid #c1cede;
+    background: #e4eef0;
+    padding: 8px;
+}
+
+.native-fiddle-pane h2 {
+    margin-top: 0;
+}
+
+#native-fiddle-source-panel .xforms-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 420px;
+    resize: vertical;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.native-fiddle-render-target {
+    display: block;
+    width: 100%;
+    min-height: 420px;
+    max-height: 640px;
+    overflow: auto;
+    border: 1px solid #c1cede;
+    background: #ffffff;
+    padding: 10px;
+}
+
+.native-fiddle-console-pane {
+    border: 1px solid #c1cede;
+    background: #e4eef0;
+    padding: 8px;
+}
+
+.native-fiddle-console-pane h2 {
+    margin-top: 0;
+}
+
+.native-fiddle-console {
+    margin: 0;
+    min-height: 120px;
+    max-height: 220px;
+    overflow: auto;
+    border: 1px solid #c1cede;
+    background: #f6fffb;
+    padding: 8px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.native-fiddle-console-line {
+    padding-right: 0;
+}
+
+.native-fiddle-console-info {
+    color: #2f4f88;
+}
+
+.native-fiddle-console-error {
+    color: #96433D;
+}
+
+@media (max-width: 1100px) {
+    .native-fiddle-grid {
+        grid-template-columns: 1fr;
+    }
+}

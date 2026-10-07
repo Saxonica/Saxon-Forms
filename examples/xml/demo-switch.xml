@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform 
+    xmlns:xf="http://www.w3.org/2002/xforms" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    >
+ 
+    <xf:model>
+        <xf:instance id="hello">
+            <demo:data xmlns:demo="urn:saxon-xforms:demo">
+                <demo:PersonGivenName>Mark</demo:PersonGivenName>
+            </demo:data>
+        </xf:instance>
+        
+       
+    </xf:model>
+    
+
+    <xf:switch>
+        <xf:case id="in" selected="true">
+            <xf:input ref="instance('hello')/demo:PersonGivenName">
+                <xf:label>Toggle demo: please tell me your name</xf:label>
+            </xf:input>
+            <xf:trigger id="submitButton">
+                <xf:label>Submit</xf:label>
+                <xf:toggle ev:event="DOMActivate" case="out"/>
+            </xf:trigger>
+        </xf:case>
+        <xf:case id="out" selected="false">
+            <p>Toggle demo: hello <xf:output ref="instance('hello')/demo:PersonGivenName" />
+                <xf:trigger id="editButton">
+                    <xf:label>Edit</xf:label>
+                    <xf:toggle ev:event="DOMActivate" case="in"/>
+                </xf:trigger>
+            </p>
+        </xf:case>
+    </xf:switch>
+    
+</xf:xform>

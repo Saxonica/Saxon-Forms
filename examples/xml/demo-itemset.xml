@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:demo="urn:saxon-xforms:demo">
+    <xf:model id="itemset-model">
+        <xf:instance id="selection">
+            <demo:selection>
+                <demo:favouriteFruit>banana</demo:favouriteFruit>
+                <demo:snackChoices>apple carrot</demo:snackChoices>
+            </demo:selection>
+        </xf:instance>
+        <xf:instance id="options">
+            <demo:options>
+                <demo:option code="apple" label="Apple" />
+                <demo:option code="banana" label="Banana" />
+                <demo:option code="carrot" label="Carrot" />
+                <demo:option code="dates" label="Dates" />
+            </demo:options>
+        </xf:instance>
+    </xf:model>
+
+    <xf:select1 ref="instance('selection')/demo:favouriteFruit" appearance="minimal">
+        <xf:label>Favorite fruit:</xf:label>
+        <xf:itemset ref="instance('options')/demo:option">
+            <xf:label ref="@label" />
+            <xf:value ref="@code" />
+        </xf:itemset>
+    </xf:select1>
+
+    <xf:select ref="instance('selection')/demo:snackChoices">
+        <xf:label>Snack choices (multi-select):</xf:label>
+        <xf:itemset ref="instance('options')/demo:option">
+            <xf:label ref="@label" />
+            <xf:value ref="@code" />
+        </xf:itemset>
+    </xf:select>
+
+    <xf:output value="concat('Favorite: ', instance('selection')/demo:favouriteFruit)" class="block demo-output" />
+    <xf:output value="concat('Snacks: ', instance('selection')/demo:snackChoices)" class="block demo-output" />
+</xf:xform>

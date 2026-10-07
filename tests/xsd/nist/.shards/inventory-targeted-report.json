@@ -1,0 +1,13 @@
+{
+  "source_manifest": "C:\\Users\\John\\Documents\\GitHub\\Saxon-Forms-fork\\tests\\w3c\\nist-simpletype-facets.manifest.json",
+  "total_families": 4,
+  "failing_families": [
+    {
+      "family": "list-QName",
+      "summary": "[summary] total=246 passed=245 failed=1 skipped=41",
+      "fail_samples": [
+        "[fail] kind=instance name=NISTXML-SV-IV-list-QName-pattern-2-3 expected=valid actual=invalid"
+      ]
+    }
+  ]
+}

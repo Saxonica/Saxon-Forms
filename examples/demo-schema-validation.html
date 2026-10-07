@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+      <title>Demo of schema validation in XForms</title>
+      <link rel="stylesheet" href="css/style.css" type="text/css" />
+      <script src="../Saxon-JS/SaxonJS3.rt.js"></script>
+
+      <script>
+      window.onload = function() {
+        SaxonJS.transform({
+           "stylesheetLocation":"../sef/saxon-xforms.sef.json",
+           "sourceLocation":"xml/demo-schema-validation.xml",
+           "stylesheetParams": {"xforms-file":"xml/demo-schema-validation.xml"}
+           })
+      }
+      </script>
+   </head>
+
+   <body>
+      <h1 id="title">Schema validation demo (inline XSD)</h1>
+      <div>
+         <p>This form embeds an <code>xs:schema</code> in the XForms document and validates typed fields through Saxon-Forms.</p>
+         <p>Try invalid values (for example, <code>orderId</code> not matching <code>AAA-1234</code>, or a non-date in <code>orderDate</code>) and submit.</p>
+      </div>
+      <div id="xForm"></div>
+   </body>
+</html>

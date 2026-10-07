@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xmlns="http://docbook.org/ns/docbook" id="chapter-introduction" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <title>Introduction to SaxonForms</title>
+    <para>SaxonForms implements XForms behavior using Interactive XSLT 3.0 and SaxonJS. This guide
+        maps the XForms 1.1 specification to concrete runtime structures in the SaxonForms so
+        developers can understand behavior, locate implementation points, and validate conformance
+        incrementally.</para>
+
+    <section id="chapter-introduction-overview">
+        <title>Overview and scope</title>
+        <para>SaxonForms is an implementation of XForms built with Interactive XSLT 3.0 and SaxonJS. It runs in the browser and is authored primarily in XSLT, using SaxonJS extension mechanisms for event handling and DOM updates.</para>
+        <para>The project started from a practical need: rewriting Saxonica&apos;s internal
+            license-management application so more processing could move into XSLT and into the
+            browser, with less Java-specific application code.</para>
+        <para>A key design goal is integration with application logic. For example, the form
+            pipeline can be combined with custom XSLT logic to parse incoming order text, populate
+            instance data, apply business rules during edits, and handle submission responses
+            in-application.</para>
+        <para>Historical context and implementation details are discussed in the presentation at
+                <ulink url="https://www.youtube.com/watch?v=GWvl7EhsocI"
+                >https://www.youtube.com/watch?v=GWvl7EhsocI</ulink>. </para>
+
+        <section id="chapter-introduction-scope">
+            <title>Guide structure</title>
+            <para>The guide follows the XForms 1.1 specification structure, while focusing on how SaxonForms currently implements those features:</para>
+            <itemizedlist>
+                <listitem><para><emphasis>SaxonForms and SaxonJS</emphasis> — Runtime boundaries and Interactive XSLT integration points.</para></listitem>
+                <listitem><para><emphasis>Processing Model</emphasis> — Initialization, event flow, and update cycle
+                        behavior.</para></listitem>
+                <listitem><para><emphasis>Data Types and MIPs</emphasis>  — XSD support and model item property
+                        handling.</para></listitem>
+                <listitem><para><emphasis>XPath and Controls</emphasis> — Expression handling and control-to-HTML
+                        rendering.</para></listitem>
+                <listitem><para><emphasis>Actions and Submission</emphasis>  — Action execution and HTTP submission
+                        mechanisms.</para></listitem>
+                <listitem><para><emphasis>Additional Topics</emphasis> — Reusable components, accessibility, BPMN workflows, XSLT API reference.</para></listitem>
+            </itemizedlist>
+        </section>
+    </section>
+
+    <section id="chapter-introduction-use-cases">
+        <title>Primary use-cases</title>
+        <para>Four primary actor roles interact with SaxonForms:</para>
+        <itemizedlist>
+            <listitem><para><emphasis>Form Author</emphasis> — Writes XForms markup using standard controls and XPath bindings. Relies on correct rendering and function evaluation.</para></listitem>
+            <listitem><para><emphasis>Application Developer</emphasis> — Integrates SaxonForms into web applications, using actions (insert, delete, toggle, script, load), submission, and file upload.</para></listitem>
+            <listitem><para><emphasis>End User</emphasis> — Interacts with rendered forms, triggering lifecycle events and control updates through the DOM event bridge.</para></listitem>
+            <listitem><para><emphasis>QA Engineer</emphasis> — Validates conformance using the W3C Playwright test suite
+                        (<literal>e.g. tests/xforms/w3c/ch02–ch11, appendix</literal>) and
+                    regression gate.</para></listitem>
+        </itemizedlist>
+    </section>
+
+    <section id="chapter-introduction-terminology">
+        <title>Terminology and conventions</title>
+        <para>The following terms are used consistently throughout this guide:</para>
+        <variablelist>
+            <varlistentry><term>SaxonJS</term><listitem><para>The Saxonica Interactive XSLT 3.0 engine for the browser. Provides the <literal>ixsl:*</literal> extension functions for DOM access, event handling, and JavaScript interop.</para></listitem></varlistentry>
+            <varlistentry><term>SEF</term><listitem><para>Stylesheet Export File — a compiled XSLT representation that SaxonJS loads and executes. Built from <literal>saxon-xforms.xsl</literal> via <literal>xslt3</literal> compiler.</para></listitem></varlistentry>
+            <varlistentry><term>Interactive XSLT</term><listitem><para>A SaxonJS execution mode where XSLT templates respond to DOM events (e.g., <literal>ixsl:onclick</literal>, <literal>ixsl:onchange</literal>) and modify the page in place.</para></listitem></varlistentry>
+            <varlistentry><term>Instance</term><listitem><para>An XML document bound to an <literal>xforms:model</literal> that stores form data. Identified by <literal>@id</literal> and accessed via <literal>xforms:instance()</literal>.</para></listitem></varlistentry>
+            <varlistentry><term>Bind</term><listitem><para>An <literal>xforms:bind</literal> element associating an XPath nodeset with model item properties (MIPs).</para></listitem></varlistentry>
+            <varlistentry><term>MIP</term><listitem><para>Model Item Property — attributes on <literal>xforms:bind</literal> that control node behavior: <literal>readonly</literal>, <literal>relevant</literal>, <literal>required</literal>, <literal>constraint</literal>, <literal>calculate</literal>, <literal>type</literal>.</para></listitem></varlistentry>
+            <varlistentry><term>Deferred update cycle</term><listitem><para>The sequence <literal>recalculate → revalidate → refresh</literal> that runs after user interactions or action execution.</para></listitem></varlistentry>
+            <varlistentry><term>Action map</term><listitem><para>An in-memory <literal>map(*)</literal> built by the <literal>set-action</literal> mode template in <literal>src/saxon-xforms.xsl</literal> that stores parsed action metadata for runtime dispatch.</para></listitem></varlistentry>
+        </variablelist>
+        <para>Implementation hook references in this guide use symbol names plus source files (for example, <literal>xformsjs-main</literal> in <literal>src/saxon-xforms.xsl</literal>) unless a different file is specified.</para>
+    </section>
+</chapter>

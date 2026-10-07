@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:demo="urn:saxon-xforms:demo">
+    <xf:model id="sample2-model">
+        <xf:instance id="sample2-data">
+            <demo:data>
+                <demo:title>Sample 2 title</demo:title>
+                <demo:notes>Loaded via stylesheet-driven SEF</demo:notes>
+            </demo:data>
+        </xf:instance>
+    </xf:model>
+
+    <xf:input ref="instance('sample2-data')/demo:title">
+        <xf:label>Title:</xf:label>
+    </xf:input>
+
+    <xf:textarea ref="instance('sample2-data')/demo:notes">
+        <xf:label>Notes:</xf:label>
+    </xf:textarea>
+
+    <xf:output value="concat('Summary: ', instance('sample2-data')/demo:title, ' / ', instance('sample2-data')/demo:notes)" class="block demo-output"/>
+</xf:xform>

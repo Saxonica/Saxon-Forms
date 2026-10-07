@@ -1,0 +1,20 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_atomic-boolean": {
+      "valid_groups": [
+        "atomic-boolean-pattern",
+        "atomic-boolean-pattern-1",
+        "atomic-boolean-pattern-2",
+        "atomic-boolean-pattern-3",
+        "atomic-boolean-pattern-4",
+        "atomic-boolean-whiteSpace",
+        "atomic-boolean-whiteSpace-1",
+        "atomic-boolean-whiteSpace-2",
+        "atomic-boolean-whiteSpace-3",
+        "atomic-boolean-whiteSpace-4"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

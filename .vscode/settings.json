@@ -1,0 +1,7 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "npx playwright": true,
+        "npx tsx": true
+    },
+    "sarif-viewer.connectToGithubCodeScanning": "off"
+}

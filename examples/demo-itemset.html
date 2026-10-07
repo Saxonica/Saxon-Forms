@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Shared itemset options (single + multi select) | XForms demo</title>
+  <link rel="stylesheet" href="css/style.css" type="text/css" />
+  <script src="../Saxon-JS/SaxonJS3.rt.js"></script>
+  <script>
+    window.onload = function () {
+      SaxonJS.transform({
+        "stylesheetLocation": "../sef/saxon-xforms.sef.json",
+        "sourceLocation": "xml/demo-itemset.xml"
+      }, "async");
+    }
+  </script>
+</head>
+<body>
+  <h1 id="title">XForms demo: shared itemset options (single + multi select)</h1>
+  <div class="demo-description">
+    <p>This page demonstrates dynamic option rendering through <code>xf:itemset</code> for both <code>xf:select1</code> and <code>xf:select</code> using one shared, static options list.</p>
+    <p>It does <strong>not</strong> implement cascading filtering (changing snack choices does not filter favorite-fruit options).</p>
+  </div>
+  <div id="xForm"></div>
+</body>
+</html>

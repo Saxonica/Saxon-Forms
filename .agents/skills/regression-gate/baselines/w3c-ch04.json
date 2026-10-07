@@ -1,0 +1,19 @@
+{
+  "suite_id": "w3c-ch04",
+  "test_path": "tests/xforms/w3c/ch04.spec.ts",
+  "config_path": "playwright.config.ts",
+  "last_updated": "2026-08-25T14:56:45.369Z",
+  "stats": {
+    "total": 67,
+    "passed": 63,
+    "failed": 4,
+    "flaky": 0,
+    "skipped": 0
+  },
+  "allowed_failures": [
+    "W3C Ch4 — Processing Model [behavioral] › 4.2.2.b — 4.2.2.b xforms-model-construct-done",
+    "W3C Ch4 — Processing Model [behavioral] › 4.2.2.c1 — 4.2.2.c1 form control referenced instance that did not exist yet",
+    "W3C Ch4 — Processing Model [behavioral] › 4.4.1.a — 4.4.1.a xforms-insert event",
+    "W3C Ch4 — Processing Model [behavioral] › 4.7.a — 4.7.a invalid ID references that terminate with no effect"
+  ]
+}

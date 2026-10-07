@@ -1,0 +1,114 @@
+# -*- rnc -*-
+# Namespaced XForms 1.1 schema in RELAX NG
+# 
+#    Copyright (C) 2009 W3C (R); (MIT, ERCIM, Keio), All Rights Reserved.
+# 
+# 
+#    Permission to use, copy, modify and distribute this RELAX NG schema
+#    for XForms 1.1 and its accompanying documentation for any purpose and
+#    without fee is hereby granted in perpetuity, provided that the above
+#    copyright notice and this paragraph appear in all copies. The copyright
+#    holders make no representation about the suitability of this RELAX NG
+#    schema for any purpose.
+# 
+#    It is provided "as is" without expressed or implied warranty.
+#    For details, please refer to the W3C software license at:
+# 
+# http://www.w3.org/Consortium/Legal/copyright-software
+
+namespace xf = "http://www.w3.org/2002/xforms"
+namespace h = "http://www.w3.org/1999/xhtml"
+
+include "xforms-nons-11.rnc" inherit = xf {
+  xforms.anyForeignElement = element (* - xf:*) {
+    (attribute * { text }
+     | text
+     | xforms.anyForeignElement)*
+  }
+}
+
+# repeat attributes in xf namespace
+xforms.repeat-nodeset.attr = attribute xf:repeat-nodeset { XPathExpression }
+xforms.repeat-bind.attr = attribute xf:repeat-bind  { xsd:IDREF }
+xforms.repeat-model.attr = attribute xf:repeat-mode { xsd:IDREF }
+xforms.repeat-startindex.attr = attribute xf:repeat-startindex { xsd:positiveInteger }
+xforms.repeat-number.attr = attribute xf:repeat-number { xsd:nonNegativeInteger }
+xforms.repeat-various.attrs = xforms.repeat-nodeset.attr?, xforms.repeat-bind.attr?,
+   xforms.repeat-model.attr?, xforms.repeat-startindex.attr?, xforms.repeat-number.attr?
+
+# xforms elements
+xforms.group.attrib &= xforms.repeat-various.attrs
+# Validation entry points for host documents
+start = xforms.document
+
+xforms.document = xforms.standalone.xform | xforms.xhtml.document
+
+xforms.standalone.xform = element xf:xform { xforms.host.mixed }
+xforms.xhtml.document = element h:html { xforms.host.mixed }
+
+xforms.host.mixed =
+  (xforms.anyXFormsElement
+   | xforms.anyHostElement
+   | text)*
+
+xforms.anyHostElement = element (* - xf:*) {
+  attribute * { text }*,
+  xforms.host.mixed
+}
+
+xforms.anyXFormsElement =
+  xforms.model
+  | xforms.instance
+  | xforms.submission
+  | xforms.bind
+  | xforms.Core.Form.Controls
+  | xforms.Container.Form.Controls
+  | xforms.label
+  | xforms.help
+  | xforms.hint
+  | xforms.alert
+  | xforms.choices
+  | xforms.item
+  | xforms.itemset
+  | xforms.value
+  | xforms.copy
+  | xforms.filename
+  | xforms.upload.mediatype
+  | xforms.output.mediatype
+  | xforms.output
+  | xforms.input
+  | xforms.textarea
+  | xforms.secret
+  | xforms.upload
+  | xforms.select1
+  | xforms.select
+  | xforms.range
+  | xforms.trigger
+  | xforms.submit
+  | xforms.action
+  | xforms.dispatch
+  | xforms.rebuild
+  | xforms.revalidate
+  | xforms.recalculate
+  | xforms.refresh
+  | xforms.setfocus
+  | xforms.load
+  | xforms.setvalue
+  | xforms.send
+  | xforms.reset
+  | xforms.insert
+  | xforms.delete
+  | xforms.setindex
+  | xforms.toggle
+  | xforms.message
+  | xforms.repeat
+  | xforms.group
+  | xforms.switch
+  | xforms.switch.case
+  | xforms.extension
+
+# Changes for first update after XForms 1.1 Recommendation 2009-12-08
+# + Changed namespace prefix from ns1 to xf
+# + Added redefinition of xforms.anyForeignElement to include xf namespace
+# + added repeat attributes for host languages to integrate
+# + added repeat attributes on xf:group

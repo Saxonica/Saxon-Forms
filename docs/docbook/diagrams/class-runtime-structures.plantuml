@@ -1,0 +1,84 @@
+@startuml
+title Runtime structures (logical class model)
+skinparam classAttributeIconSize 0
+
+class XFormsEngine <<saxon-xforms.xsl>> {
+  +xformsjs-main() : template
+  +xforms-model-construct() : template
+  +xforms-rebuild() : template
+  +xforms-recalculate() : template
+  +xforms-revalidate() : template
+  +xforms-refresh() : template
+  +applyActions() : template
+}
+
+class ModelState <<in-memory>> {
+  +instances : map(xs:string, element())
+  +binds : element(xforms:bind)*
+  +mipState : map(*)
+  +getNode(path) : node()?
+}
+
+class ActionContext <<action-map>> {
+  +name : xs:string
+  +ref : xs:string
+  +instanceContext : xs:string
+  +ifCondition : xs:string?
+  +whileCondition : xs:string?
+  +iterate : xs:string?
+  +bindRef : xs:string?
+}
+
+class SubmissionRequest <<HTTPsubmit in src/saxon-xforms.xsl>> {
+  +method : xs:string
+  +resource : xs:string
+  +headers : map(*)
+  +body : document-node()
+  +serialization : xs:string
+  +replace : xs:string
+}
+
+class SubmissionResponse <<xforms-submit-done in src/saxon-xforms.xsl>> {
+  +status : xs:integer
+  +headers : element()*
+  +payload : document-node()?
+}
+
+class FunctionLibrary <<xforms-function-library.xsl>> {
+  +impose(xpath) : xs:string
+  +resolve-index(xpath) : xs:string
+  +instance(id?) : element()?
+  +index(repeatId) : xs:anyAtomicType
+  +id(value, node?) : node()*
+  +min(seq) : xs:anyAtomicType
+  +max(seq) : xs:anyAtomicType
+}
+
+class XPathFunctions <<xforms-xpath-functions.xsl>> {
+  +property(name) : xs:string
+  +boolean-from-string(s) : xs:boolean
+  +avg(seq) : xs:anyAtomicType
+  +event(name) : item()*
+  +now() : xs:string
+  +days-from-date(d) : xs:anyAtomicType
+  +digest(data, algo, enc?) : xs:string
+}
+
+class DomAdapter <<ixsl: extensions>> {
+  +ixsl:page() : document-node()
+  +ixsl:event() : item()
+  +ixsl:call(obj, fn, args)
+  +ixsl:set-property(obj, name, val)
+  +setFocus(controlId) : JS
+  +readFileAsXML(file, instId) : JS
+}
+
+XFormsEngine *-- ModelState
+XFormsEngine --> ActionContext : builds via set-action template
+XFormsEngine --> DomAdapter : refresh/event dispatch
+XFormsEngine --> SubmissionRequest : xforms-submit template
+XFormsEngine --> FunctionLibrary : XPath evaluation
+XFormsEngine --> XPathFunctions : XPath evaluation
+SubmissionRequest --> SubmissionResponse
+SubmissionResponse --> ModelState : apply instance updates
+@enduml

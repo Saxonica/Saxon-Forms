@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xmlns="http://docbook.org/ns/docbook" id="chapter-conformance">
+    <title>Conformance</title>
+    <para>This chapter records conformance claims and known implementation-defined behavior. It is synchronized with the latest W3C test status (<literal>tests/xforms/w3c/STATUS.md</literal>) and regression gate outputs.</para>
+
+    <section id="chapter-conformance-summary">
+        <title>Test suite coverage summary</title>
+        <para>SaxonForms is validated against the <ulink url="https://www.w3.org/MarkUp/Forms/Test/XForms1.1/Edition1/">W3C XForms 1.1 Test Suite</ulink> via Playwright end-to-end tests. Current coverage as of the latest regression gate run:</para>
+        <informaltable>
+            <tgroup cols="5">
+                <colspec colname="chapter"/>
+                <colspec colname="description"/>
+                <colspec colname="tests"/>
+                <colspec colname="pass"/>
+                <colspec colname="rate"/>
+                <thead>
+                    <row><entry>Chapter</entry><entry>Description</entry><entry>Tests</entry><entry>Pass</entry><entry>Rate</entry></row>
+                </thead>
+                <tbody>
+                    <row><entry>5</entry><entry>Datatypes</entry><entry>15</entry><entry>11</entry><entry>73%</entry></row>
+                    <row><entry>6</entry><entry>Model Item Properties</entry><entry>11</entry><entry>9</entry><entry>82%</entry></row>
+                    <row><entry>7</entry><entry>XPath Expressions</entry><entry>62</entry><entry>18</entry><entry>29%</entry></row>
+                    <row><entry>8</entry><entry>Core Form Controls</entry><entry>59</entry><entry>53</entry><entry>90%</entry></row>
+                    <row><entry>9</entry><entry>Container Form Controls</entry><entry>21</entry><entry>15</entry><entry>71%</entry></row>
+                    <row><entry>10</entry><entry>XForms Actions</entry><entry>15</entry><entry>11</entry><entry>73%</entry></row>
+                    <row><entry>B</entry><entry>Insert/Delete Patterns</entry><entry>15</entry><entry>15</entry><entry>100%</entry></row>
+                    <row><entry><emphasis role="bold">Total</emphasis></entry><entry></entry><entry><emphasis role="bold">198</emphasis></entry><entry><emphasis role="bold">132</emphasis></entry><entry><emphasis role="bold">67%</emphasis></entry></row>
+                </tbody>
+            </tgroup>
+        </informaltable>
+        <para>Additionally, 24 fork-specific tests (14 feature tests + 10 issue regression tests) exist outside the W3C suite, with 22 passing.</para>
+    </section>
+
+    <section id="chapter-conformance-levels">
+        <title>Conformance levels</title>
+
+        <section id="chapter-conformance-production-ready">
+            <title>Production-ready features (≥90% pass rate)</title>
+            <itemizedlist>
+                <listitem><para><emphasis>Appendix B — Data Mutation Patterns</emphasis> (15/15, 100%): insert, delete, duplicate, replace, move for elements and attributes.</para></listitem>
+                <listitem><para><emphasis>Core Form Controls</emphasis> (53/59, 90%): input, secret, textarea, output, upload, range, submit, trigger, select, select1.</para></listitem>
+                <listitem><para><emphasis>Evaluation Context (7.2)</emphasis> (6/6, 100%): outermost/inner bindings, namespace scope.</para></listitem>
+                <listitem><para><emphasis>Repeat (9.3.1)</emphasis> (6/6, 100%): basic repeat, startindex, unrolling, nested switch.</para></listitem>
+                <listitem><para><emphasis>Key XPath functions</emphasis>: index(), compare(), if(), context(), event(), id().</para></listitem>
+            </itemizedlist>
+        </section>
+
+        <section id="chapter-conformance-implementation-defined">
+            <title>Implementation-defined behavior</title>
+            <itemizedlist>
+                <listitem><para><emphasis>XPath 3.1 type coercion</emphasis> — Calculate/relevant expressions are wrapped in try/catch to handle empty-string arithmetic. XForms expects NaN; XPath 3.1 throws a type error. SaxonForms catches and returns NaN.</para></listitem>
+                <listitem><para><emphasis>Non-incremental select deferred update</emphasis> — Non-incremental <literal>&lt;select&gt;</literal>/<literal>&lt;select1&gt;</literal> controls perform inline recalculate/revalidate/refresh during onchange to avoid duplicate outer deferred-cycle dispatch. This deviates from the specification's strict deferred update model but produces correct observable behavior.</para></listitem>
+                <listitem><para><emphasis>Namespace prefix propagation</emphasis> — Fork enhancement: XPaths can use prefixes declared on <literal>&lt;xf:xform&gt;</literal>. This is outside the XForms 1.1 specification.</para></listitem>
+                <listitem><para><emphasis>ixsl:promise submission</emphasis> — Submission uses the browser <literal>fetch</literal> API via <literal>ixsl:promise</literal> rather than <literal>XMLHttpRequest</literal>. Behavior is equivalent for standard HTTP methods but may differ for edge-case transport scenarios.</para></listitem>
+            </itemizedlist>
+        </section>
+
+        <section id="chapter-conformance-implementation-dependent">
+            <title>Implementation-dependent behavior</title>
+            <itemizedlist>
+                <listitem><para><emphasis>SaxonJS engine version</emphasis> — Runtime behavior depends on the SaxonJS version. The fork targets SaxonJS 3.</para></listitem>
+                <listitem><para><emphasis>Browser environment</emphasis> — DOM event ordering and JavaScript runtime behavior vary across browsers. Tests are run in Chromium via Playwright.</para></listitem>
+                <listitem><para><emphasis>Crypto functions</emphasis> — <literal>digest()</literal> and <literal>hmac()</literal> require <literal>crypto.subtle</literal>, which is only available in secure contexts (HTTPS or localhost).</para></listitem>
+            </itemizedlist>
+        </section>
+    </section>
+
+    <section id="chapter-conformance-known-gaps">
+        <title>Known gap clusters</title>
+        <para>The following gap categories are tracked in <literal>tests/xforms/w3c/STATUS.md</literal> with root cause analysis:</para>
+        <itemizedlist>
+            <listitem><para><emphasis>Unimplemented XForms functions</emphasis> (35 test failures) — Functions referenced in the spec but previously unimplemented. Many have been resolved in the fork (property, boolean-from-string, avg, etc.); remaining gaps include <literal>current()</literal> in repeat context (issue #20).</para></listitem>
+            <listitem><para><emphasis>Insert/delete action semantics</emphasis> (13 tests) — Root causes include model-level <literal>xforms-ready</literal> handler unreliability, multi-instance <literal>@context</literal> resolution, <literal>@bind/@model</literal> crash, <literal>@at</literal> position evaluation, and post-delete index tracking.</para></listitem>
+            <listitem><para><emphasis>Model-event message dispatch</emphasis> (10 tests) — <literal>xforms:message</literal> elements listening for model-level events do not produce modal dialogs.</para></listitem>
+            <listitem><para><emphasis>Multi-model support</emphasis> (7 tests) — Multiple <literal>&lt;xf:model&gt;</literal> elements crash during rendering due to default instance resolution and cross-model context switching bugs.</para></listitem>
+            <listitem><para><emphasis>Schema type validation</emphasis> (6 tests) — <literal>xf:bind/@type</literal> is parsed but not enforced.</para></listitem>
+            <listitem><para><emphasis>Submission features</emphasis> (4 tests) — <literal>@bind</literal> filtering, <literal>xforms-submit-serialize</literal> event, and custom HTTP headers.</para></listitem>
+            <listitem><para><emphasis>Processing model behavioral</emphasis> (3 tests) — Model construction event handler timing and lazy instance resolution.</para></listitem>
+        </itemizedlist>
+    </section>
+
+    <section id="chapter-conformance-recently-resolved">
+        <title>Recently resolved gaps</title>
+        <para>The following gaps have been resolved in the fork and are documented here for traceability. Each resolution references the affected test IDs:</para>
+        <itemizedlist>
+            <listitem><para>Readonly MIP enforcement (6.1.2.a/b, 7.2.f)</para></listitem>
+            <listitem><para><literal>index()</literal> returns NaN for non-existent repeats (7.7.5.b)</para></listitem>
+            <listitem><para>XPath 3.1 type coercion try/catch (6.1.5.a, 6.1.4.b)</para></listitem>
+            <listitem><para><literal>min()</literal>/<literal>max()</literal> NaN handling (7.7.2.b, 7.7.3.b)</para></listitem>
+            <listitem><para>Constraint validation events (6.1.6.a)</para></listitem>
+            <listitem><para>Switch/case selector scoping (9.1.1.a2, 9.1.1.b, 9.2.2.b/c)</para></listitem>
+            <listitem><para>Reset action with initial snapshots (10.a)</para></listitem>
+            <listitem><para><literal>setfocus</literal> with suffixed-ID fallback (9.1.1.c, 10.7.a)</para></listitem>
+            <listitem><para><literal>current()</literal> in repeat (7.10.2.b)</para></listitem>
+            <listitem><para><literal>position()</literal>/<literal>last()</literal> in bind calculate (7.2.e)</para></listitem>
+            <listitem><para><literal>adjust-dateTime-to-timezone()</literal> test fix (7.9.8.a)</para></listitem>
+            <listitem><para>Model-construction crash without instance (4.2.1.a/d, 4.2.2.a, 4.2.3.a, 4.5.2.a)</para></listitem>
+            <listitem><para>Non-incremental select sequencing (4.6.3.a/b/c)</para></listitem>
+            <listitem><para>Action context resolution for bind-based actions (10.4.b, 10.18.b)</para></listitem>
+            <listitem><para><literal>id()</literal> function routing and implementation (7.10.3.a/b/c)</para></listitem>
+            <listitem><para>Chapter 2 submit selector alignment (2.1.a, 2.2.a, 2.3.a)</para></listitem>
+        </itemizedlist>
+    </section>
+
+    <section id="chapter-conformance-checkpoint">
+        <title>Checkpoint validation focus</title>
+        <itemizedlist>
+            <listitem><para>Use <literal>tests/xforms/w3c/STATUS.md</literal> as the source of truth for known gaps/resolutions.</para></listitem>
+            <listitem><para>Verify pass-rate table matches latest <literal>npm run test:gate</literal> output.</para></listitem>
+            <listitem><para>Verify no new W3C regressions in regression-gate evidence before chapter approval.</para></listitem>
+            <listitem><para>Review and justify any non-W3C waivers explicitly.</para></listitem>
+        </itemizedlist>
+    </section>
+</chapter>

@@ -1,0 +1,50 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_atomic-language": {
+      "valid_groups": [
+        "atomic-language-enumeration",
+        "atomic-language-enumeration-1",
+        "atomic-language-enumeration-2",
+        "atomic-language-enumeration-3",
+        "atomic-language-enumeration-4",
+        "atomic-language-length",
+        "atomic-language-length-1",
+        "atomic-language-length-2",
+        "atomic-language-length-3",
+        "atomic-language-length-4",
+        "atomic-language-maxLength",
+        "atomic-language-maxLength-1",
+        "atomic-language-maxLength-2",
+        "atomic-language-maxLength-3",
+        "atomic-language-maxLength-4",
+        "atomic-language-minLength",
+        "atomic-language-minLength-1",
+        "atomic-language-minLength-2",
+        "atomic-language-minLength-3",
+        "atomic-language-minLength-4",
+        "atomic-language-pattern",
+        "atomic-language-pattern-1",
+        "atomic-language-pattern-2",
+        "atomic-language-pattern-3",
+        "atomic-language-pattern-4",
+        "atomic-language-whiteSpace",
+        "atomic-language-length-5",
+        "atomic-language-length-6",
+        "atomic-language-length-7",
+        "atomic-language-length-8",
+        "atomic-language-length-9",
+        "atomic-language-maxLength-5",
+        "atomic-language-maxLength-6",
+        "atomic-language-maxLength-7",
+        "atomic-language-maxLength-8",
+        "atomic-language-maxLength-9",
+        "atomic-language-minLength-5",
+        "atomic-language-minLength-6",
+        "atomic-language-minLength-7",
+        "atomic-language-minLength-8"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

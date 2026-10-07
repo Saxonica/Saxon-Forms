@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="Definitions_TestSuiteDev"
+             targetNamespace="http://saxon-forms-fork.example.com/bpmn/test-suite-development"
+             exporter="Saxon-Forms BPMN Modeler"
+             exporterVersion="1.0">
+
+  <process id="Process_TestSuiteDevelopment" name="Test Suite Development"
+           isExecutable="false">
+    <documentation>Implement only the minimum code required to satisfy failing tests,
+with changes that are clearly justifiable. Every functional change
+requires an adjacent TEST-TRACE comment naming the relevant test(s).</documentation>
+
+    <!-- ===== Flow Nodes ===== -->
+
+    <startEvent id="StartEvent_TSD" name="Test Failure Identified">
+      <outgoing>Flow_TSD_Start</outgoing>
+    </startEvent>
+
+    <task id="Task_IdentifyFailing" name="Identify Failing Tests">
+      <incoming>Flow_TSD_Start</incoming>
+      <outgoing>Flow_TSD_ToFixSurface</outgoing>
+    </task>
+
+    <task id="Task_DetermineFixSurface" name="Determine Fix Surface">
+      <documentation>Identify the smallest likely fix surface.</documentation>
+      <incoming>Flow_TSD_ToFixSurface</incoming>
+      <outgoing>Flow_TSD_ToImplement</outgoing>
+    </task>
+
+    <!-- Collapsed subprocess: Implement Fix -->
+    <subProcess id="SubProcess_ImplementFix" name="Implement Fix"
+                triggeredByEvent="false">
+      <incoming>Flow_TSD_ToImplement</incoming>
+      <incoming>Flow_TSD_MandatoryLoop</incoming>
+      <incoming>Flow_TSD_CriteriaLoop</incoming>
+      <outgoing>Flow_TSD_ToTargeted</outgoing>
+
+      <startEvent id="StartEvent_IF" name="">
+        <outgoing>Flow_IF_1</outgoing>
+      </startEvent>
+
+      <task id="Task_NarrowChange" name="Implement Narrow Change">
+        <documentation>Make the smallest localized change that resolves the failing behavior.</documentation>
+        <incoming>Flow_IF_1</incoming>
+        <outgoing>Flow_IF_2</outgoing>
+      </task>
+
+      <task id="Task_AddTestTrace" name="Add TEST-TRACE Comments">
+        <documentation>Add TEST-TRACE comment adjacent to each changed block naming relevant test(s).</documentation>
+        <incoming>Flow_IF_2</incoming>
+        <outgoing>Flow_IF_3</outgoing>
+      </task>
+
+      <endEvent id="EndEvent_IF" name="">
+        <incoming>Flow_IF_3</incoming>
+      </endEvent>
+
+      <sequenceFlow id="Flow_IF_1" sourceRef="StartEvent_IF"
+                    targetRef="Task_NarrowChange" />
+      <sequenceFlow id="Flow_IF_2" sourceRef="Task_NarrowChange"
+                    targetRef="Task_AddTestTrace" />
+      <sequenceFlow id="Flow_IF_3" sourceRef="Task_AddTestTrace"
+                    targetRef="EndEvent_IF" />
+    </subProcess>
+
+    <task id="Task_RunTargeted_TSD" name="Run Targeted Tests">
+      <incoming>Flow_TSD_ToTargeted</incoming>
+      <outgoing>Flow_TSD_ToGate</outgoing>
+    </task>
+
+    <callActivity id="CallActivity_RegressionGate_TSD" name="Run Regression Gate"
+                  calledElement="Process_RegressionGate">
+      <incoming>Flow_TSD_ToGate</incoming>
+      <outgoing>Flow_TSD_ToMandatoryCheck</outgoing>
+    </callActivity>
+
+    <exclusiveGateway id="Gateway_MandatoryReg_TSD" name="Mandatory Regression?"
+                      default="Flow_TSD_NoMandatory">
+      <incoming>Flow_TSD_ToMandatoryCheck</incoming>
+      <outgoing>Flow_TSD_MandatoryLoop</outgoing>
+      <outgoing>Flow_TSD_NoMandatory</outgoing>
+    </exclusiveGateway>
+
+    <exclusiveGateway id="Gateway_NonMandatoryReg_TSD" name="Non-Mandatory Regression?"
+                      default="Flow_TSD_NoNonMandatory">
+      <incoming>Flow_TSD_NoMandatory</incoming>
+      <outgoing>Flow_TSD_HasNonMandatory</outgoing>
+      <outgoing>Flow_TSD_NoNonMandatory</outgoing>
+    </exclusiveGateway>
+
+    <task id="Task_DocJustification_TSD" name="Document Justification">
+      <documentation>Record explicit justification for non-mandatory regression waiver.</documentation>
+      <incoming>Flow_TSD_HasNonMandatory</incoming>
+      <outgoing>Flow_TSD_DocToMerge</outgoing>
+    </task>
+
+    <exclusiveGateway id="Gateway_DoneMerge" name="">
+      <incoming>Flow_TSD_NoNonMandatory</incoming>
+      <incoming>Flow_TSD_DocToMerge</incoming>
+      <outgoing>Flow_TSD_ToVerify</outgoing>
+    </exclusiveGateway>
+
+    <task id="Task_VerifyDone" name="Verify Done Criteria">
+      <documentation>Target failures resolved, no mandatory regressions, TEST-TRACE
+comments present, gate evidence linked to VCS context.</documentation>
+      <incoming>Flow_TSD_ToVerify</incoming>
+      <outgoing>Flow_TSD_ToAllMet</outgoing>
+    </task>
+
+    <exclusiveGateway id="Gateway_AllMet" name="All Criteria Met?"
+                      default="Flow_TSD_AllMet_Yes">
+      <incoming>Flow_TSD_ToAllMet</incoming>
+      <outgoing>Flow_TSD_AllMet_Yes</outgoing>
+      <outgoing>Flow_TSD_CriteriaLoop</outgoing>
+    </exclusiveGateway>
+
+    <endEvent id="EndEvent_TSD" name="Tests Passing">
+      <incoming>Flow_TSD_AllMet_Yes</incoming>
+    </endEvent>
+
+    <!-- ===== Sequence Flows ===== -->
+
+    <sequenceFlow id="Flow_TSD_Start" sourceRef="StartEvent_TSD"
+                  targetRef="Task_IdentifyFailing" />
+    <sequenceFlow id="Flow_TSD_ToFixSurface" sourceRef="Task_IdentifyFailing"
+                  targetRef="Task_DetermineFixSurface" />
+    <sequenceFlow id="Flow_TSD_ToImplement" sourceRef="Task_DetermineFixSurface"
+                  targetRef="SubProcess_ImplementFix" />
+    <sequenceFlow id="Flow_TSD_ToTargeted" sourceRef="SubProcess_ImplementFix"
+                  targetRef="Task_RunTargeted_TSD" />
+    <sequenceFlow id="Flow_TSD_ToGate" sourceRef="Task_RunTargeted_TSD"
+                  targetRef="CallActivity_RegressionGate_TSD" />
+    <sequenceFlow id="Flow_TSD_ToMandatoryCheck"
+                  sourceRef="CallActivity_RegressionGate_TSD"
+                  targetRef="Gateway_MandatoryReg_TSD" />
+
+    <!-- Mandatory regression loop -->
+    <sequenceFlow id="Flow_TSD_MandatoryLoop" name="Yes"
+                  sourceRef="Gateway_MandatoryReg_TSD"
+                  targetRef="SubProcess_ImplementFix" />
+    <sequenceFlow id="Flow_TSD_NoMandatory" name="No"
+                  sourceRef="Gateway_MandatoryReg_TSD"
+                  targetRef="Gateway_NonMandatoryReg_TSD" />
+
+    <!-- Non-mandatory handling -->
+    <sequenceFlow id="Flow_TSD_HasNonMandatory" name="Yes"
+                  sourceRef="Gateway_NonMandatoryReg_TSD"
+                  targetRef="Task_DocJustification_TSD" />
+    <sequenceFlow id="Flow_TSD_NoNonMandatory" name="No"
+                  sourceRef="Gateway_NonMandatoryReg_TSD"
+                  targetRef="Gateway_DoneMerge" />
+    <sequenceFlow id="Flow_TSD_DocToMerge"
+                  sourceRef="Task_DocJustification_TSD"
+                  targetRef="Gateway_DoneMerge" />
+
+    <!-- Done criteria -->
+    <sequenceFlow id="Flow_TSD_ToVerify" sourceRef="Gateway_DoneMerge"
+                  targetRef="Task_VerifyDone" />
+    <sequenceFlow id="Flow_TSD_ToAllMet" sourceRef="Task_VerifyDone"
+                  targetRef="Gateway_AllMet" />
+    <sequenceFlow id="Flow_TSD_AllMet_Yes" name="Yes"
+                  sourceRef="Gateway_AllMet"
+                  targetRef="EndEvent_TSD" />
+    <sequenceFlow id="Flow_TSD_CriteriaLoop" name="No"
+                  sourceRef="Gateway_AllMet"
+                  targetRef="SubProcess_ImplementFix" />
+  </process>
+
+  <!-- ================================================================
+       Diagram — Main flow
+       ================================================================ -->
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_TestSuiteDev"
+                      name="Test Suite Development">
+    <bpmndi:BPMNPlane id="BPMNPlane_TestSuiteDev"
+                      bpmnElement="Process_TestSuiteDevelopment">
+
+      <bpmndi:BPMNShape id="Shape_StartEvent_TSD" bpmnElement="StartEvent_TSD">
+        <dc:Bounds x="170" y="242" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_IdentifyFailing"
+                        bpmnElement="Task_IdentifyFailing">
+        <dc:Bounds x="240" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_DetermineFixSurface"
+                        bpmnElement="Task_DetermineFixSurface">
+        <dc:Bounds x="380" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_SubProcess_ImplementFix"
+                        bpmnElement="SubProcess_ImplementFix" isExpanded="false">
+        <dc:Bounds x="530" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_RunTargeted_TSD"
+                        bpmnElement="Task_RunTargeted_TSD">
+        <dc:Bounds x="680" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_CallActivity_RegressionGate_TSD"
+                        bpmnElement="CallActivity_RegressionGate_TSD">
+        <dc:Bounds x="830" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Gateway_MandatoryReg_TSD"
+                        bpmnElement="Gateway_MandatoryReg_TSD"
+                        isMarkerVisible="true">
+        <dc:Bounds x="980" y="235" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Gateway_NonMandatoryReg_TSD"
+                        bpmnElement="Gateway_NonMandatoryReg_TSD"
+                        isMarkerVisible="true">
+        <dc:Bounds x="1110" y="235" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_DocJustification_TSD"
+                        bpmnElement="Task_DocJustification_TSD">
+        <dc:Bounds x="1180" y="370" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Gateway_DoneMerge"
+                        bpmnElement="Gateway_DoneMerge" isMarkerVisible="true">
+        <dc:Bounds x="1330" y="235" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_VerifyDone" bpmnElement="Task_VerifyDone">
+        <dc:Bounds x="1420" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Gateway_AllMet" bpmnElement="Gateway_AllMet"
+                        isMarkerVisible="true">
+        <dc:Bounds x="1560" y="235" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_TSD" bpmnElement="EndEvent_TSD">
+        <dc:Bounds x="1672" y="242" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Edges ===== -->
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TSD_Start" bpmnElement="Flow_TSD_Start">
+        <di:waypoint x="206" y="260" />
+        <di:waypoint x="240" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TSD_ToFixSurface"
+                       bpmnElement="Flow_TSD_ToFixSurface">
+        <di:waypoint x="340" y="260" />
+        <di:waypoint x="380" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TSD_ToImplement"
+                       bpmnElement="Flow_TSD_ToImplement">
+        <di:waypoint x="480" y="260" />
+        <di:waypoint x="530" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TSD_ToTargeted"
+                       bpmnElement="Flow_TSD_ToTargeted">
+        <di:waypoint x="630" y="260" />
+        <di:waypoint x="680" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TSD_ToGate" bpmnElement="Flow_TSD_ToGate">
+        <di:waypoint x="780" y="260" />
+        <di:waypoint x="830" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TSD_ToMandatoryCheck"
+                       bpmnElement="Flow_TSD_ToMandatoryCheck">
+        <di:waypoint x="930" y="260" />
+        <di:waypoint x="980" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Mandatory regression loop (above) -->
+      <bpmndi:BPMNEdge id="Edge_Flow_TSD_MandatoryLoop"
+                       bpmnElement="Flow_TSD_MandatoryLoop">
+        <di:waypoint x="1005" y="235" />
+        <di:waypoint x="1005" y="100" />
+        <di:waypoint x="580" y="100" />
+        <di:waypoint x="580" y="220" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TSD_NoMandatory"
+                       bpmnElement="Flow_TSD_NoMandatory">
+        <di:waypoint x="1030" y="260" />
+        <di:waypoint x="1110" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Non-mandatory branch (below) -->
+      <bpmndi:BPMNEdge id="Edge_Flow_TSD_HasNonMandatory"
+                       bpmnElement="Flow_TSD_HasNonMandatory">
+        <di:waypoint x="1135" y="285" />
+        <di:waypoint x="1135" y="410" />
+        <di:waypoint x="1180" y="410" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TSD_NoNonMandatory"
+                       bpmnElement="Flow_TSD_NoNonMandatory">
+        <di:waypoint x="1160" y="260" />
+        <di:waypoint x="1330" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TSD_DocToMerge"
+                       bpmnElement="Flow_TSD_DocToMerge">
+        <di:waypoint x="1280" y="410" />
+        <di:waypoint x="1355" y="410" />
+        <di:waypoint x="1355" y="285" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Done criteria -->
+      <bpmndi:BPMNEdge id="Edge_Flow_TSD_ToVerify"
+                       bpmnElement="Flow_TSD_ToVerify">
+        <di:waypoint x="1380" y="260" />
+        <di:waypoint x="1420" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TSD_ToAllMet"
+                       bpmnElement="Flow_TSD_ToAllMet">
+        <di:waypoint x="1520" y="260" />
+        <di:waypoint x="1560" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TSD_AllMet_Yes"
+                       bpmnElement="Flow_TSD_AllMet_Yes">
+        <di:waypoint x="1610" y="260" />
+        <di:waypoint x="1672" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Criteria not met loop (above, different y from mandatory loop) -->
+      <bpmndi:BPMNEdge id="Edge_Flow_TSD_CriteriaLoop"
+                       bpmnElement="Flow_TSD_CriteriaLoop">
+        <di:waypoint x="1585" y="235" />
+        <di:waypoint x="1585" y="140" />
+        <di:waypoint x="580" y="140" />
+        <di:waypoint x="580" y="220" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+  <!-- ================================================================
+       Diagram 3a — Implement Fix (expanded subprocess detail)
+       ================================================================ -->
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ImplementFix" name="Implement Fix">
+    <bpmndi:BPMNPlane id="BPMNPlane_ImplementFix"
+                      bpmnElement="SubProcess_ImplementFix">
+
+      <bpmndi:BPMNShape id="Shape_StartEvent_IF" bpmnElement="StartEvent_IF">
+        <dc:Bounds x="170" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_NarrowChange"
+                        bpmnElement="Task_NarrowChange">
+        <dc:Bounds x="270" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_AddTestTrace"
+                        bpmnElement="Task_AddTestTrace">
+        <dc:Bounds x="430" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_IF" bpmnElement="EndEvent_IF">
+        <dc:Bounds x="592" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_IF_1" bpmnElement="Flow_IF_1">
+        <di:waypoint x="206" y="270" />
+        <di:waypoint x="270" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_IF_2" bpmnElement="Flow_IF_2">
+        <di:waypoint x="370" y="270" />
+        <di:waypoint x="430" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_IF_3" bpmnElement="Flow_IF_3">
+        <di:waypoint x="530" y="270" />
+        <di:waypoint x="592" y="270" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

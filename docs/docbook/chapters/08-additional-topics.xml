@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xmlns="http://docbook.org/ns/docbook" id="chapter-additional-topics" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <title>Additional Topics</title>
+    <para>This chapter covers reusable components, accessibility, BPMN workflow diagrams, and the XSLT API reference.</para>
+
+    <section id="chapter-additional-topics-reusable-components">
+        <title>Reusable components</title>
+        <para>SaxonForms contains several reusable template and function patterns that are used across controls, actions, and submissions. The class diagram below shows the logical structure of these runtime components.</para>
+        <mediaobject>
+            <imageobject>
+                <imagedata fileref="../diagrams/class-runtime-structures.svg" format="SVG" width="100%" scalefit="1"/>
+            </imageobject>
+        </mediaobject>
+
+        <section id="chapter-additional-topics-property-resolution">
+            <title>Property resolution (<literal>get-properties</literal> mode)</title>
+            <para>The <literal>get-properties</literal> mode template in <literal>src/saxon-xforms.xsl</literal> is the central binding resolution mechanism. It accepts any XForms element and returns a <literal>map(*)</literal> containing the resolved nodeset, instance context, matching bind, and context model. This template is called by every control rendering template and every action template that needs to resolve a data reference.</para>
+        </section>
+
+        <section id="chapter-additional-topics-context-instance">
+            <title>Context instance resolution (<literal>get-context-instance-id</literal> mode)</title>
+            <para>The <literal>get-context-instance-id</literal> mode template in <literal>src/saxon-xforms.xsl</literal> determines which instance an XForms element refers to. It checks: (1) whether the element has a <literal>@bind</literal> that belongs to a specific model, (2) whether the element's nodeset expression references a specific instance via <literal>instance('id')</literal>, (3) whether the element's ancestor model has a default instance.</para>
+        </section>
+
+        <section id="chapter-additional-topics-xpath-evaluation">
+            <title>XPath evaluation functions</title>
+            <para>Two primary functions handle XPath evaluation against instance data:</para>
+            <itemizedlist>
+                <listitem><para><literal>xforms:evaluate-xpath-with-context-node()</literal> in <literal>src/saxon-xforms.xsl</literal> — Evaluates an XPath expression with a given context node and namespace context. Used for binding resolution, calculate evaluation, and control value computation.</para></listitem>
+                <listitem><para><literal>xforms:evaluate-xpath-with-instance-id()</literal> in <literal>src/saxon-xforms.xsl</literal> — Resolves the instance root element first, then delegates to the context-node variant.</para></listitem>
+            </itemizedlist>
+        </section>
+
+        <section id="chapter-additional-topics-field-accessors">
+            <title>DOM field accessors</title>
+            <para>The <literal>get-field</literal> and <literal>set-field</literal> mode templates provide a uniform interface for reading from and writing to HTML form controls:</para>
+            <itemizedlist>
+                <listitem><para><literal>get-field</literal> — Specializations for <literal>*:input</literal>, <literal>*:select</literal>, <literal>*:textarea</literal>, and <literal>*[@data-xf-component]</literal> (web components) in <literal>src/saxon-xforms.xsl</literal>.</para></listitem>
+                <listitem><para><literal>set-field</literal> — Specializations for <literal>*:input</literal>, <literal>*:select</literal>, <literal>*:textarea</literal>, and <literal>*[@data-xf-component]</literal> (web components) in <literal>src/saxon-xforms.xsl</literal>.</para></listitem>
+            </itemizedlist>
+            <para>All accessors use the standard <literal>.value</literal> property, making them compatible with both native HTML controls and form-associated custom elements.</para>
+        </section>
+
+        <section id="chapter-additional-topics-refresh-templates">
+            <title>Refresh subsystem</title>
+            <para>The refresh phase uses four named templates that update different categories of DOM elements:</para>
+            <itemizedlist>
+                <listitem><para><literal>refreshOutputs-JS</literal> in <literal>src/saxon-xforms.xsl</literal> — Re-evaluates and updates all registered <literal>xforms:output</literal> elements, and projects validation MIP classes (<literal>xforms-valid</literal>/<literal>xforms-invalid</literal>, <literal>xforms-required</literal>/<literal>xforms-optional</literal>) from the revalidate registry onto controls (including parent wrappers for <literal>input</literal>/<literal>select</literal>/<literal>textarea</literal>).</para></listitem>
+                <listitem><para><literal>refreshRepeats-JS</literal> in <literal>src/saxon-xforms.xsl</literal> — Regenerates repeat item content when instance data changes.</para></listitem>
+                <listitem><para><literal>refreshRelevantFields-JS</literal> in <literal>src/saxon-xforms.xsl</literal> — Shows/hides controls based on the <literal>relevant</literal> MIP.</para></listitem>
+                <listitem><para><literal>refreshElementsUsingIndexFunction-JS</literal> in <literal>src/saxon-xforms.xsl</literal> — Updates elements whose values depend on <literal>index()</literal> function results.</para></listitem>
+            </itemizedlist>
+        </section>
+    </section>
+
+    <section id="chapter-additional-topics-web-component-binding">
+        <title>Web Component Binding</title>
+        <para>SaxonForms provides a generic mechanism for binding arbitrary HTML custom elements (web components) to XForms instance data. Any non-XForms element that carries an <literal>@xforms:ref</literal> attribute is treated as a bound web component control and participates in the XForms processing model identically to native controls.</para>
+
+        <section id="chapter-additional-topics-wc-usage">
+            <title>Usage in XForms</title>
+            <para>To bind a web component to instance data, add the <literal>xf:ref</literal> attribute (in the XForms namespace) pointing to the target node. All non-XForms attributes are passed through to the rendered HTML element unchanged:</para>
+            <programlisting language="xml"><![CDATA[<tinymce-editor
+    xf:ref="instance('data')/htmlContent"
+    on-Change="xfComponentChanged"
+    height="300"
+    menubar="false"
+    toolbar="bold italic | bullist numlist"
+    plugins="lists"
+    license-key="gpl"
+/>]]></programlisting>
+            <para>The mechanism is not specific to any particular web component. Any custom element that exposes a <literal>.value</literal> property can be bound.</para>
+        </section>
+
+        <section id="chapter-additional-topics-wc-attributes">
+            <title>XForms namespace attributes</title>
+            <para>The following attributes in the XForms namespace (<literal>http://www.w3.org/2002/xforms</literal>) are recognized on web component elements:</para>
+            <variablelist>
+                <varlistentry>
+                    <term><literal>xf:ref</literal></term>
+                    <listitem><para>XPath binding expression pointing to the instance node whose value the component manages. Resolved using the same algorithm as native XForms controls (context model, parent nodeset, instance resolution).</para></listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term><literal>xf:event</literal> (optional)</term>
+                    <listitem><para>Name of the DOM event that signals a value change. Defaults to <literal>"change"</literal>. If the web component dispatches a non-standard event (e.g. <literal>"input"</literal> or a custom event name), specify it here so the Saxon-Forms JavaScript bridge can translate it into a native <literal>change</literal> event for the XSLT event handler.</para></listitem>
+                </varlistentry>
+            </variablelist>
+        </section>
+
+        <section id="chapter-additional-topics-wc-rendering">
+            <title>Rendering (<literal>get-html</literal> mode)</title>
+            <para>The template at priority 10 matching <literal>*[not(self::xforms:*)][exists(@xforms:ref)]</literal> processes bound web components. During rendering:</para>
+            <orderedlist>
+                <listitem><para>All non-XForms attributes are copied to the output element unchanged.</para></listitem>
+                <listitem><para>Saxon-Forms binding attributes are injected: <literal>id</literal>, <literal>data-ref</literal>, <literal>instance-context</literal>, <literal>data-xf-component="true"</literal>, <literal>data-xf-change-event</literal>.</para></listitem>
+                <listitem><para>Constraint, relevant, and required MIP attributes are added when a matching <literal>xf:bind</literal> exists.</para></listitem>
+                <listitem><para>The initial value from the bound instance node is emitted as the element's text content (web components typically read <literal>textContent</literal> for initial value).</para></listitem>
+                <listitem><para>The element is registered via <literal>registerOutput</literal> so that <literal>refreshOutputs-JS</literal> can update its value during the refresh phase.</para></listitem>
+            </orderedlist>
+        </section>
+
+        <section id="chapter-additional-topics-wc-value-sync">
+            <title>Value synchronisation</title>
+            <para>Two mode templates provide the DOM ↔ model interface for web components:</para>
+            <itemizedlist>
+                <listitem><para><literal>get-field</literal> matching <literal>*[@data-xf-component]</literal> — reads the element's <literal>.value</literal> property via <literal>ixsl:get(., 'value')</literal>.</para></listitem>
+                <listitem><para><literal>set-field</literal> matching <literal>*[@data-xf-component]</literal> — writes to the element's <literal>.value</literal> property via <literal>ixsl:set-property</literal>.</para></listitem>
+            </itemizedlist>
+            <para>These templates rely on the web component implementing the standard <literal>value</literal> property getter/setter contract (the same contract used by form-associated custom elements).</para>
+        </section>
+
+        <section id="chapter-additional-topics-wc-events">
+            <title>Event handling</title>
+            <para>When the web component dispatches a native <literal>change</literal> event on the host element, SaxonJS matches it with the <literal>ixsl:onchange</literal> mode template for <literal>*[@data-xf-component]</literal>. This template invokes <literal>action-setvalue-form-control</literal> followed by <literal>outermost-action-handler</literal>, triggering the standard XForms processing cycle (recalculate → revalidate → refresh).</para>
+        </section>
+
+        <section id="chapter-additional-topics-wc-js-bridge">
+            <title>JavaScript bridge (<literal>xforms-javascript-library.xsl</literal>)</title>
+            <para>The JavaScript library provides runtime support for web components that do not natively dispatch DOM <literal>change</literal> events:</para>
+            <variablelist>
+                <varlistentry>
+                    <term><literal>xfComponentObserver</literal></term>
+                    <listitem><para>A <literal>MutationObserver</literal> that watches for elements with <literal>data-xf-component</literal> being added to the DOM. For each new element, if <literal>data-xf-change-event</literal> names an event other than <literal>"change"</literal>, the observer registers a listener that translates that event into a native <literal>change</literal> event dispatch on the host element.</para></listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term><literal>xfComponentChanged(evt)</literal></term>
+                    <listitem><para>A global bridge function intended for use with web components that expose attribute-based event callbacks (e.g. TinyMCE's <literal>on-Change</literal> attribute). When called, it locates the host custom element via the shadow DOM (<literal>evt.target.getContainer().getRootNode().host</literal>) and dispatches a native <literal>change</literal> event on it.</para></listitem>
+                </varlistentry>
+            </variablelist>
+        </section>
+
+        <section id="chapter-additional-topics-wc-example">
+            <title>Complete example: TinyMCE rich text editor</title>
+            <para>The following demonstrates binding the TinyMCE web component to an OSCAL part element in an XForm:</para>
+            <programlisting language="xml"><![CDATA[<xf:xform xmlns:xf="http://www.w3.org/2002/xforms"
+          xmlns:o="http://csrc.nist.gov/ns/oscal/1.0">
+
+  <xf:model>
+    <xf:instance id="data">
+      <catalog xmlns="http://csrc.nist.gov/ns/oscal/1.0">
+        <control id="ac-1">
+          <part name="statement"><p>Account lockout...</p></part>
+        </control>
+      </catalog>
+    </xf:instance>
+  </xf:model>
+
+  <!-- Rich text editing of the part content -->
+  <tinymce-editor
+      xf:ref="o:p"
+      on-Change="xfComponentChanged"
+      height="200"
+      menubar="false"
+      toolbar="undo redo | bold italic underline | bullist numlist"
+      license-key="gpl"
+      skin="oxide"
+  />
+</xf:xform>]]></programlisting>
+            <para>Host page requirements:</para>
+            <orderedlist>
+                <listitem><para>Import <literal>tinymce</literal> and expose it globally (<literal>window.tinymce</literal>) so the web component can find the editor core without loading from CDN.</para></listitem>
+                <listitem><para>Import <literal>@tinymce/tinymce-webcomponent</literal> to register the <literal>&lt;tinymce-editor&gt;</literal> custom element.</para></listitem>
+                <listitem><para>Set <literal>tinymce.baseURL</literal> to point to the directory containing TinyMCE skins, themes, and icons.</para></listitem>
+            </orderedlist>
+        </section>
+
+        <section id="chapter-additional-topics-wc-requirements">
+            <title>Web component requirements</title>
+            <para>For a web component to work with this binding mechanism, it must satisfy:</para>
+            <orderedlist>
+                <listitem><para>Expose a <literal>.value</literal> property (getter returns current content, setter updates content).</para></listitem>
+                <listitem><para>Read initial content from the element's <literal>textContent</literal> when connected to the DOM.</para></listitem>
+                <listitem><para>Either dispatch a native <literal>change</literal> event on the host element when content changes, OR provide an attribute-based callback mechanism (like <literal>on-Change</literal>) that can invoke the <literal>xfComponentChanged</literal> global bridge function.</para></listitem>
+            </orderedlist>
+        </section>
+    </section>
+
+    <section id="chapter-additional-topics-accessibility">
+        <title>Accessibility</title>
+        <para>SaxonForms generates standard HTML form controls, which inherit the browser's native accessibility support. The following aspects are relevant:</para>
+
+        <section id="chapter-additional-topics-a11y-keyboard">
+            <title>Keyboard navigation</title>
+            <para>Since SaxonForms renders standard HTML <literal>&lt;input&gt;</literal>, <literal>&lt;select&gt;</literal>, <literal>&lt;textarea&gt;</literal>, and <literal>&lt;button&gt;</literal> elements, keyboard tab navigation works natively. The <literal>action-setfocus</literal> template in <literal>src/saxon-xforms.xsl</literal> supports programmatic focus management, including suffixed-ID fallback and group→first-child focus delegation.</para>
+        </section>
+
+        <section id="chapter-additional-topics-a11y-labels">
+            <title>Labels and descriptions</title>
+            <para>The <literal>xforms:label</literal> template in <literal>src/saxon-xforms.xsl</literal> renders labels associated with controls. <literal>xforms:hint</literal> is matched but currently suppressed (empty template). The <literal>action-message</literal> template handles <literal>xforms:message</literal> display via <literal>alert()</literal>, though model-level message dispatch has known issues (10.13.a, 8.2.2.a–c, 8.2.3.a–c).</para>
+        </section>
+
+        <section id="chapter-additional-topics-a11y-css">
+            <title>CSS class hooks for state</title>
+            <para>The <literal>getHtmlClass</literal> template in <literal>src/saxon-xforms.xsl</literal> computes CSS classes for controls based on MIP state: <literal>xforms-readonly</literal>, <literal>xforms-required</literal>, <literal>xforms-valid</literal>/<literal>xforms-invalid</literal>, <literal>xforms-enabled</literal>/<literal>xforms-disabled</literal>. These classes enable CSS-based visual feedback without additional JavaScript.</para>
+        </section>
+    </section>
+
+    <section id="chapter-additional-topics-api-reference">
+        <title>XSLT API reference</title>
+        <para>This section provides a summary of the public API surface of SaxonForms — the named templates and functions that form the implementation contract.</para>
+
+        <section id="chapter-api-lifecycle-templates">
+            <title>Lifecycle templates (saxon-xforms.xsl)</title>
+            <itemizedlist>
+                <listitem><para><literal>xformsjs-main</literal> (template in <literal>src/saxon-xforms.xsl</literal>) — Entry point. Parses XForms source, builds submission map, initiates model construction.</para></listitem>
+                <listitem><para><literal>xforms-model-construct</literal> (template in <literal>src/saxon-xforms.xsl</literal>) — Initializes model instances and binds.</para></listitem>
+                <listitem><para><literal>xforms-rebuild</literal> (template in <literal>src/saxon-xforms.xsl</literal>) — Processes bind elements, resolves nodesets.</para></listitem>
+                <listitem><para><literal>xforms-recalculate</literal> (template in <literal>src/saxon-xforms.xsl</literal>) — Evaluates MIP expressions on all binds.</para></listitem>
+                <listitem><para><literal>xforms-revalidate</literal> (template in <literal>src/saxon-xforms.xsl</literal>) — Validates required fields, constraints, XSD types.</para></listitem>
+                <listitem><para><literal>xforms-refresh</literal> (template in <literal>src/saxon-xforms.xsl</literal>) — Updates DOM to reflect model state.</para></listitem>
+            </itemizedlist>
+        </section>
+
+        <section id="chapter-api-action-templates">
+            <title>Action templates (saxon-xforms.xsl)</title>
+            <itemizedlist>
+                <listitem><para><literal>applyActions</literal> (template in <literal>src/saxon-xforms.xsl</literal>) — Main action dispatch entry point.</para></listitem>
+                <listitem><para><literal>action-setvalue</literal>, <literal>action-insert</literal>, <literal>action-delete</literal>, <literal>action-toggle</literal>, <literal>action-dispatch</literal>, <literal>action-message</literal>, <literal>action-send</literal>, <literal>action-setindex</literal>, <literal>action-setfocus</literal>, <literal>action-reset</literal>, <literal>action-recalculate</literal>, <literal>action-revalidate</literal>, <literal>action-refresh</literal>, <literal>action-script</literal>, and <literal>action-load</literal> templates in <literal>src/saxon-xforms.xsl</literal>.</para></listitem>
+            </itemizedlist>
+        </section>
+
+        <section id="chapter-api-function-library">
+            <title>Function library (xforms-function-library.xsl)</title>
+            <itemizedlist>
+                <listitem><para><literal>xforms:impose($xpath)</literal> in <literal>src/xforms-function-library.xsl</literal> — Rewrites XForms function calls to xforms: namespace.</para></listitem>
+                <listitem><para><literal>xforms:resolve-index($xpath)</literal> in <literal>src/xforms-function-library.xsl</literal> — Substitutes index() calls with current values.</para></listitem>
+                <listitem><para><literal>xforms:instance($id?)</literal> in <literal>src/xforms-function-library.xsl</literal> — Returns instance root element.</para></listitem>
+                <listitem><para><literal>xforms:index($repeatId)</literal> in <literal>src/xforms-function-library.xsl</literal> — Returns current repeat index.</para></listitem>
+                <listitem><para><literal>xforms:id($value, $node?)</literal> in <literal>src/xforms-function-library.xsl</literal> — XForms-compliant id() with xml:id and xsi:type support.</para></listitem>
+                <listitem><para><literal>xforms:min($seq)</literal> and <literal>xforms:max($seq)</literal> in <literal>src/xforms-function-library.xsl</literal> — NaN-safe min/max.</para></listitem>
+            </itemizedlist>
+        </section>
+
+        <section id="chapter-api-xpath-functions">
+            <title>XPath functions (xforms-xpath-functions.xsl)</title>
+            <itemizedlist>
+                <listitem><para><literal>xforms:property($name)</literal> in <literal>src/xforms-xpath-functions.xsl</literal> — Returns XForms property values (version, conformance-level).</para></listitem>
+                <listitem><para><literal>xforms:boolean-from-string($s)</literal>, <literal>xforms:count-non-empty($seq)</literal>, <literal>xforms:power($base, $exp)</literal>, and <literal>xforms:choose($cond, $t, $f)</literal> in <literal>src/xforms-xpath-functions.xsl</literal>.</para></listitem>
+                <listitem><para><literal>xforms:avg($seq)</literal>, <literal>xforms:is-card-number($s)</literal>, and <literal>xforms:event($name)</literal> in <literal>src/xforms-xpath-functions.xsl</literal>.</para></listitem>
+                <listitem><para>Date/time functions in <literal>src/xforms-xpath-functions.xsl</literal>: <literal>xforms:now()</literal>, <literal>xforms:local-date()</literal>, <literal>xforms:local-dateTime()</literal>, <literal>xforms:days-from-date()</literal>, <literal>xforms:days-to-date()</literal>, <literal>xforms:seconds-from-dateTime()</literal>, <literal>xforms:seconds-to-dateTime()</literal>, <literal>xforms:seconds()</literal>, <literal>xforms:months()</literal>, and <literal>xforms:adjust-dateTime-to-timezone()</literal>.</para></listitem>
+                <listitem><para>Crypto functions in <literal>src/xforms-xpath-functions.xsl</literal>: <literal>xforms:digest()</literal> and <literal>xforms:hmac()</literal> — JS crypto.subtle bridge.</para></listitem>
+            </itemizedlist>
+        </section>
+
+        <section id="chapter-api-xsd-helpers">
+            <title>XSD helpers (xsd-helpers.xsl)</title>
+            <itemizedlist>
+                <listitem><para><literal>xsdh:canonical-type($type)</literal> in <literal>src/xsd-helpers.xsl</literal> — Normalizes XSD type QNames.</para></listitem>
+                <listitem><para><literal>xsdh:is-type-valid($value, $type)</literal> in <literal>src/xsd-helpers.xsl</literal> — Validates value against XSD type.</para></listitem>
+            </itemizedlist>
+        </section>
+    </section>
+</chapter>

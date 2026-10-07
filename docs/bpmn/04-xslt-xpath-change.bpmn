@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="Definitions_XsltXpath"
+             targetNamespace="http://saxon-forms-fork.example.com/bpmn/xslt-xpath-change"
+             exporter="Saxon-Forms BPMN Modeler"
+             exporterVersion="1.0">
+
+  <process id="Process_XsltXpathChange" name="XSLT/XPath Change Review"
+           isExecutable="false">
+    <documentation>Quality gate for XSLT/XPath changes. Ensures XSLT 3.0 and
+XPath 3.1 idioms are used, SaxonJS3 compatibility is preserved,
+and deprecated features are only introduced with explicit justification.</documentation>
+
+    <!-- ===== Flow Nodes ===== -->
+
+    <startEvent id="StartEvent_XX" name="XSLT/XPath Change Required">
+      <outgoing>Flow_XX_Start</outgoing>
+    </startEvent>
+
+    <task id="Task_AuthorChange" name="Author Change with Modern Idioms">
+      <documentation>Use XSLT 3.0+ features, XPath 3.1+ expressions,
+and SaxonJS3-compatible constructs.</documentation>
+      <incoming>Flow_XX_Start</incoming>
+      <outgoing>Flow_XX_ToReview</outgoing>
+    </task>
+
+    <!-- Collapsed subprocess: Review Checklist -->
+    <subProcess id="SubProcess_ReviewChecklist" name="Review Checklist"
+                triggeredByEvent="false">
+      <incoming>Flow_XX_ToReview</incoming>
+      <incoming>Flow_XX_ModernizeLoop</incoming>
+      <outgoing>Flow_XX_ToReviewResult</outgoing>
+
+      <startEvent id="StartEvent_RC" name="">
+        <outgoing>Flow_RC_1</outgoing>
+      </startEvent>
+
+      <task id="Task_VerifyXSLT" name="Verify XSLT 3.0 / XPath 3.1 Usage">
+        <incoming>Flow_RC_1</incoming>
+        <outgoing>Flow_RC_2</outgoing>
+      </task>
+
+      <task id="Task_VerifySaxonJS" name="Verify SaxonJS3 Compatibility">
+        <incoming>Flow_RC_2</incoming>
+        <outgoing>Flow_RC_3</outgoing>
+      </task>
+
+      <task id="Task_CheckDeprecated" name="Check for Deprecated Features">
+        <incoming>Flow_RC_3</incoming>
+        <outgoing>Flow_RC_4</outgoing>
+      </task>
+
+      <endEvent id="EndEvent_RC" name="">
+        <incoming>Flow_RC_4</incoming>
+      </endEvent>
+
+      <sequenceFlow id="Flow_RC_1" sourceRef="StartEvent_RC"
+                    targetRef="Task_VerifyXSLT" />
+      <sequenceFlow id="Flow_RC_2" sourceRef="Task_VerifyXSLT"
+                    targetRef="Task_VerifySaxonJS" />
+      <sequenceFlow id="Flow_RC_3" sourceRef="Task_VerifySaxonJS"
+                    targetRef="Task_CheckDeprecated" />
+      <sequenceFlow id="Flow_RC_4" sourceRef="Task_CheckDeprecated"
+                    targetRef="EndEvent_RC" />
+    </subProcess>
+
+    <exclusiveGateway id="Gateway_ReviewPassed" name="Review Passed?"
+                      default="Flow_XX_Passed">
+      <incoming>Flow_XX_ToReviewResult</incoming>
+      <outgoing>Flow_XX_Passed</outgoing>
+      <outgoing>Flow_XX_NotPassed</outgoing>
+    </exclusiveGateway>
+
+    <endEvent id="EndEvent_Approved" name="Change Approved">
+      <incoming>Flow_XX_Passed</incoming>
+    </endEvent>
+
+    <exclusiveGateway id="Gateway_DeprecatedJustified"
+                      name="Deprecated Feature Justified?"
+                      default="Flow_XX_NotJustified">
+      <incoming>Flow_XX_NotPassed</incoming>
+      <outgoing>Flow_XX_Justified</outgoing>
+      <outgoing>Flow_XX_NotJustified</outgoing>
+    </exclusiveGateway>
+
+    <task id="Task_DocJustification_XX" name="Document Justification">
+      <documentation>Explain why modern-only behavior is not possible.</documentation>
+      <incoming>Flow_XX_Justified</incoming>
+      <outgoing>Flow_XX_JustifiedToEnd</outgoing>
+    </task>
+
+    <endEvent id="EndEvent_ApprovedWithException"
+              name="Approved with Exception">
+      <incoming>Flow_XX_JustifiedToEnd</incoming>
+    </endEvent>
+
+    <task id="Task_ModernizeCode" name="Modernize Code">
+      <documentation>Replace deprecated features with modern XSLT 3.0 / XPath 3.1 equivalents.</documentation>
+      <incoming>Flow_XX_NotJustified</incoming>
+      <outgoing>Flow_XX_ModernizeLoop</outgoing>
+    </task>
+
+    <!-- ===== Sequence Flows ===== -->
+
+    <sequenceFlow id="Flow_XX_Start" sourceRef="StartEvent_XX"
+                  targetRef="Task_AuthorChange" />
+    <sequenceFlow id="Flow_XX_ToReview" sourceRef="Task_AuthorChange"
+                  targetRef="SubProcess_ReviewChecklist" />
+    <sequenceFlow id="Flow_XX_ToReviewResult"
+                  sourceRef="SubProcess_ReviewChecklist"
+                  targetRef="Gateway_ReviewPassed" />
+
+    <sequenceFlow id="Flow_XX_Passed" name="Yes"
+                  sourceRef="Gateway_ReviewPassed"
+                  targetRef="EndEvent_Approved" />
+    <sequenceFlow id="Flow_XX_NotPassed" name="No"
+                  sourceRef="Gateway_ReviewPassed"
+                  targetRef="Gateway_DeprecatedJustified" />
+
+    <sequenceFlow id="Flow_XX_Justified" name="Yes"
+                  sourceRef="Gateway_DeprecatedJustified"
+                  targetRef="Task_DocJustification_XX" />
+    <sequenceFlow id="Flow_XX_NotJustified" name="No"
+                  sourceRef="Gateway_DeprecatedJustified"
+                  targetRef="Task_ModernizeCode" />
+
+    <sequenceFlow id="Flow_XX_JustifiedToEnd"
+                  sourceRef="Task_DocJustification_XX"
+                  targetRef="EndEvent_ApprovedWithException" />
+    <sequenceFlow id="Flow_XX_ModernizeLoop"
+                  sourceRef="Task_ModernizeCode"
+                  targetRef="SubProcess_ReviewChecklist" />
+  </process>
+
+  <!-- ================================================================
+       Diagram — Main flow
+       ================================================================ -->
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_XsltXpath"
+                      name="XSLT/XPath Change Review">
+    <bpmndi:BPMNPlane id="BPMNPlane_XsltXpath"
+                      bpmnElement="Process_XsltXpathChange">
+
+      <bpmndi:BPMNShape id="Shape_StartEvent_XX" bpmnElement="StartEvent_XX">
+        <dc:Bounds x="170" y="242" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_AuthorChange"
+                        bpmnElement="Task_AuthorChange">
+        <dc:Bounds x="250" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_SubProcess_ReviewChecklist"
+                        bpmnElement="SubProcess_ReviewChecklist"
+                        isExpanded="false">
+        <dc:Bounds x="400" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Gateway_ReviewPassed"
+                        bpmnElement="Gateway_ReviewPassed" isMarkerVisible="true">
+        <dc:Bounds x="560" y="235" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_Approved"
+                        bpmnElement="EndEvent_Approved">
+        <dc:Bounds x="682" y="242" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- Below: deprecated-feature handling -->
+
+      <bpmndi:BPMNShape id="Shape_Gateway_DeprecatedJustified"
+                        bpmnElement="Gateway_DeprecatedJustified"
+                        isMarkerVisible="true">
+        <dc:Bounds x="660" y="380" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_DocJustification_XX"
+                        bpmnElement="Task_DocJustification_XX">
+        <dc:Bounds x="780" y="370" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_ApprovedWithException"
+                        bpmnElement="EndEvent_ApprovedWithException">
+        <dc:Bounds x="942" y="392" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_ModernizeCode"
+                        bpmnElement="Task_ModernizeCode">
+        <dc:Bounds x="640" y="490" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Edges ===== -->
+
+      <bpmndi:BPMNEdge id="Edge_Flow_XX_Start" bpmnElement="Flow_XX_Start">
+        <di:waypoint x="206" y="260" />
+        <di:waypoint x="250" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_XX_ToReview" bpmnElement="Flow_XX_ToReview">
+        <di:waypoint x="350" y="260" />
+        <di:waypoint x="400" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_XX_ToReviewResult"
+                       bpmnElement="Flow_XX_ToReviewResult">
+        <di:waypoint x="500" y="260" />
+        <di:waypoint x="560" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Passed (default, right) -->
+      <bpmndi:BPMNEdge id="Edge_Flow_XX_Passed" bpmnElement="Flow_XX_Passed">
+        <di:waypoint x="610" y="260" />
+        <di:waypoint x="682" y="260" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Not passed (down) -->
+      <bpmndi:BPMNEdge id="Edge_Flow_XX_NotPassed"
+                       bpmnElement="Flow_XX_NotPassed">
+        <di:waypoint x="585" y="285" />
+        <di:waypoint x="585" y="405" />
+        <di:waypoint x="660" y="405" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Justified (right) -->
+      <bpmndi:BPMNEdge id="Edge_Flow_XX_Justified"
+                       bpmnElement="Flow_XX_Justified">
+        <di:waypoint x="710" y="405" />
+        <di:waypoint x="780" y="410" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Not justified (default, down) -->
+      <bpmndi:BPMNEdge id="Edge_Flow_XX_NotJustified"
+                       bpmnElement="Flow_XX_NotJustified">
+        <di:waypoint x="685" y="430" />
+        <di:waypoint x="690" y="490" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Justification → end -->
+      <bpmndi:BPMNEdge id="Edge_Flow_XX_JustifiedToEnd"
+                       bpmnElement="Flow_XX_JustifiedToEnd">
+        <di:waypoint x="880" y="410" />
+        <di:waypoint x="942" y="410" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Modernize loop back to Review Checklist -->
+      <bpmndi:BPMNEdge id="Edge_Flow_XX_ModernizeLoop"
+                       bpmnElement="Flow_XX_ModernizeLoop">
+        <di:waypoint x="640" y="530" />
+        <di:waypoint x="450" y="530" />
+        <di:waypoint x="450" y="300" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+  <!-- ================================================================
+       Diagram 4a — Review Checklist (expanded subprocess detail)
+       ================================================================ -->
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ReviewChecklist"
+                      name="Review Checklist">
+    <bpmndi:BPMNPlane id="BPMNPlane_ReviewChecklist"
+                      bpmnElement="SubProcess_ReviewChecklist">
+
+      <bpmndi:BPMNShape id="Shape_StartEvent_RC" bpmnElement="StartEvent_RC">
+        <dc:Bounds x="170" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_VerifyXSLT" bpmnElement="Task_VerifyXSLT">
+        <dc:Bounds x="270" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_VerifySaxonJS"
+                        bpmnElement="Task_VerifySaxonJS">
+        <dc:Bounds x="430" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_CheckDeprecated"
+                        bpmnElement="Task_CheckDeprecated">
+        <dc:Bounds x="590" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_RC" bpmnElement="EndEvent_RC">
+        <dc:Bounds x="752" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_RC_1" bpmnElement="Flow_RC_1">
+        <di:waypoint x="206" y="270" />
+        <di:waypoint x="270" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_RC_2" bpmnElement="Flow_RC_2">
+        <di:waypoint x="370" y="270" />
+        <di:waypoint x="430" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_RC_3" bpmnElement="Flow_RC_3">
+        <di:waypoint x="530" y="270" />
+        <di:waypoint x="590" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_RC_4" bpmnElement="Flow_RC_4">
+        <di:waypoint x="690" y="270" />
+        <di:waypoint x="752" y="270" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

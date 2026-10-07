@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "sequence_diagrams": [
+    {
+      "id": "sequence-processing-cycle",
+      "diagram": "docs/docbook/diagrams/sequence-processing-cycle.plantuml",
+      "verification_tests": [
+        "tests/xforms/w3c/ch04.spec.ts",
+        "tests/xforms/w3c/ch06.spec.ts",
+        "tests/xforms/w3c/sequence-trace.spec.ts"
+      ],
+      "trace_hooks": [
+        {
+          "location": "src/saxon-xforms.xsl",
+          "purpose": "Template-level [SEQTRACE] markers for xformsjs-main/model-construct/rebuild/recalculate/revalidate/refresh and event dispatch."
+        },
+        {
+          "location": "tests/runtime/w3c-runner.html",
+          "purpose": "sequenceTrace query option forwards sequence-template-trace stylesheet param."
+        },
+        {
+          "location": "tests/xforms/w3c/sequence-trace.spec.ts",
+          "purpose": "Captures console [SEQTRACE] output and asserts ordered template subsequences."
+        }
+      ],
+      "acceptance_criteria": [
+        "Model construction [SEQTRACE] output contains an ordered chain matching the diagram (xformsjs-main -> xforms-model-construct -> xforms-rebuild -> xforms-recalculate -> xforms-model-construct -> xforms-model-construct-done -> xforms-ready).",
+        "Interaction [SEQTRACE] output contains recalculate -> revalidate -> refresh template ordering.",
+        "Trace evidence is reproducible via tests/xforms/w3c/sequence-trace.spec.ts."
+      ]
+    },
+    {
+      "id": "sequence-action-dispatch",
+      "diagram": "docs/docbook/diagrams/sequence-action-dispatch.plantuml",
+      "verification_tests": [
+        "tests/xforms/w3c/ch10.spec.ts",
+        "tests/xforms/w3c/sequence-trace.spec.ts"
+      ],
+      "trace_hooks": [
+        {
+          "location": "src/saxon-xforms.xsl",
+          "purpose": "DOMActivate/applyActions/action-* templates emit [SEQTRACE] markers for dispatch sequencing."
+        },
+        {
+          "location": "tests/runtime/w3c-runner.html",
+          "purpose": "sequenceTrace query option enables template trace instrumentation at runtime."
+        },
+        {
+          "location": "tests/xforms/w3c/sequence-trace.spec.ts",
+          "purpose": "Asserts ordered template chains for setvalue and dispatch flows."
+        }
+      ],
+      "acceptance_criteria": [
+        "Setvalue flow [SEQTRACE] output matches DOMActivate -> applyActions(setvalue) -> action-setvalue -> outermost-action-handler -> recalculate/revalidate/refresh.",
+        "Dispatch flow [SEQTRACE] output shows action-dispatch before the target xforms-event-handler invocation.",
+        "Trace evidence is reproducible via tests/xforms/w3c/sequence-trace.spec.ts."
+      ]
+    },
+    {
+      "id": "sequence-submission",
+      "diagram": "docs/docbook/diagrams/sequence-submission.plantuml",
+      "verification_tests": [
+        "tests/xforms/w3c/ch10.spec.ts",
+        "tests/xforms/w3c/ch11.spec.ts",
+        "tests/xforms/w3c/sequence-trace.spec.ts"
+      ],
+      "trace_hooks": [
+        {
+          "location": "src/saxon-xforms.xsl",
+          "purpose": "[SEQTRACE] markers for action-send, xforms-submit, HTTPsubmit, and dispatch-submit-error."
+        },
+        {
+          "location": "tests/runtime/w3c-runner.html",
+          "purpose": "sequenceTrace query option enables runtime template traces for submission scenarios."
+        },
+        {
+          "location": "tests/xforms/w3c/sequence-trace.spec.ts",
+          "purpose": "Validates ordered success and failure submission template chains."
+        }
+      ],
+      "acceptance_criteria": [
+        "Submission success path [SEQTRACE] output matches DOMActivate -> applyActions(send) -> action-send -> xforms-submit -> HTTPsubmit -> xforms-submit-done.",
+        "Submission error path [SEQTRACE] output matches DOMActivate -> applyActions(send) -> action-send -> xforms-submit -> HTTPsubmit -> dispatch-submit-error -> xforms-submit-error.",
+        "Trace evidence is reproducible via tests/xforms/w3c/sequence-trace.spec.ts."
+      ]
+    }
+  ]
+}

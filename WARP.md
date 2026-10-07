@@ -1,0 +1,3 @@
+- Follow the `general-development`, `test-suite-development` and `xslt-xpath` skill when rewriting code.
+- use the `caveman` skill at ultra level, except when providing end of conversation summaries, or writing code comments / documentation.
+- Use the `regression-gate` when adding new functionality. When adding new tests or modifying them, forcibly create a new baseline.

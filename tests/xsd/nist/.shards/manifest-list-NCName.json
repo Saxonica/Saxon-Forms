@@ -1,0 +1,51 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_list-NCName": {
+      "valid_groups": [
+        "list-NCName-enumeration",
+        "list-NCName-enumeration-1",
+        "list-NCName-enumeration-2",
+        "list-NCName-enumeration-3",
+        "list-NCName-enumeration-4",
+        "list-NCName-length",
+        "list-NCName-length-1",
+        "list-NCName-length-2",
+        "list-NCName-length-3",
+        "list-NCName-length-4",
+        "list-NCName-maxLength",
+        "list-NCName-maxLength-1",
+        "list-NCName-maxLength-2",
+        "list-NCName-maxLength-3",
+        "list-NCName-maxLength-4",
+        "list-NCName-minLength",
+        "list-NCName-minLength-1",
+        "list-NCName-minLength-2",
+        "list-NCName-minLength-3",
+        "list-NCName-minLength-4",
+        "list-NCName-pattern",
+        "list-NCName-pattern-1",
+        "list-NCName-pattern-2",
+        "list-NCName-pattern-3",
+        "list-NCName-pattern-4",
+        "list-NCName-whiteSpace",
+        "list-NCName-length-5",
+        "list-NCName-length-6",
+        "list-NCName-length-7",
+        "list-NCName-length-8",
+        "list-NCName-length-9",
+        "list-NCName-maxLength-5",
+        "list-NCName-maxLength-6",
+        "list-NCName-maxLength-7",
+        "list-NCName-maxLength-8",
+        "list-NCName-maxLength-9",
+        "list-NCName-minLength-5",
+        "list-NCName-minLength-6",
+        "list-NCName-minLength-7",
+        "list-NCName-minLength-8",
+        "list-NCName-minLength-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

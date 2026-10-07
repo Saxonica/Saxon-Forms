@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform
+    xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xf:model id="m-validation">
+    <xf:instance id="validation-data">
+      <data xmlns="">
+        <issued-at/>
+        <required-field/>
+      </data>
+    </xf:instance>
+    <!-- TEST-TRACE: typed + required binds for revalidate class MIP coverage; helps tests/supplemental/saxon-forms-validation.spec.ts -->
+    <xf:bind id="bind-issued-at"
+             nodeset="instance('validation-data')/issued-at"
+             type="xs:dateTime"/>
+    <xf:bind id="bind-required-field"
+             nodeset="instance('validation-data')/required-field"
+             type="xs:string"
+             required="true()"/>
+  </xf:model>
+  <div id="validation-root">
+    <xf:input id="issued-at-input" ref="instance('validation-data')/issued-at">
+      <xf:label>Issued at</xf:label>
+    </xf:input>
+    <xf:input id="required-input" ref="instance('validation-data')/required-field">
+      <xf:label>Required field</xf:label>
+    </xf:input>
+    <xf:trigger id="revalidate-trigger">
+      <xf:label>Revalidate</xf:label>
+      <xf:action ev:event="DOMActivate">
+        <xf:revalidate/>
+        <xf:refresh/>
+      </xf:action>
+    </xf:trigger>
+  </div>
+</xf:xform>

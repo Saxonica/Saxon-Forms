@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:demo="urn:saxon-xforms:demo">
+    <xf:model id="actions-model">
+        <xf:instance id="actions-data">
+            <demo:data>
+                <demo:editableMessage>Edit me</demo:editableMessage>
+                <demo:readonlyMessage>Read-only value</demo:readonlyMessage>
+                <demo:dispatchStatus>No custom event yet.</demo:dispatchStatus>
+                <demo:sendStatus>No send yet.</demo:sendStatus>
+            </demo:data>
+        </xf:instance>
+
+        <xf:bind nodeset="instance('actions-data')/demo:readonlyMessage" readonly="true()" />
+
+        <xf:submission id="actions-send"
+            method="post"
+            replace="none"
+            ref="instance('actions-data')"
+            resource="/api/echo" />
+
+        <xf:action ev:event="demo-custom-event" ev:observer="dispatch-target">
+            <xf:setvalue ref="instance('actions-data')/demo:dispatchStatus">Custom event fired.</xf:setvalue>
+        </xf:action>
+
+        <xf:action ev:event="xforms-submit-done" ev:observer="actions-send">
+            <xf:setvalue ref="instance('actions-data')/demo:sendStatus">Send succeeded.</xf:setvalue>
+        </xf:action>
+    </xf:model>
+
+    <xf:input ref="instance('actions-data')/demo:editableMessage" class="demo-input">
+        <xf:label>Editable message:</xf:label>
+    </xf:input>
+
+    <xf:input ref="instance('actions-data')/demo:readonlyMessage" class="demo-input">
+        <xf:label>Read-only message:</xf:label>
+    </xf:input>
+
+    <xf:trigger>
+        <xf:label>Reset form</xf:label>
+        <xf:reset model="actions-model" ev:event="DOMActivate" />
+    </xf:trigger>
+
+    <xf:trigger id="dispatch-target">
+        <xf:label>Dispatch custom event</xf:label>
+        <xf:dispatch ev:event="DOMActivate" name="demo-custom-event" targetid="dispatch-target" />
+    </xf:trigger>
+
+    <xf:trigger>
+        <xf:label>Send to echo endpoint</xf:label>
+        <xf:send ev:event="DOMActivate" submission="actions-send" />
+    </xf:trigger>
+
+    <xf:trigger>
+        <xf:label>Open external docs</xf:label>
+        <xf:load ev:event="DOMActivate" show="new" resource="/index.html" />
+    </xf:trigger>
+
+    <xf:output ref="instance('actions-data')/demo:dispatchStatus" class="block demo-output" />
+    <xf:output ref="instance('actions-data')/demo:sendStatus" class="block demo-output" />
+</xf:xform>

@@ -1,0 +1,53 @@
+@startuml
+title Action dispatch sequence (event -> action resolution -> execution)
+autonumber
+
+actor "End User" as USER
+participant "DOM Control\n(button/input/select)" as DOM
+participant "Event Bridge\nixsl:onclick\nDOMActivate" as BRIDGE
+participant "Action Dispatcher\napplyActions" as DISPATCHER
+participant "Event Handler\noutermost-action-handler\nxforms-event-handler" as HANDLER
+participant "Action Templates\naction-* named templates" as ACTIONS
+participant "SaxonJS/XSLT Runtime" as RUNTIME
+database "Model State" as MODEL
+
+USER -> DOM : click / change / keyup
+DOM -> BRIDGE : ixsl:onclick / ixsl:onchange
+BRIDGE -> DISPATCHER : applyActions()\nresolve action-map for control
+
+DISPATCHER -> DISPATCHER : get-matching-event-actions\nfilter by event name + observer
+DISPATCHER -> HANDLER : outermost-action-handler\ncheck if/while/iterate guards
+
+loop for each matching action
+  HANDLER -> HANDLER : getIfStatement\ngetWhileStatement\ngetIterateStatement
+
+  alt action = setvalue
+    HANDLER -> ACTIONS : action-setvalue\naction-setvalue-inner
+    ACTIONS -> MODEL : evaluate + update instance node
+    ACTIONS -> DOM : action-setvalue-form-control
+  else action = insert
+    HANDLER -> ACTIONS : action-insert
+    ACTIONS -> MODEL : clone + insert node
+    ACTIONS -> RUNTIME : xforms-recalculate
+  else action = delete
+    HANDLER -> ACTIONS : action-delete
+    ACTIONS -> MODEL : remove node(s)
+    ACTIONS -> RUNTIME : xforms-recalculate
+  else action = toggle
+    HANDLER -> ACTIONS : action-toggle
+    ACTIONS -> DOM : show/hide case elements
+  else action = dispatch
+    HANDLER -> ACTIONS : action-dispatch
+    ACTIONS -> DISPATCHER : recursive applyActions
+  else action = send
+    HANDLER -> ACTIONS : action-send
+    ACTIONS -> RUNTIME : trigger submission flow
+  else action = load / script
+    HANDLER -> ACTIONS : action-load\nor action-script
+    ACTIONS -> DOM : JS eval / window.open
+  end
+end
+
+RUNTIME -> MODEL : deferred update cycle\n(recalculate/revalidate/refresh)
+RUNTIME -> DOM : xforms-refresh
+@enduml

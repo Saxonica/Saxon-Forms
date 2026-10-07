@@ -1,0 +1,41 @@
+@startuml
+title Submission flow sequence (action -> transport -> response update)
+autonumber
+
+actor "End User" as USER
+participant "DOM Trigger\nbutton[data-action]" as DOM
+participant "Action Dispatcher\napplyActions" as ACTIONS
+participant "Submission Adapter\nxforms-submit\nsetSubmission" as SUBMISSION
+participant "HTTP Client\nixsl:schedule-action\n(http-request map)" as HTTP
+database "Remote Endpoint" as ENDPOINT
+participant "SaxonJS/XSLT Runtime\nsaxon-xforms.xsl" as RUNTIME
+database "Model State" as MODEL
+
+== Submission trigger ==
+USER -> DOM : activate submit control
+DOM -> ACTIONS : ixsl:onclick\nDOMActivate
+ACTIONS -> SUBMISSION : action-send\nbuild submission from map
+SUBMISSION -> RUNTIME : serialize bound instance data\n(check-required/check-constraint gates)
+RUNTIME -> MODEL : check-required-fields\ncheck-constraints-on-fields
+
+alt validation passes
+  SUBMISSION -> HTTP : ixsl:schedule-action http-request
+  HTTP -> ENDPOINT : HTTP request
+  ENDPOINT --> HTTP : response map (status, body, headers)
+  HTTP -> SUBMISSION : HTTPsubmit callback\nresponse-headers-to-nodes
+  
+  alt replace="instance"
+    SUBMISSION -> RUNTIME : parse response XML
+    RUNTIME -> MODEL : replace instance data
+  else replace="all"
+    SUBMISSION -> DOM : replace page content
+  else replace="none"
+    SUBMISSION -> ACTIONS : dispatch xforms-submit-done
+  end
+  
+  RUNTIME -> MODEL : xforms-rebuild / xforms-recalculate
+  RUNTIME -> DOM : xforms-refresh
+else validation fails
+  SUBMISSION -> ACTIONS : dispatch-submit-error
+end
+@enduml

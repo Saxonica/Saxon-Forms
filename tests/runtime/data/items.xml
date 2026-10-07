@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<items xmlns="urn:test:items">
+  <item id="i-1">
+    <name>Alpha</name>
+    <value>100</value>
+  </item>
+  <item id="i-2">
+    <name>Beta</name>
+    <value>200</value>
+  </item>
+  <item id="i-3">
+    <name>Gamma</name>
+    <value>300</value>
+  </item>
+</items>

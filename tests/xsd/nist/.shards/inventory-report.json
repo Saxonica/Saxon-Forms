@@ -1,0 +1,13 @@
+{
+  "source_manifest": "C:\\Users\\John\\Documents\\GitHub\\Saxon-Forms-fork\\tests\\xsd\\nist\\nist-simpletype-facets.manifest.json",
+  "total_families": 10,
+  "failing_families": [
+    {
+      "family": "atomic-date",
+      "summary": "[summary] total=342 passed=341 failed=1 skipped=61",
+      "fail_samples": [
+        "[fail] kind=instance name=NISTXML-SV-IV-atomic-date-maxExclusive-2-1 expected=valid actual=invalid"
+      ]
+    }
+  ]
+}

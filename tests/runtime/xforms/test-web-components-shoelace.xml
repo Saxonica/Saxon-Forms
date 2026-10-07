@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform
+    xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:xforms="http://www.w3.org/2002/xforms"
+    xmlns:ev="http://www.w3.org/2001/xml-events">
+  <xf:model id="m-web-components">
+    <xf:instance id="wc">
+      <data xmlns="">
+        <projectName>Acme Migration</projectName>
+        <ownerEmail>owner@example.test</ownerEmail>
+        <releaseNotes>Initial draft notes</releaseNotes>
+        <miswired>keep-original</miswired>
+        <items>
+          <item>
+            <name>Implement API gateway</name>
+          </item>
+          <item>
+            <name>Run load tests</name>
+          </item>
+        </items>
+      </data>
+    </xf:instance>
+  </xf:model>
+  <div id="wc-root">
+    <fieldset>
+      <legend>Release configuration</legend>
+      <div class="field-row">
+        <label>Project Name</label>
+        <sl-input id="project-name" xforms:ref="instance('wc')/projectName" xforms:event="sl-change"></sl-input>
+        <span class="helper">Customer-facing project identifier.</span>
+      </div>
+      <div class="field-row">
+        <label>Owner Email</label>
+        <sl-input id="owner-email" xforms:ref="instance('wc')/ownerEmail" xforms:event="sl-change"></sl-input>
+        <span class="helper">Primary owner for release approvals.</span>
+      </div>
+      <div class="field-row">
+        <label>Release Notes</label>
+        <sl-textarea id="release-notes" xforms:ref="instance('wc')/releaseNotes" xforms:event="sl-change"></sl-textarea>
+      </div>
+      <div class="field-row">
+        <label>Miswired Event Control</label>
+        <sl-input id="sl-miswired" xforms:ref="instance('wc')/miswired" xforms:event="not-a-real-event"></sl-input>
+      </div>
+    </fieldset>
+    <div id="wc-outputs">
+      <span id="out-project-name"><xf:output ref="instance('wc')/projectName"/></span>
+      <span id="out-owner-email"><xf:output ref="instance('wc')/ownerEmail"/></span>
+      <span id="out-release-notes"><xf:output ref="instance('wc')/releaseNotes"/></span>
+      <span id="out-miswired"><xf:output ref="instance('wc')/miswired"/></span>
+    </div>
+    <xf:trigger id="set-main-values">
+      <xf:label>Apply model refresh values</xf:label>
+      <xf:setvalue ev:event="DOMActivate" ref="instance('wc')/projectName" value="'Acme Migration v2'"/>
+      <xf:setvalue ev:event="DOMActivate" ref="instance('wc')/ownerEmail" value="'release.manager@example.test'"/>
+      <xf:setvalue ev:event="DOMActivate" ref="instance('wc')/releaseNotes" value="'Release approved for staging deploy.'"/>
+      <xf:refresh ev:event="DOMActivate"/>
+    </xf:trigger>
+    <h2>Milestone tasks</h2>
+    <xf:repeat id="wc-repeat" nodeset="instance('wc')/items/item">
+      <div class="repeat-row">
+        <label>Task Name</label>
+        <sl-input id="repeat-sl" xforms:ref="name" xforms:event="sl-change"></sl-input>
+        <span class="repeat-out"><xf:output id="repeat-name-out" ref="name"/></span>
+      </div>
+    </xf:repeat>
+    <xf:trigger id="set-repeat-second">
+      <xf:label>Set repeat second</xf:label>
+      <xf:setvalue ev:event="DOMActivate" ref="instance('wc')/items/item[2]/name" value="'repeat-b-model-update'"/>
+      <xf:refresh ev:event="DOMActivate"/>
+    </xf:trigger>
+    <h2>View mode toggle</h2>
+    <xf:switch id="wc-mode-switch">
+      <xf:case id="mode-summary" selected="true">
+        <div class="field-row">
+          <label>Summary Mode Project</label>
+          <sl-input id="toggle-summary" xforms:ref="instance('wc')/projectName" xforms:event="sl-change"></sl-input>
+        </div>
+      </xf:case>
+      <xf:case id="mode-advanced">
+        <div class="field-row">
+          <label>Advanced Mode Owner</label>
+          <sl-input id="toggle-advanced" xforms:ref="instance('wc')/ownerEmail" xforms:event="sl-change"></sl-input>
+        </div>
+      </xf:case>
+    </xf:switch>
+    <div class="toggle-actions">
+      <xf:trigger id="show-summary-mode">
+        <xf:label>Show Summary Mode</xf:label>
+        <xf:toggle ev:event="DOMActivate" case="mode-summary"/>
+      </xf:trigger>
+      <xf:trigger id="show-advanced-mode">
+        <xf:label>Show Advanced Mode</xf:label>
+        <xf:toggle ev:event="DOMActivate" case="mode-advanced"/>
+      </xf:trigger>
+    </div>
+  </div>
+</xf:xform>

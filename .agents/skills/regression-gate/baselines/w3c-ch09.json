@@ -1,0 +1,21 @@
+{
+  "suite_id": "w3c-ch09",
+  "test_path": "tests/xforms/w3c/ch09.spec.ts",
+  "config_path": "playwright.config.ts",
+  "last_updated": "2026-08-25T14:58:31.550Z",
+  "stats": {
+    "total": 25,
+    "passed": 19,
+    "failed": 6,
+    "flaky": 0,
+    "skipped": 0
+  },
+  "allowed_failures": [
+    "W3C Ch9 — Container Form Controls [behavioral] › 9.2.1.a2 — switch readonly event and readonly select1 behavior",
+    "W3C Ch9 — Container Form Controls [behavioral] › 9.2.3.1.a — case element child of toggle element",
+    "W3C Ch9 — Container Form Controls [behavioral] › 9.2.3.1.b — 9.2.3.1.b case element child of the toggle element precedence testing",
+    "W3C Ch9 — Container Form Controls [behavioral] › 9.3.1.b — repeat startindex=3: Initial Index output is 3",
+    "W3C Ch9 — Container Form Controls [behavioral] › 9.3.7.a — 9.3.7.a copy element",
+    "W3C Ch9 — Container Form Controls [behavioral] › 9.3.7.b — copy across model raises binding exception"
+  ]
+}

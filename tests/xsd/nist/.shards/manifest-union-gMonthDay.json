@@ -1,0 +1,30 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_union-gMonthDay": {
+      "valid_groups": [
+        "union-gMonthDay-gYearMonth-enumeration",
+        "union-gMonthDay-gYearMonth-enumeration-1",
+        "union-gMonthDay-gYearMonth-enumeration-2",
+        "union-gMonthDay-gYearMonth-enumeration-3",
+        "union-gMonthDay-gYearMonth-enumeration-4",
+        "union-gMonthDay-gYearMonth-pattern",
+        "union-gMonthDay-gYearMonth-pattern-1",
+        "union-gMonthDay-gYearMonth-pattern-2",
+        "union-gMonthDay-gYearMonth-pattern-3",
+        "union-gMonthDay-gYearMonth-pattern-4",
+        "union-gMonthDay-gYearMonth-enumeration-5",
+        "union-gMonthDay-gYearMonth-enumeration-6",
+        "union-gMonthDay-gYearMonth-enumeration-7",
+        "union-gMonthDay-gYearMonth-enumeration-8",
+        "union-gMonthDay-gYearMonth-enumeration-9",
+        "union-gMonthDay-gYearMonth-pattern-5",
+        "union-gMonthDay-gYearMonth-pattern-6",
+        "union-gMonthDay-gYearMonth-pattern-7",
+        "union-gMonthDay-gYearMonth-pattern-8",
+        "union-gMonthDay-gYearMonth-pattern-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

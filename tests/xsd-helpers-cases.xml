@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cases>
+  <canonical-case id="canon-gyearmonth" input="xsd:gYearMonth" expected="gyearmonth"/>
+  <canonical-case id="canon-datetime" input="xs:dateTime" expected="datetime"/>
+  <canonical-case id="canon-xforms-datetime" input="xforms:dateTime" expected="datetime"/>
+  <canonical-case id="canon-listitems" input="xforms:listItems" expected="listitems"/>
+  <canonical-case id="canon-card-number" input="xforms:card-number" expected="card-number"/>
+  <canonical-case id="canon-ccnumber" input="my:ccnumber" expected="ccnumber-strict"/>
+  <canonical-case id="canon-nonempty" input="nonEmptyString" expected="nonemptystring"/>
+
+  <validity-case id="gym-valid" type="xsd:gYearMonth" expected="true">
+    <value>2025-08</value>
+  </validity-case>
+  <validity-case id="gym-invalid-month" type="xsd:gYearMonth" expected="false">
+    <value>2025-13</value>
+  </validity-case>
+  <validity-case id="datetime-valid" type="xsd:dateTime" expected="true">
+    <value>2025-08-01T12:30:00Z</value>
+  </validity-case>
+  <validity-case id="datetime-invalid" type="xsd:dateTime" expected="false">
+    <value>2025-15-01T12:30:00</value>
+  </validity-case>
+  <validity-case id="date-valid" type="xsd:date" expected="true">
+    <value>2024-02-29</value>
+  </validity-case>
+  <validity-case id="date-invalid" type="xsd:date" expected="false">
+    <value>2025-02-29</value>
+  </validity-case>
+  <validity-case id="boolean-valid" type="xsd:boolean" expected="true">
+    <value>true</value>
+  </validity-case>
+  <validity-case id="boolean-invalid" type="xsd:boolean" expected="false">
+    <value>yes</value>
+  </validity-case>
+  <validity-case id="integer-valid" type="xsd:integer" expected="true">
+    <value>-10</value>
+  </validity-case>
+  <validity-case id="integer-invalid" type="xsd:integer" expected="false">
+    <value>10.5</value>
+  </validity-case>
+  <validity-case id="positive-valid" type="xsd:positiveInteger" expected="true">
+    <value>7</value>
+  </validity-case>
+  <validity-case id="positive-invalid" type="xsd:positiveInteger" expected="false">
+    <value>0</value>
+  </validity-case>
+  <validity-case id="nonnegative-valid" type="xsd:nonNegativeInteger" expected="true">
+    <value>0</value>
+  </validity-case>
+  <validity-case id="nonnegative-invalid" type="xsd:nonNegativeInteger" expected="false">
+    <value>-1</value>
+  </validity-case>
+  <validity-case id="qname-valid" type="xsd:QName" expected="true">
+    <value>ns:item</value>
+  </validity-case>
+  <validity-case id="qname-invalid" type="xsd:QName" expected="false">
+    <value>9bad:name</value>
+  </validity-case>
+  <validity-case id="uri-valid" type="xsd:anyURI" expected="true">
+    <value>https://example.org/path</value>
+  </validity-case>
+  <validity-case id="uri-invalid" type="xsd:anyURI" expected="false">
+    <value>http://exa mple.com</value>
+  </validity-case>
+  <validity-case id="listitem-valid" type="xforms:listItem" expected="true">
+    <value>alpha</value>
+  </validity-case>
+  <validity-case id="listitem-invalid" type="xforms:listItem" expected="false">
+    <value>two words</value>
+  </validity-case>
+  <validity-case id="listitems-valid" type="xforms:listItems" expected="true">
+    <value>alpha beta gamma</value>
+  </validity-case>
+  <validity-case id="email-valid" type="xforms:email" expected="true">
+    <value>name@example.com</value>
+  </validity-case>
+  <validity-case id="email-invalid" type="xforms:email" expected="false">
+    <value>name@@example.com</value>
+  </validity-case>
+  <validity-case id="card-number-valid" type="xforms:card-number" expected="true">
+    <value>123456789012</value>
+  </validity-case>
+  <validity-case id="card-number-invalid" type="xforms:card-number" expected="false">
+    <value>1234abcd9012</value>
+  </validity-case>
+  <validity-case id="ccnumber-valid" type="my:ccnumber" expected="true">
+    <value>12345678901234</value>
+  </validity-case>
+  <validity-case id="ccnumber-invalid-length" type="my:ccnumber" expected="false">
+    <value>1234567890123</value>
+  </validity-case>
+  <validity-case id="daytimeduration-valid" type="xforms:dayTimeDuration" expected="true">
+    <value>P2DT12H</value>
+  </validity-case>
+  <validity-case id="daytimeduration-invalid" type="xforms:dayTimeDuration" expected="false">
+    <value>2DT12H</value>
+  </validity-case>
+  <validity-case id="yearmonthduration-valid" type="xforms:yearMonthDuration" expected="true">
+    <value>P1Y6M</value>
+  </validity-case>
+  <validity-case id="yearmonthduration-invalid" type="xforms:yearMonthDuration" expected="false">
+    <value>1Y6M</value>
+  </validity-case>
+  <validity-case id="nonempty-valid" type="nonEmptyString" expected="true">
+    <value>hello</value>
+  </validity-case>
+  <validity-case id="nonempty-invalid" type="nonEmptyString" expected="false">
+    <value/>
+  </validity-case>
+  <validity-case id="unknown-type-default-pass" type="my:customType" expected="true">
+    <value>anything</value>
+  </validity-case>
+  <validity-case id="empty-value-default-pass" type="xsd:gYearMonth" expected="false">
+    <value/>
+  </validity-case>
+</cases>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Saxon-Forms Perf Tests</title>
+    <script src="/lib/SaxonJS3.rt.js"></script>
+    <script>
+      window.addEventListener("DOMContentLoaded", function () {
+        fetch("/xforms/test-perf.xml")
+          .then(function (r) { return r.text(); })
+          .then(function (xformText) {
+            var parser = new DOMParser();
+            var xformDoc = parser.parseFromString(xformText, "application/xml");
+            SaxonJS.transform(
+              {
+                stylesheetLocation: "/sef/saxon-xforms.sef.json",
+                sourceNode: xformDoc,
+              },
+              "async"
+            );
+          });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Saxon-Forms Perf Tests</h1>
+    <div id="xForm"></div>
+  </body>
+</html>

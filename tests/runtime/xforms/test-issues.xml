@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Test XForm for Saxon-Forms upstream issues #19-27.
+  Each section has its own instance, trigger, and output to verify data mutations.
+  The host page (tests/runtime/issues.html) loads this XForm.
+-->
+<xf:xform
+    xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xf:model id="m-issues">
+
+    <!-- #23 (B.6): Remove Attribute -->
+    <xf:instance id="i23">
+      <items xmlns="">
+        <item key="23" rating="classified"/>
+      </items>
+    </xf:instance>
+
+    <!-- #24 (B.7): Remove Nodeset (multiple elements) -->
+    <xf:instance id="i24">
+      <playlist xmlns="">
+        <name>Music for Airports</name>
+        <track id="382"/>
+        <track id="461"/>
+        <track id="629"/>
+      </playlist>
+    </xf:instance>
+
+    <!-- #21 (B.1): Prepend Element Copy from another instance -->
+    <xf:instance id="i21">
+      <data xmlns="">
+        <people>
+          <person><name>Jane Doe</name></person>
+        </people>
+      </data>
+    </xf:instance>
+    <xf:instance id="i21-proto">
+      <prototypes xmlns="">
+        <person><name/></person>
+      </prototypes>
+    </xf:instance>
+
+    <!-- #22 (B.4): Set Attribute (copy attribute to sibling) -->
+    <xf:instance id="i22">
+      <items xmlns="">
+        <item key="23" rating="classified"/>
+        <item key="42"/>
+        <item key="68" rating="unknown"/>
+      </items>
+    </xf:instance>
+
+    <!-- #25 (B.12): Replace Instance with Insert -->
+    <xf:instance id="i25">
+      <shoppingcart xmlns="">
+        <item><product>SKU-0815</product></item>
+        <item><product>SKU-4711</product></item>
+      </shoppingcart>
+    </xf:instance>
+    <xf:instance id="i25-proto">
+      <prototypes xmlns="">
+        <shoppingcart/>
+      </prototypes>
+    </xf:instance>
+    
+    <!-- #26: instance() followed by predicate in @ref -->
+    <xf:instance id="i26">
+      <catalog xmlns="">
+        <metadata>
+          <title>Predicate Ref</title>
+        </metadata>
+      </catalog>
+    </xf:instance>
+    
+    <!-- #27: switch/case/toggle scoping inside repeat -->
+    <xf:instance id="i27">
+      <records xmlns="">
+        <record><name>Alpha</name></record>
+        <record><name>Beta</name></record>
+      </records>
+    </xf:instance>
+    
+    <!-- #29: group relevance refresh + insert fallback -->
+    <xf:instance id="i29">
+      <state xmlns="">
+        <title>Empty state</title>
+      </state>
+    </xf:instance>
+    <xf:instance id="i29-proto">
+      <state xmlns="">
+        <control><title>Inserted</title></control>
+      </state>
+    </xf:instance>
+    
+    <!-- #30: delete nodeset='.' inside repeat -->
+    <xf:instance id="i30">
+      <list xmlns="">
+        <item><name>First</name></item>
+        <item><name>Second</name></item>
+      </list>
+    </xf:instance>
+    
+    <!-- #31: insert fallback when nodeset empty and no @context -->
+    <xf:instance id="i31">
+      <bag xmlns=""/>
+    </xf:instance>
+    <xf:instance id="i31-proto">
+      <bag xmlns="">
+        <entry>Seed</entry>
+      </bag>
+    </xf:instance>
+
+    <!-- #33: explicit function-prefix behavior for avg() -->
+    <xf:instance id="i33">
+      <nums xmlns="">
+        <n>1</n>
+      </nums>
+    </xf:instance>
+
+  </xf:model>
+
+  <div id="issues-root">
+
+    <!-- ======== #23 (B.6): Remove Attribute ======== -->
+    <div id="issue-23" class="issue-section">
+      <h3>#23: Remove Attribute (B.6)</h3>
+      <xf:trigger id="trigger-23">
+        <xf:label>Delete @rating</xf:label>
+        <xf:action ev:event="DOMActivate">
+          <xf:delete nodeset="instance('i23')/item/@rating"/>
+        </xf:action>
+      </xf:trigger>
+      <span id="out-23-before" class="issue-output">
+        <xf:output value="string(instance('i23')/item/@rating)"/>
+      </span>
+    </div>
+
+    <!-- ======== #24 (B.7): Remove Nodeset ======== -->
+    <div id="issue-24" class="issue-section">
+      <h3>#24: Remove Nodeset (B.7)</h3>
+      <xf:trigger id="trigger-24">
+        <xf:label>Delete all tracks</xf:label>
+        <xf:action ev:event="DOMActivate">
+          <xf:delete nodeset="instance('i24')/track"/>
+        </xf:action>
+      </xf:trigger>
+      <span id="out-24-count" class="issue-output">
+        <xf:output value="count(instance('i24')/track)"/>
+      </span>
+    </div>
+
+    <!-- ======== #21 (B.1): Prepend Element Copy ======== -->
+    <div id="issue-21" class="issue-section">
+      <h3>#21: Prepend Element Copy (B.1)</h3>
+      <xf:trigger id="trigger-21">
+        <xf:label>Insert person from prototype</xf:label>
+        <xf:action ev:event="DOMActivate">
+          <xf:insert context="instance('i21')/people" origin="instance('i21-proto')/person"/>
+        </xf:action>
+      </xf:trigger>
+      <span id="out-21-count" class="issue-output">
+        <xf:output value="count(instance('i21')/people/person)"/>
+      </span>
+    </div>
+
+    <!-- ======== #22 (B.4): Set Attribute ======== -->
+    <div id="issue-22" class="issue-section">
+      <h3>#22: Set Attribute (B.4)</h3>
+      <xf:trigger id="trigger-22">
+        <xf:label>Copy @rating to item[2]</xf:label>
+        <xf:action ev:event="DOMActivate">
+          <xf:insert context="instance('i22')/item[2]" origin="instance('i22')/item[1]/@rating"/>
+        </xf:action>
+      </xf:trigger>
+      <span id="out-22-attr" class="issue-output">
+        <xf:output value="string(instance('i22')/item[2]/@rating)"/>
+      </span>
+    </div>
+
+    <!-- ======== #25 (B.12): Replace Instance with Insert ======== -->
+    <div id="issue-25" class="issue-section">
+      <h3>#25: Replace Instance (B.12)</h3>
+      <xf:trigger id="trigger-25">
+        <xf:label>Replace with empty cart</xf:label>
+        <xf:action ev:event="DOMActivate">
+          <xf:insert nodeset="instance('i25')" origin="instance('i25-proto')/shoppingcart"/>
+        </xf:action>
+      </xf:trigger>
+      <span id="out-25-items" class="issue-output">
+        <xf:output value="count(instance('i25')/item)"/>
+      </span>
+    </div>
+    
+    <!-- ======== #26: instance() with predicate in @ref ======== -->
+    <div id="issue-26" class="issue-section">
+      <h3>#26: instance() predicate context</h3>
+      <xf:group ref="instance('i26')[not(control)]">
+        <span id="out-26-group" class="issue-output">
+          <xf:output value="'VISIBLE'"/>
+        </span>
+        <span id="out-26-title" class="issue-output">
+          <xf:output ref="metadata/title"/>
+        </span>
+      </xf:group>
+    </div>
+    
+    <!-- ======== #27: Scoped toggle in repeats ======== -->
+    <div id="issue-27" class="issue-section">
+      <h3>#27: switch/case/toggle scoped per repeat item</h3>
+      <xf:repeat id="repeat-27" nodeset="instance('i27')/record">
+        <div class="issue-27-row">
+          <xf:switch id="switch-27">
+            <xf:case id="view-27" selected="true">
+              <span class="issue-output">
+                <xf:output ref="name"/>
+              </span>
+              <xf:trigger id="trigger-27-edit">
+                <xf:label>Edit</xf:label>
+                <xf:toggle ev:event="DOMActivate" case="edit-27"/>
+              </xf:trigger>
+            </xf:case>
+            <xf:case id="edit-27">
+              <xf:input ref="name"/>
+              <xf:trigger id="trigger-27-done">
+                <xf:label>Done</xf:label>
+                <xf:toggle ev:event="DOMActivate" case="view-27"/>
+              </xf:trigger>
+            </xf:case>
+          </xf:switch>
+        </div>
+      </xf:repeat>
+    </div>
+    
+    <!-- ======== #28: class + custom data-* passthrough ======== -->
+    <div id="issue-28" class="issue-section">
+      <h3>#28: class + data-* passthrough</h3>
+      <xf:trigger id="trigger-28" class="custom-trigger" data-testid="issue-28-trigger">
+        <xf:label>Custom trigger</xf:label>
+      </xf:trigger>
+      <span class="issue-output">
+        <xf:output id="output-28" class="custom-output" data-testid="issue-28-output" value="'class-ok'"/>
+      </span>
+    </div>
+    
+    <!-- ======== #29: group relevance refresh after insert/delete ======== -->
+    <div id="issue-29" class="issue-section">
+      <h3>#29: group relevance refresh</h3>
+      <xf:trigger id="trigger-29-insert">
+        <xf:label>Insert control</xf:label>
+        <xf:action ev:event="DOMActivate">
+          <xf:insert nodeset="instance('i29')/control"
+                     origin="instance('i29-proto')/control"/>
+        </xf:action>
+      </xf:trigger>
+      <xf:trigger id="trigger-29-delete">
+        <xf:label>Delete controls</xf:label>
+        <xf:action ev:event="DOMActivate">
+          <xf:delete nodeset="instance('i29')/control"/>
+        </xf:action>
+      </xf:trigger>
+      <xf:group id="group-empty-29" ref="instance('i29')[not(control)]">
+        <span id="out-29-empty" class="issue-output">
+          <xf:output value="'EMPTY'"/>
+        </span>
+      </xf:group>
+      <span id="out-29-count" class="issue-output">
+        <xf:output value="count(instance('i29')/control)"/>
+      </span>
+    </div>
+    
+    <!-- ======== #30: delete nodeset='.' inside repeat ======== -->
+    <div id="issue-30" class="issue-section">
+      <h3>#30: delete current repeat item</h3>
+      <xf:repeat id="repeat-30" nodeset="instance('i30')/item">
+        <div class="issue-30-row">
+          <span class="issue-output">
+            <xf:output ref="name"/>
+          </span>
+          <xf:trigger id="trigger-30-delete">
+            <xf:label>Delete row</xf:label>
+            <xf:delete ev:event="DOMActivate" nodeset="."/>
+          </xf:trigger>
+        </div>
+      </xf:repeat>
+    </div>
+    
+    <!-- ======== #31: insert fallback on empty nodeset ======== -->
+    <div id="issue-31" class="issue-section">
+      <h3>#31: insert fallback for empty nodeset without context</h3>
+      <xf:trigger id="trigger-31-insert">
+        <xf:label>Insert entry</xf:label>
+        <xf:action ev:event="DOMActivate">
+          <xf:insert nodeset="instance('i31')/entry"
+                     origin="instance('i31-proto')/entry"/>
+        </xf:action>
+      </xf:trigger>
+      <span id="out-31-count" class="issue-output">
+        <xf:output value="count(instance('i31')/entry)"/>
+      </span>
+    </div>
+
+    <!-- ======== #32: current() inside string literal ======== -->
+    <div id="issue-32" class="issue-section">
+      <h3>#32: current() literal is not rewritten</h3>
+      <span id="out-32-contains" class="issue-output">
+        <xf:output value="contains('current()', '()')"/>
+      </span>
+    </div>
+
+    <!-- ======== #33: avg() vs xforms:avg() vs fn:avg() on empty nodeset ======== -->
+    <!-- TEST-TRACE: verifies explicit fn:/xforms: prefixes are preserved through impose() rewrite; helps tests/supplemental/issues.spec.ts "Issue #33". -->
+    <div id="issue-33" class="issue-section">
+      <h3>#33: explicit avg() prefix semantics</h3>
+      <span id="out-33-unpref" class="issue-output">
+        <xf:output value="avg(instance('i33')/n[false()])"/>
+      </span>
+      <span id="out-33-xforms" class="issue-output">
+        <xf:output value="xforms:avg(instance('i33')/n[false()])"/>
+      </span>
+      <span id="out-33-fn" class="issue-output">
+        <xf:output value="fn:avg(instance('i33')/n[false()])"/>
+      </span>
+    </div>
+
+  </div>
+
+</xf:xform>

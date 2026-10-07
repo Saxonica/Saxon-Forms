@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude" id="saxonforms-implementation-guide">
+    <bookinfo>
+        <title>SaxonForms Implementation Guide</title>
+        <releaseinfo>prerelease</releaseinfo>
+    </bookinfo>
+    <xi:include href="chapters/01-introduction.xml"/>
+    <xi:include href="chapters/02-saxonforms-and-saxonjs.xml"/>
+    <xi:include href="chapters/03-processing-model.xml"/>
+    <xi:include href="chapters/04-data-types-and-mips.xml"/>
+    <xi:include href="chapters/05-xpath-and-controls.xml"/>
+    <xi:include href="chapters/06-actions-and-submission.xml"/>
+    <!-- <xi:include href="chapters/07-conformance.xml"/>  -->
+    <xi:include href="chapters/08-additional-topics.xml"/>
+</book>

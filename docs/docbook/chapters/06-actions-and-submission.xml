@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xmlns="http://docbook.org/ns/docbook" id="chapter-actions-and-submission" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <title>Actions and Submission </title>
+    <para>This chapter documents action dispatch semantics, context resolution, and submission processing behavior including request serialization, headers, and response handling.</para>
+
+    <section id="chapter-actions-mapping">
+        <title>Actions: XForms to implementation hooks</title>
+
+        <section id="chapter-actions-dispatch-pipeline">
+            <title>Action dispatch pipeline</title>
+            <para>When a DOM event fires (e.g., button click), the corresponding <literal>ixsl:onclick</literal> mode template in <literal>src/saxon-xforms.xsl</literal> routes to <literal>applyActions</literal>. This template retrieves the action map for the control and invokes <literal>outermost-action-handler</literal>, which processes the outermost action container. For nested actions, <literal>xforms-event-handler</literal> handles recursive dispatch.</para>
+            <para>Event-action matching uses <literal>get-matching-event-actions()</literal>, which filters action maps by event name and observer ID. Event default cancellation is checked via <literal>is-event-default-cancelled()</literal>.</para>
+        </section>
+
+        <section id="chapter-actions-map-builder">
+            <title>Action map builder</title>
+            <para>During control rendering, the <literal>set-action</literal> mode template in <literal>src/saxon-xforms.xsl</literal> builds an action map (<literal>map(*)</literal>) for each action element. The map stores:</para>
+            <itemizedlist>
+                <listitem><para><literal>name</literal> — The action type (setvalue, insert, delete, toggle, dispatch, send, etc.).</para></listitem>
+                <listitem><para><literal>ref</literal> — The effective nodeset reference, resolved via <literal>get-properties</literal> mode.</para></listitem>
+                <listitem><para><literal>instanceContext</literal> — The instance ID the action operates on.</para></listitem>
+                <listitem><para><literal>if</literal>/<literal>while</literal>/<literal>iterate</literal> — Guard conditions from <literal>@if</literal>, <literal>@while</literal>, <literal>@iterate</literal> attributes.</para></listitem>
+                <listitem><para><literal>bindRef</literal> — Optional <literal>@bind</literal> reference for bind-based action resolution.</para></listitem>
+            </itemizedlist>
+            <para>Action-map persistence now keeps bind metadata, and insert/delete resolve local
+                context first with absolute-ref fallback.</para>
+        </section>
+
+        <section id="chapter-actions-individual">
+            <title>Individual action templates</title>
+            <variablelist>
+                <varlistentry><term>action-setvalue</term><listitem><para>Evaluates the <literal>@value</literal> expression or uses element text content to set the bound instance node. Delegates to <literal>action-setvalue-inner</literal> for XPath evaluation and to <literal>action-setvalue-form-control</literal> for DOM control update.</para></listitem></varlistentry>
+                <varlistentry><term>action-insert</term><listitem><para>Clones and inserts nodes into the instance. Supports <literal>@origin</literal>, <literal>@at</literal>, <literal>@position</literal> (before/after), and <literal>@context</literal> attributes. Uses <literal>insert-node</literal> mode for DOM-level insertion. Known issues: multi-instance <literal>@context</literal> resolution (10.3.a/c), <literal>@bind/@model</literal> crash (10.3.b), <literal>@at</literal> position evaluation (10.3.d, 10.4.d).</para></listitem></varlistentry>
+                <varlistentry><term>action-delete</term><listitem><para>Removes nodes from instances. Uses <literal>delete-node</literal> mode. </para></listitem></varlistentry>
+                <varlistentry><term>action-toggle</term><listitem><para>Toggles visibility of <literal>xforms:case</literal> elements within a
+                                <literal>xforms:switch</literal>. The
+                                <literal>$source-control</literal> scoping mechanism exists in
+                                <literal>src/saxon-xforms.xsl</literal> but is not always passed
+                            through the event dispatch chain. </para></listitem></varlistentry>
+                <varlistentry><term>action-dispatch</term><listitem><para>Dispatches a named event to a target, supporting <literal>@targetid</literal>,
+                                <literal>@bubbles</literal>, <literal>@cancelable</literal>, and
+                                <literal>@delay</literal>. </para></listitem></varlistentry>
+                <varlistentry><term>action-message</term><listitem><para>Displays a modal message via <literal>alert()</literal>.</para></listitem></varlistentry>
+                <varlistentry><term>action-send</term><listitem><para>Triggers submission by looking up the submission map and invoking the submission flow.</para></listitem></varlistentry>
+                <varlistentry><term>action-setindex</term><listitem><para>Sets the repeat index for a given repeat ID.</para></listitem></varlistentry>
+                <varlistentry><term>action-setfocus</term><listitem><para>Sets focus to a control. Enhanced with suffixed-ID fallback and group→first-child
+                            focus.</para></listitem></varlistentry>
+                <varlistentry><term>action-reset</term><listitem><para>Restores instance data from initial snapshots saved during model construction.</para></listitem></varlistentry>
+                <varlistentry><term>action-recalculate / action-revalidate / action-refresh</term><listitem><para>Explicitly trigger the corresponding lifecycle phase. <literal>action-revalidate</literal> invokes <literal>xforms-revalidate</literal> (including validation MIP registry rebuild used by refresh class projection) and clears the deferred revalidate flag.</para></listitem></varlistentry>
+                <varlistentry><term>action-script</term><listitem><para>Fork enhancement: XForms 2.0 script execution via <literal>ixsl:call(window, 'eval', ...)</literal>.</para></listitem></varlistentry>
+                <varlistentry><term>action-load</term><listitem><para>Fork enhancement: Supports <literal>show="new"</literal> (window.open), <literal>show="replace"</literal> (location.href), and <literal>javascript:</literal> URI scheme.</para></listitem></varlistentry>
+            </variablelist>
+        </section>
+    </section>
+
+    <section id="chapter-actions-dispatch-diagram">
+        <title>Action dispatch sequence diagram</title>
+        <para>The following sequence shows the event-to-action resolution pipeline and execution flow for each action type.</para>
+        <mediaobject>
+            <imageobject>
+                <imagedata fileref="../diagrams/sequence-action-dispatch.svg" format="SVG" width="100%" scalefit="1"/>
+            </imageobject>
+        </mediaobject>
+    </section>
+
+    <section id="chapter-submission-section">
+        <title>Submission</title>
+
+        <section id="chapter-submission-overview">
+            <title>Submission flow overview</title>
+            <para>Submission is initiated by <literal>action-send</literal>, which looks up the submission configuration from the <literal>$submissions</literal> map built during <literal>xformsjs-main</literal>. The <literal>xforms-submit</literal> template in <literal>src/saxon-xforms.xsl</literal> orchestrates the full submission lifecycle:</para>
+            <orderedlist>
+                <listitem><para><emphasis>Pre-submit validation</emphasis> — Runs <literal>xforms-revalidate</literal> to check required fields and constraints. If validation fails, <literal>dispatch-submit-error</literal> fires.</para></listitem>
+                <listitem><para><emphasis>Serialization</emphasis> — Instance data is serialized based on <literal>@serialization</literal> (default: <literal>application/xml</literal>). The <literal>setSubmission</literal> template configures the submission parameters.</para></listitem>
+                <listitem><para><emphasis>Transport</emphasis> — <literal>xforms-submit</literal> builds an HTTP request map and schedules transport via <literal>ixsl:schedule-action</literal>. The response callback is handled by <literal>HTTPsubmit</literal>, which normalizes status/body/headers before dispatching submit outcome events.</para></listitem>
+                <listitem><para><emphasis>Response handling</emphasis> — Response headers are parsed by <literal>response-headers-to-nodes()</literal>. Based on <literal>@replace</literal>: <literal>"instance"</literal> replaces instance data, <literal>"all"</literal> replaces page content, <literal>"none"</literal> dispatches <literal>xforms-submit-done</literal>.</para></listitem>
+                <listitem><para><emphasis>Post-submit update</emphasis> — After instance replacement, <literal>xforms-rebuild</literal>/<literal>xforms-recalculate</literal>/<literal>xforms-refresh</literal> are triggered.</para></listitem>
+            </orderedlist>
+        </section>
+    </section>
+
+    <section id="chapter-submission-sequence-diagram">
+        <title>Submission sequence diagram</title>
+        <para>The sequence captures request build, transport, response parse, and model refresh behavior, including the validation-failure alternative path.</para>
+        <mediaobject>
+            <imageobject>
+                <imagedata fileref="../diagrams/sequence-submission.svg" format="SVG" width="100%" scalefit="1"/>
+            </imageobject>
+        </mediaobject>
+    </section>
+</chapter>

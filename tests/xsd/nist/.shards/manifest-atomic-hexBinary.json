@@ -1,0 +1,36 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_atomic-hexBinary": {
+      "valid_groups": [
+        "atomic-hexBinary-enumeration",
+        "atomic-hexBinary-enumeration-1",
+        "atomic-hexBinary-enumeration-2",
+        "atomic-hexBinary-enumeration-3",
+        "atomic-hexBinary-enumeration-4",
+        "atomic-hexBinary-length",
+        "atomic-hexBinary-length-1",
+        "atomic-hexBinary-length-2",
+        "atomic-hexBinary-length-3",
+        "atomic-hexBinary-length-4",
+        "atomic-hexBinary-maxLength",
+        "atomic-hexBinary-maxLength-1",
+        "atomic-hexBinary-maxLength-2",
+        "atomic-hexBinary-maxLength-3",
+        "atomic-hexBinary-maxLength-4",
+        "atomic-hexBinary-minLength",
+        "atomic-hexBinary-minLength-1",
+        "atomic-hexBinary-minLength-2",
+        "atomic-hexBinary-minLength-3",
+        "atomic-hexBinary-minLength-4",
+        "atomic-hexBinary-pattern",
+        "atomic-hexBinary-pattern-1",
+        "atomic-hexBinary-pattern-2",
+        "atomic-hexBinary-pattern-3",
+        "atomic-hexBinary-pattern-4",
+        "atomic-hexBinary-whiteSpace"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

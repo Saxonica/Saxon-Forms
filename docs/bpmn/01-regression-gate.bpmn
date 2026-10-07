@@ -1,0 +1,686 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="Definitions_RegressionGate"
+             targetNamespace="http://saxon-forms-fork.example.com/bpmn/regression-gate"
+             exporter="Saxon-Forms BPMN Modeler"
+             exporterVersion="1.0">
+
+  <!-- ================================================================
+       Process: Regression Gate
+       Reusable process called from Git Commit and Test Suite Development.
+       ================================================================ -->
+
+  <process id="Process_RegressionGate" name="Regression Gate" isExecutable="false">
+    <documentation>Prevent regressions by requiring successful compilation,
+targeted verification, full suite comparison against stored baselines,
+and commit-linked run provenance.</documentation>
+
+    <!-- ===== Main-flow nodes ===== -->
+
+    <startEvent id="StartEvent_RG" name="Code Change Detected">
+      <outgoing>Flow_RG_1</outgoing>
+    </startEvent>
+
+    <task id="Task_CaptureVCS" name="Capture VCS Snapshot">
+      <documentation>Record HEAD SHA, branch, tree state, and changed files.</documentation>
+      <incoming>Flow_RG_1</incoming>
+      <outgoing>Flow_RG_2</outgoing>
+    </task>
+
+    <task id="Task_InspectScope" name="Inspect Scope of Change">
+      <documentation>git --no-pager diff --name-only</documentation>
+      <incoming>Flow_RG_2</incoming>
+      <outgoing>Flow_RG_3</outgoing>
+    </task>
+
+    <!-- ~~~~~ Collapsed subprocess: Execute Gate Runner ~~~~~ -->
+    <subProcess id="SubProcess_ExecuteGate" name="Execute Gate Runner"
+                triggeredByEvent="false">
+      <incoming>Flow_RG_3</incoming>
+      <outgoing>Flow_RG_4</outgoing>
+
+      <startEvent id="StartEvent_EG" name="">
+        <outgoing>Flow_EG_1</outgoing>
+      </startEvent>
+
+      <task id="Task_Compile" name="Compile Stylesheets">
+        <incoming>Flow_EG_1</incoming>
+        <outgoing>Flow_EG_2</outgoing>
+      </task>
+
+      <exclusiveGateway id="Gateway_CompileOK" name="Compile Successful?"
+                        default="Flow_EG_CompilePass">
+        <incoming>Flow_EG_2</incoming>
+        <outgoing>Flow_EG_CompileFail</outgoing>
+        <outgoing>Flow_EG_CompilePass</outgoing>
+      </exclusiveGateway>
+
+      <endEvent id="EndEvent_CompileFail" name="Compilation Failed">
+        <incoming>Flow_EG_CompileFail</incoming>
+        <errorEventDefinition id="ErrorDef_CompileFail" />
+      </endEvent>
+
+      <exclusiveGateway id="Gateway_TargetedNeeded" name="Targeted Test Needed?"
+                        default="Flow_EG_Targeted_No">
+        <incoming>Flow_EG_CompilePass</incoming>
+        <outgoing>Flow_EG_Targeted_Yes</outgoing>
+        <outgoing>Flow_EG_Targeted_No</outgoing>
+      </exclusiveGateway>
+
+      <task id="Task_RunTargeted" name="Run Targeted Tests">
+        <documentation>Playwright -g regex on primary suite.</documentation>
+        <incoming>Flow_EG_Targeted_Yes</incoming>
+        <outgoing>Flow_EG_TargetedToMerge</outgoing>
+      </task>
+
+      <exclusiveGateway id="Gateway_TargetedMerge" name="">
+        <incoming>Flow_EG_TargetedToMerge</incoming>
+        <incoming>Flow_EG_Targeted_No</incoming>
+        <outgoing>Flow_EG_MergeToSuite</outgoing>
+      </exclusiveGateway>
+
+      <task id="Task_RunFullSuite" name="Run Full Suite">
+        <incoming>Flow_EG_MergeToSuite</incoming>
+        <outgoing>Flow_EG_SuiteToCompare</outgoing>
+      </task>
+
+      <task id="Task_CompareBaseline" name="Compare to Baseline">
+        <incoming>Flow_EG_SuiteToCompare</incoming>
+        <outgoing>Flow_EG_CompareToEnd</outgoing>
+      </task>
+
+      <endEvent id="EndEvent_EG" name="">
+        <incoming>Flow_EG_CompareToEnd</incoming>
+      </endEvent>
+
+      <!-- Subprocess internal flows -->
+      <sequenceFlow id="Flow_EG_1" sourceRef="StartEvent_EG" targetRef="Task_Compile" />
+      <sequenceFlow id="Flow_EG_2" sourceRef="Task_Compile" targetRef="Gateway_CompileOK" />
+      <sequenceFlow id="Flow_EG_CompileFail" name="No"
+                    sourceRef="Gateway_CompileOK" targetRef="EndEvent_CompileFail" />
+      <sequenceFlow id="Flow_EG_CompilePass" name="Yes"
+                    sourceRef="Gateway_CompileOK" targetRef="Gateway_TargetedNeeded" />
+      <sequenceFlow id="Flow_EG_Targeted_Yes" name="Yes"
+                    sourceRef="Gateway_TargetedNeeded" targetRef="Task_RunTargeted" />
+      <sequenceFlow id="Flow_EG_Targeted_No" name="No"
+                    sourceRef="Gateway_TargetedNeeded" targetRef="Gateway_TargetedMerge" />
+      <sequenceFlow id="Flow_EG_TargetedToMerge"
+                    sourceRef="Task_RunTargeted" targetRef="Gateway_TargetedMerge" />
+      <sequenceFlow id="Flow_EG_MergeToSuite"
+                    sourceRef="Gateway_TargetedMerge" targetRef="Task_RunFullSuite" />
+      <sequenceFlow id="Flow_EG_SuiteToCompare"
+                    sourceRef="Task_RunFullSuite" targetRef="Task_CompareBaseline" />
+      <sequenceFlow id="Flow_EG_CompareToEnd"
+                    sourceRef="Task_CompareBaseline" targetRef="EndEvent_EG" />
+    </subProcess>
+
+    <task id="Task_PersistProvenance" name="Persist Run Provenance">
+      <documentation>Write vcs-context.json per suite; append to run-index.ndjson.</documentation>
+      <incoming>Flow_RG_4</incoming>
+      <outgoing>Flow_RG_5</outgoing>
+    </task>
+
+    <exclusiveGateway id="Gateway_PolicyResult" name="Policy Result?"
+                      default="Flow_RG_Pass">
+      <incoming>Flow_RG_5</incoming>
+      <outgoing>Flow_RG_Pass</outgoing>
+      <outgoing>Flow_RG_MandatoryReg</outgoing>
+      <outgoing>Flow_RG_NonMandatoryReg</outgoing>
+      <outgoing>Flow_RG_MissingBaseline</outgoing>
+    </exclusiveGateway>
+
+    <!-- ===== Branch 1: Pass (default — right) ===== -->
+
+    <exclusiveGateway id="Gateway_BaselineImprovement" name="Baseline Improvement?"
+                      default="Flow_RG_Improve_No">
+      <incoming>Flow_RG_Pass</incoming>
+      <outgoing>Flow_RG_Improve_Yes</outgoing>
+      <outgoing>Flow_RG_Improve_No</outgoing>
+    </exclusiveGateway>
+
+    <task id="Task_PromoteBaseline" name="Promote Baseline">
+      <documentation>Auto-promote when zero regressions and improvement over stored baseline.</documentation>
+      <incoming>Flow_RG_Improve_Yes</incoming>
+      <outgoing>Flow_RG_PromoteToEnd</outgoing>
+    </task>
+
+    <endEvent id="EndEvent_PassPromoted" name="Pass with Promotion">
+      <incoming>Flow_RG_PromoteToEnd</incoming>
+    </endEvent>
+
+    <endEvent id="EndEvent_Pass" name="Pass">
+      <incoming>Flow_RG_Improve_No</incoming>
+    </endEvent>
+
+    <!-- ===== Branch 2: Mandatory Regression (up) ===== -->
+
+    <subProcess id="SubProcess_TriageRegression" name="Triage Regression"
+                triggeredByEvent="false">
+      <incoming>Flow_RG_MandatoryReg</incoming>
+      <outgoing>Flow_RG_TriageToEnd</outgoing>
+
+      <startEvent id="StartEvent_TR" name="">
+        <outgoing>Flow_TR_1</outgoing>
+      </startEvent>
+
+      <task id="Task_FindLastPassing" name="Find Last Passing Run">
+        <documentation>Locate latest passing ledger entry for the same suite.</documentation>
+        <incoming>Flow_TR_1</incoming>
+        <outgoing>Flow_TR_2</outgoing>
+      </task>
+
+      <task id="Task_BuildSuspectRange" name="Build Suspect Commit Range">
+        <documentation>git log --oneline last-passing-sha..failing-sha</documentation>
+        <incoming>Flow_TR_2</incoming>
+        <outgoing>Flow_TR_3</outgoing>
+      </task>
+
+      <task id="Task_ReportRange" name="Report Suspect Range">
+        <incoming>Flow_TR_3</incoming>
+        <outgoing>Flow_TR_4</outgoing>
+      </task>
+
+      <endEvent id="EndEvent_TR" name="">
+        <incoming>Flow_TR_4</incoming>
+      </endEvent>
+
+      <sequenceFlow id="Flow_TR_1" sourceRef="StartEvent_TR"
+                    targetRef="Task_FindLastPassing" />
+      <sequenceFlow id="Flow_TR_2" sourceRef="Task_FindLastPassing"
+                    targetRef="Task_BuildSuspectRange" />
+      <sequenceFlow id="Flow_TR_3" sourceRef="Task_BuildSuspectRange"
+                    targetRef="Task_ReportRange" />
+      <sequenceFlow id="Flow_TR_4" sourceRef="Task_ReportRange"
+                    targetRef="EndEvent_TR" />
+    </subProcess>
+
+    <endEvent id="EndEvent_MandatoryRegression" name="Mandatory Regression">
+      <incoming>Flow_RG_TriageToEnd</incoming>
+      <errorEventDefinition id="ErrorDef_MandatoryRegression" />
+    </endEvent>
+
+    <!-- ===== Branch 3: Non-Mandatory Regression (down) ===== -->
+
+    <exclusiveGateway id="Gateway_WaiverJustified" name="Waiver Justified?"
+                      default="Flow_RG_Waiver_No">
+      <incoming>Flow_RG_NonMandatoryReg</incoming>
+      <outgoing>Flow_RG_Waiver_Yes</outgoing>
+      <outgoing>Flow_RG_Waiver_No</outgoing>
+    </exclusiveGateway>
+
+    <task id="Task_DocumentWaiver" name="Document Waiver">
+      <documentation>Add explicit justification in run artifacts and user-visible reporting.</documentation>
+      <incoming>Flow_RG_Waiver_Yes</incoming>
+      <outgoing>Flow_RG_WaiverToEnd</outgoing>
+    </task>
+
+    <endEvent id="EndEvent_Waived" name="Waived">
+      <incoming>Flow_RG_WaiverToEnd</incoming>
+    </endEvent>
+
+    <endEvent id="EndEvent_FixRequired" name="Fix Required">
+      <incoming>Flow_RG_Waiver_No</incoming>
+    </endEvent>
+
+    <!-- ===== Branch 4: Missing Baseline (further down) ===== -->
+
+    <task id="Task_InitializeBaseline" name="Initialize Baseline">
+      <documentation>npm run test:baseline -- --suite suite-id (after user approval).</documentation>
+      <incoming>Flow_RG_MissingBaseline</incoming>
+      <outgoing>Flow_RG_InitToEnd</outgoing>
+    </task>
+
+    <endEvent id="EndEvent_BaselineCreated" name="Baseline Created">
+      <incoming>Flow_RG_InitToEnd</incoming>
+    </endEvent>
+
+    <!-- ===== Main-flow sequence flows ===== -->
+
+    <sequenceFlow id="Flow_RG_1" sourceRef="StartEvent_RG"
+                  targetRef="Task_CaptureVCS" />
+    <sequenceFlow id="Flow_RG_2" sourceRef="Task_CaptureVCS"
+                  targetRef="Task_InspectScope" />
+    <sequenceFlow id="Flow_RG_3" sourceRef="Task_InspectScope"
+                  targetRef="SubProcess_ExecuteGate" />
+    <sequenceFlow id="Flow_RG_4" sourceRef="SubProcess_ExecuteGate"
+                  targetRef="Task_PersistProvenance" />
+    <sequenceFlow id="Flow_RG_5" sourceRef="Task_PersistProvenance"
+                  targetRef="Gateway_PolicyResult" />
+
+    <sequenceFlow id="Flow_RG_Pass" name="Pass (Exit 0)"
+                  sourceRef="Gateway_PolicyResult"
+                  targetRef="Gateway_BaselineImprovement" />
+    <sequenceFlow id="Flow_RG_MandatoryReg" name="Mandatory Regression (Exit 2)"
+                  sourceRef="Gateway_PolicyResult"
+                  targetRef="SubProcess_TriageRegression" />
+    <sequenceFlow id="Flow_RG_NonMandatoryReg" name="Non-Mandatory (Exit 3)"
+                  sourceRef="Gateway_PolicyResult"
+                  targetRef="Gateway_WaiverJustified" />
+    <sequenceFlow id="Flow_RG_MissingBaseline" name="Missing Baseline (Exit 4)"
+                  sourceRef="Gateway_PolicyResult"
+                  targetRef="Task_InitializeBaseline" />
+
+    <sequenceFlow id="Flow_RG_Improve_Yes" name="Yes"
+                  sourceRef="Gateway_BaselineImprovement"
+                  targetRef="Task_PromoteBaseline" />
+    <sequenceFlow id="Flow_RG_Improve_No" name="No"
+                  sourceRef="Gateway_BaselineImprovement"
+                  targetRef="EndEvent_Pass" />
+    <sequenceFlow id="Flow_RG_PromoteToEnd"
+                  sourceRef="Task_PromoteBaseline"
+                  targetRef="EndEvent_PassPromoted" />
+
+    <sequenceFlow id="Flow_RG_TriageToEnd"
+                  sourceRef="SubProcess_TriageRegression"
+                  targetRef="EndEvent_MandatoryRegression" />
+
+    <sequenceFlow id="Flow_RG_Waiver_Yes" name="Yes"
+                  sourceRef="Gateway_WaiverJustified"
+                  targetRef="Task_DocumentWaiver" />
+    <sequenceFlow id="Flow_RG_Waiver_No" name="No"
+                  sourceRef="Gateway_WaiverJustified"
+                  targetRef="EndEvent_FixRequired" />
+    <sequenceFlow id="Flow_RG_WaiverToEnd"
+                  sourceRef="Task_DocumentWaiver"
+                  targetRef="EndEvent_Waived" />
+
+    <sequenceFlow id="Flow_RG_InitToEnd"
+                  sourceRef="Task_InitializeBaseline"
+                  targetRef="EndEvent_BaselineCreated" />
+  </process>
+
+  <!-- ================================================================
+       Diagram 1 — Main flow (collapsed subprocesses)
+       ================================================================ -->
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_RegressionGate" name="Regression Gate">
+    <bpmndi:BPMNPlane id="BPMNPlane_RegressionGate"
+                      bpmnElement="Process_RegressionGate">
+
+      <!-- Main flow -->
+      <bpmndi:BPMNShape id="Shape_StartEvent_RG" bpmnElement="StartEvent_RG">
+        <dc:Bounds x="170" y="332" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_CaptureVCS" bpmnElement="Task_CaptureVCS">
+        <dc:Bounds x="270" y="310" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_InspectScope" bpmnElement="Task_InspectScope">
+        <dc:Bounds x="430" y="310" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_SubProcess_ExecuteGate"
+                        bpmnElement="SubProcess_ExecuteGate" isExpanded="false">
+        <dc:Bounds x="590" y="310" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_PersistProvenance"
+                        bpmnElement="Task_PersistProvenance">
+        <dc:Bounds x="750" y="310" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Gateway_PolicyResult"
+                        bpmnElement="Gateway_PolicyResult" isMarkerVisible="true">
+        <dc:Bounds x="910" y="325" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <!-- Branch 1 — Pass -->
+      <bpmndi:BPMNShape id="Shape_Gateway_BaselineImprovement"
+                        bpmnElement="Gateway_BaselineImprovement"
+                        isMarkerVisible="true">
+        <dc:Bounds x="1060" y="325" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_PromoteBaseline"
+                        bpmnElement="Task_PromoteBaseline">
+        <dc:Bounds x="1180" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_PassPromoted"
+                        bpmnElement="EndEvent_PassPromoted">
+        <dc:Bounds x="1342" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_Pass" bpmnElement="EndEvent_Pass">
+        <dc:Bounds x="1212" y="382" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- Branch 2 — Mandatory Regression -->
+      <bpmndi:BPMNShape id="Shape_SubProcess_TriageRegression"
+                        bpmnElement="SubProcess_TriageRegression"
+                        isExpanded="false">
+        <dc:Bounds x="1060" y="110" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_MandatoryRegression"
+                        bpmnElement="EndEvent_MandatoryRegression">
+        <dc:Bounds x="1222" y="132" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- Branch 3 — Non-Mandatory -->
+      <bpmndi:BPMNShape id="Shape_Gateway_WaiverJustified"
+                        bpmnElement="Gateway_WaiverJustified"
+                        isMarkerVisible="true">
+        <dc:Bounds x="1060" y="495" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_DocumentWaiver"
+                        bpmnElement="Task_DocumentWaiver">
+        <dc:Bounds x="1180" y="580" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_Waived" bpmnElement="EndEvent_Waived">
+        <dc:Bounds x="1342" y="602" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_FixRequired"
+                        bpmnElement="EndEvent_FixRequired">
+        <dc:Bounds x="1212" y="502" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- Branch 4 — Missing Baseline -->
+      <bpmndi:BPMNShape id="Shape_Task_InitializeBaseline"
+                        bpmnElement="Task_InitializeBaseline">
+        <dc:Bounds x="1060" y="700" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_BaselineCreated"
+                        bpmnElement="EndEvent_BaselineCreated">
+        <dc:Bounds x="1222" y="722" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Edges ===== -->
+
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_1" bpmnElement="Flow_RG_1">
+        <di:waypoint x="206" y="350" />
+        <di:waypoint x="270" y="350" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_2" bpmnElement="Flow_RG_2">
+        <di:waypoint x="370" y="350" />
+        <di:waypoint x="430" y="350" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_3" bpmnElement="Flow_RG_3">
+        <di:waypoint x="530" y="350" />
+        <di:waypoint x="590" y="350" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_4" bpmnElement="Flow_RG_4">
+        <di:waypoint x="690" y="350" />
+        <di:waypoint x="750" y="350" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_5" bpmnElement="Flow_RG_5">
+        <di:waypoint x="850" y="350" />
+        <di:waypoint x="910" y="350" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Pass (default — right) -->
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_Pass" bpmnElement="Flow_RG_Pass">
+        <di:waypoint x="960" y="350" />
+        <di:waypoint x="1060" y="350" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Mandatory Regression (up) -->
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_MandatoryReg"
+                       bpmnElement="Flow_RG_MandatoryReg">
+        <di:waypoint x="935" y="325" />
+        <di:waypoint x="935" y="150" />
+        <di:waypoint x="1060" y="150" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Non-Mandatory (down) -->
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_NonMandatoryReg"
+                       bpmnElement="Flow_RG_NonMandatoryReg">
+        <di:waypoint x="935" y="375" />
+        <di:waypoint x="935" y="520" />
+        <di:waypoint x="1060" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Missing Baseline (further down) -->
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_MissingBaseline"
+                       bpmnElement="Flow_RG_MissingBaseline">
+        <di:waypoint x="935" y="375" />
+        <di:waypoint x="935" y="740" />
+        <di:waypoint x="1060" y="740" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Baseline Improvement — Yes (up) -->
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_Improve_Yes"
+                       bpmnElement="Flow_RG_Improve_Yes">
+        <di:waypoint x="1085" y="325" />
+        <di:waypoint x="1085" y="270" />
+        <di:waypoint x="1180" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Baseline Improvement — No (default right) -->
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_Improve_No"
+                       bpmnElement="Flow_RG_Improve_No">
+        <di:waypoint x="1085" y="375" />
+        <di:waypoint x="1085" y="400" />
+        <di:waypoint x="1212" y="400" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_PromoteToEnd"
+                       bpmnElement="Flow_RG_PromoteToEnd">
+        <di:waypoint x="1280" y="270" />
+        <di:waypoint x="1342" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Triage → Error End -->
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_TriageToEnd"
+                       bpmnElement="Flow_RG_TriageToEnd">
+        <di:waypoint x="1160" y="150" />
+        <di:waypoint x="1222" y="150" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Waiver — Yes (down) -->
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_Waiver_Yes"
+                       bpmnElement="Flow_RG_Waiver_Yes">
+        <di:waypoint x="1085" y="545" />
+        <di:waypoint x="1085" y="620" />
+        <di:waypoint x="1180" y="620" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Waiver — No (default right) -->
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_Waiver_No"
+                       bpmnElement="Flow_RG_Waiver_No">
+        <di:waypoint x="1110" y="520" />
+        <di:waypoint x="1212" y="520" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_WaiverToEnd"
+                       bpmnElement="Flow_RG_WaiverToEnd">
+        <di:waypoint x="1280" y="620" />
+        <di:waypoint x="1342" y="620" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Initialize Baseline → End -->
+      <bpmndi:BPMNEdge id="Edge_Flow_RG_InitToEnd"
+                       bpmnElement="Flow_RG_InitToEnd">
+        <di:waypoint x="1160" y="740" />
+        <di:waypoint x="1222" y="740" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+  <!-- ================================================================
+       Diagram 1a — Execute Gate Runner (expanded subprocess detail)
+       ================================================================ -->
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ExecuteGate" name="Execute Gate Runner">
+    <bpmndi:BPMNPlane id="BPMNPlane_ExecuteGate"
+                      bpmnElement="SubProcess_ExecuteGate">
+
+      <bpmndi:BPMNShape id="Shape_StartEvent_EG" bpmnElement="StartEvent_EG">
+        <dc:Bounds x="170" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_Compile" bpmnElement="Task_Compile">
+        <dc:Bounds x="270" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Gateway_CompileOK" bpmnElement="Gateway_CompileOK"
+                        isMarkerVisible="true">
+        <dc:Bounds x="430" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_CompileFail"
+                        bpmnElement="EndEvent_CompileFail">
+        <dc:Bounds x="437" y="370" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Gateway_TargetedNeeded"
+                        bpmnElement="Gateway_TargetedNeeded"
+                        isMarkerVisible="true">
+        <dc:Bounds x="560" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_RunTargeted" bpmnElement="Task_RunTargeted">
+        <dc:Bounds x="680" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Gateway_TargetedMerge"
+                        bpmnElement="Gateway_TargetedMerge"
+                        isMarkerVisible="true">
+        <dc:Bounds x="830" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_RunFullSuite" bpmnElement="Task_RunFullSuite">
+        <dc:Bounds x="940" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_CompareBaseline"
+                        bpmnElement="Task_CompareBaseline">
+        <dc:Bounds x="1100" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_EG" bpmnElement="EndEvent_EG">
+        <dc:Bounds x="1262" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- Edges -->
+
+      <bpmndi:BPMNEdge id="Edge_Flow_EG_1" bpmnElement="Flow_EG_1">
+        <di:waypoint x="206" y="270" />
+        <di:waypoint x="270" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_EG_2" bpmnElement="Flow_EG_2">
+        <di:waypoint x="370" y="270" />
+        <di:waypoint x="430" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_EG_CompileFail" bpmnElement="Flow_EG_CompileFail">
+        <di:waypoint x="455" y="295" />
+        <di:waypoint x="455" y="370" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_EG_CompilePass" bpmnElement="Flow_EG_CompilePass">
+        <di:waypoint x="480" y="270" />
+        <di:waypoint x="560" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_EG_Targeted_Yes"
+                       bpmnElement="Flow_EG_Targeted_Yes">
+        <di:waypoint x="585" y="245" />
+        <di:waypoint x="585" y="180" />
+        <di:waypoint x="680" y="180" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_EG_Targeted_No"
+                       bpmnElement="Flow_EG_Targeted_No">
+        <di:waypoint x="610" y="270" />
+        <di:waypoint x="830" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_EG_TargetedToMerge"
+                       bpmnElement="Flow_EG_TargetedToMerge">
+        <di:waypoint x="780" y="180" />
+        <di:waypoint x="855" y="180" />
+        <di:waypoint x="855" y="245" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_EG_MergeToSuite"
+                       bpmnElement="Flow_EG_MergeToSuite">
+        <di:waypoint x="880" y="270" />
+        <di:waypoint x="940" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_EG_SuiteToCompare"
+                       bpmnElement="Flow_EG_SuiteToCompare">
+        <di:waypoint x="1040" y="270" />
+        <di:waypoint x="1100" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_EG_CompareToEnd"
+                       bpmnElement="Flow_EG_CompareToEnd">
+        <di:waypoint x="1200" y="270" />
+        <di:waypoint x="1262" y="270" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+  <!-- ================================================================
+       Diagram 1b — Triage Regression (expanded subprocess detail)
+       ================================================================ -->
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_TriageRegression"
+                      name="Triage Regression">
+    <bpmndi:BPMNPlane id="BPMNPlane_TriageRegression"
+                      bpmnElement="SubProcess_TriageRegression">
+
+      <bpmndi:BPMNShape id="Shape_StartEvent_TR" bpmnElement="StartEvent_TR">
+        <dc:Bounds x="170" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_FindLastPassing"
+                        bpmnElement="Task_FindLastPassing">
+        <dc:Bounds x="270" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_BuildSuspectRange"
+                        bpmnElement="Task_BuildSuspectRange">
+        <dc:Bounds x="430" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_ReportRange" bpmnElement="Task_ReportRange">
+        <dc:Bounds x="590" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_TR" bpmnElement="EndEvent_TR">
+        <dc:Bounds x="752" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TR_1" bpmnElement="Flow_TR_1">
+        <di:waypoint x="206" y="270" />
+        <di:waypoint x="270" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TR_2" bpmnElement="Flow_TR_2">
+        <di:waypoint x="370" y="270" />
+        <di:waypoint x="430" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TR_3" bpmnElement="Flow_TR_3">
+        <di:waypoint x="530" y="270" />
+        <di:waypoint x="590" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TR_4" bpmnElement="Flow_TR_4">
+        <di:waypoint x="690" y="270" />
+        <di:waypoint x="752" y="270" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

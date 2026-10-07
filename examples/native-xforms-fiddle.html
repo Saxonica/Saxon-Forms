@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Native XForms Fiddle</title>
+    <link rel="stylesheet" href="css/style.css" type="text/css" />
+    <script src="../Saxon-JS/SaxonJS3.rt.js"></script>
+    <script src="js/native-xforms-fiddle-bridge.js"></script>
+    <script>
+      window.addEventListener("load", function () {
+        SaxonJS.transform({
+          stylesheetLocation: "../sef/saxon-xforms.sef.json",
+          sourceLocation: "xml/native-xforms-fiddle.xml",
+          stylesheetParams: {
+            "xforms-file": "xml/native-xforms-fiddle.xml"
+          }
+        });
+      });
+    </script>
+  </head>
+  <body class="native-fiddle-page">
+    <h1 id="title">Native XForms Fiddle</h1>
+    <div class="demo-description">
+      <p>This version uses XForms controls/events for the host UI and calls a minimal JavaScript bridge to render nested XForms from editor text.</p>
+    </div>
+    <div id="xForm"></div>
+  </body>
+</html>

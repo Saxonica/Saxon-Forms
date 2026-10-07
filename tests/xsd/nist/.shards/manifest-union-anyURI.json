@@ -1,0 +1,30 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_union-anyURI": {
+      "valid_groups": [
+        "union-anyURI-float-enumeration",
+        "union-anyURI-float-enumeration-1",
+        "union-anyURI-float-enumeration-2",
+        "union-anyURI-float-enumeration-3",
+        "union-anyURI-float-enumeration-4",
+        "union-anyURI-float-pattern",
+        "union-anyURI-float-pattern-1",
+        "union-anyURI-float-pattern-2",
+        "union-anyURI-float-pattern-3",
+        "union-anyURI-float-pattern-4",
+        "union-anyURI-float-enumeration-5",
+        "union-anyURI-float-enumeration-6",
+        "union-anyURI-float-enumeration-7",
+        "union-anyURI-float-enumeration-8",
+        "union-anyURI-float-enumeration-9",
+        "union-anyURI-float-pattern-5",
+        "union-anyURI-float-pattern-6",
+        "union-anyURI-float-pattern-7",
+        "union-anyURI-float-pattern-8",
+        "union-anyURI-float-pattern-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

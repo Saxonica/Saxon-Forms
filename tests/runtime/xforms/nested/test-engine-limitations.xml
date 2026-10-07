@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Engine limitation fixtures for SAXON-LIMITATIONS #2/#3/#4/#5.
+  Loaded from nested path so relative submission resources diverge from page base.
+-->
+<xf:xform
+    xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:ev="http://www.w3.org/2001/xml-events">
+
+  <xf:model id="m-limitations">
+    <xf:instance id="empty-submit">
+      <data xmlns=""/>
+    </xf:instance>
+
+    <!-- #3: whole-instance replace target (no targetref) -->
+    <xf:instance id="detail">
+      <detail xmlns="">
+        <item mode="z" id="placeholder"><label>placeholder</label></item>
+      </detail>
+    </xf:instance>
+
+    <!-- #5: predicate driver -->
+    <xf:instance id="ui">
+      <ui xmlns="">
+        <mode>a</mode>
+      </ui>
+    </xf:instance>
+
+<!-- #3: root-absolute resource so load succeeds regardless of nested xform base.
+         #2 (page-vs-xform relative base) deferred: W3C ch11 requires document base. -->
+    <xf:submission id="load-detail"
+                   method="get"
+                   resource="/data/detail-payload.xml"
+                   replace="instance"
+                   instance="detail"
+                   serialization="none"/>
+
+    <xf:action ev:event="xforms-ready">
+      <xf:send submission="load-detail"/>
+    </xf:action>
+  </xf:model>
+
+  <div id="limitations-root">
+    <div id="status-section">
+      <span id="detail-count-output" class="detail-count">
+        <xf:output value="count(instance('detail')/item)"/>
+      </span>
+      <span id="filtered-count-output" class="filtered-count">
+        <xf:output value="count(instance('detail')/item[@mode = instance('ui')/mode])"/>
+      </span>
+      <span id="mode-output" class="mode-value">
+        <xf:output ref="instance('ui')/mode"/>
+      </span>
+    </div>
+
+    <!-- #5/#4: repeat nodeset depends on detail + ui -->
+    <xf:repeat id="filtered-props-repeat"
+               nodeset="instance('detail')/item[@mode = instance('ui')/mode]">
+      <div class="prop-row" data-testid="prop-row">
+        <span class="prop-id"><xf:output ref="@id"/></span>
+        <span class="prop-label"><xf:output ref="label"/></span>
+      </div>
+    </xf:repeat>
+
+    <div id="mode-controls">
+      <xf:select1 id="mode-select" ref="instance('ui')/mode" incremental="true" class="mode-select">
+        <xf:label>Mode</xf:label>
+        <xf:item>
+          <xf:label>A</xf:label>
+          <xf:value>a</xf:value>
+        </xf:item>
+        <xf:item>
+          <xf:label>B</xf:label>
+          <xf:value>b</xf:value>
+        </xf:item>
+      </xf:select1>
+    </div>
+
+    <xf:submit submission="load-detail" class="reload-detail">
+      <xf:label>Reload detail</xf:label>
+    </xf:submit>
+  </div>
+
+</xf:xform>

@@ -1,0 +1,51 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_list-language": {
+      "valid_groups": [
+        "list-language-enumeration",
+        "list-language-enumeration-1",
+        "list-language-enumeration-2",
+        "list-language-enumeration-3",
+        "list-language-enumeration-4",
+        "list-language-length",
+        "list-language-length-1",
+        "list-language-length-2",
+        "list-language-length-3",
+        "list-language-length-4",
+        "list-language-maxLength",
+        "list-language-maxLength-1",
+        "list-language-maxLength-2",
+        "list-language-maxLength-3",
+        "list-language-maxLength-4",
+        "list-language-minLength",
+        "list-language-minLength-1",
+        "list-language-minLength-2",
+        "list-language-minLength-3",
+        "list-language-minLength-4",
+        "list-language-pattern",
+        "list-language-pattern-1",
+        "list-language-pattern-2",
+        "list-language-pattern-3",
+        "list-language-pattern-4",
+        "list-language-whiteSpace",
+        "list-language-length-5",
+        "list-language-length-6",
+        "list-language-length-7",
+        "list-language-length-8",
+        "list-language-length-9",
+        "list-language-maxLength-5",
+        "list-language-maxLength-6",
+        "list-language-maxLength-7",
+        "list-language-maxLength-8",
+        "list-language-maxLength-9",
+        "list-language-minLength-5",
+        "list-language-minLength-6",
+        "list-language-minLength-7",
+        "list-language-minLength-8",
+        "list-language-minLength-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

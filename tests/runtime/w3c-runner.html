@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>W3C XForms Test Runner</title>
+  <script src="/lib/SaxonJS3.rt.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      var params = new URLSearchParams(window.location.search);
+      var testFile = params.get("test");
+      var sequenceTraceParam = (params.get("sequenceTrace") || "").toLowerCase();
+      var sequenceTraceEnabled = ["1", "true", "yes", "on"].indexOf(sequenceTraceParam) !== -1;
+      if (!testFile) {
+        document.getElementById("xForm").textContent = "No test file specified. Use ?test=filename.xhtml";
+        return;
+      }
+
+      fetch("/w3c-suite/" + testFile)
+        .then(function (r) { return r.text(); })
+        .then(function (xhtmlText) {
+          var parser = new DOMParser();
+          var doc = parser.parseFromString(xhtmlText, "application/xml");
+
+          var parseErr = doc.querySelector("parsererror");
+          if (parseErr) {
+            document.getElementById("xForm").textContent = "XML parse error: " + parseErr.textContent;
+            return;
+          }
+
+          // Detect document format and extract XForm content
+          var xfNs = "http://www.w3.org/2002/xforms";
+          var xhtmlNs = "http://www.w3.org/1999/xhtml";
+          var rootName = doc.documentElement.localName;
+          var rootNs = doc.documentElement.namespaceURI;
+
+          var xformDoc;
+
+          if (rootNs === xfNs && rootName === 'xform') {
+            // Already a standalone xf:xform document
+            xformDoc = doc;
+          } else {
+            // XHTML document — extract model + body into a standalone xf:xform
+            var model = doc.getElementsByTagNameNS(xfNs, "model")[0];
+            var head = doc.getElementsByTagNameNS(xhtmlNs, "head")[0];
+            var body = doc.getElementsByTagNameNS(xhtmlNs, "body")[0];
+
+            if (!body) {
+              document.getElementById("xForm").textContent = "No xhtml:body in " + testFile;
+              return;
+            }
+
+            // Collect all namespace declarations from root + head
+            var nsSet = {};
+            var root = doc.documentElement;
+            for (var a = 0; a < root.attributes.length; a++) {
+              var attr = root.attributes[a];
+              if (attr.name.startsWith('xmlns:') && attr.name !== 'xmlns:xhtml') {
+                nsSet[attr.name] = attr.value;
+              }
+            }
+            // Remap xforms: to xf:
+            if (nsSet['xmlns:xforms']) {
+              nsSet['xmlns:xf'] = nsSet['xmlns:xforms'];
+              delete nsSet['xmlns:xforms'];
+            }
+            if (!nsSet['xmlns:xf']) nsSet['xmlns:xf'] = xfNs;
+            if (!nsSet['xmlns:ev']) nsSet['xmlns:ev'] = 'http://www.w3.org/2001/xml-events';
+
+            var nsAttrs = '';
+            for (var key in nsSet) {
+              nsAttrs += ' ' + key + '="' + nsSet[key] + '"';
+            }
+
+            var s = new XMLSerializer();
+            var xformXml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+            xformXml += '<xf:xform' + nsAttrs + '>';
+
+            // Serialize all head children (model, head-level actions, etc.)
+            if (head) {
+              for (var i = 0; i < head.childNodes.length; i++) {
+                var child = head.childNodes[i];
+                if (child.nodeType === 1 && child.namespaceURI === xfNs) {
+                  xformXml += s.serializeToString(child);
+                }
+              }
+            }
+
+            // Serialize all body children
+            for (var i = 0; i < body.childNodes.length; i++) {
+              if (body.childNodes[i].nodeType === 1) {
+                xformXml += s.serializeToString(body.childNodes[i]);
+              }
+            }
+            xformXml += '</xf:xform>';
+
+            xformDoc = parser.parseFromString(xformXml, "application/xml");
+            var parseErr2 = xformDoc.querySelector("parsererror");
+            if (parseErr2) {
+              document.getElementById("xForm").textContent = "Generated XForm parse error: " + parseErr2.textContent;
+              return;
+            }
+          }
+
+          window.__w3cTestFile = testFile;
+          window.__w3cTestLoaded = false;
+
+          // TEST-TRACE: set xml:base on source document so resolve-uri() in the XSLT
+          // resolves @src/@resource relative to the XHTML file's directory, not the runner page;
+          // helps tests/w3c/ch03.spec.ts "3.2.2.a", "3.3.2.c", "3.3.2.f", tests/w3c/appendix.spec.ts "h.2"
+          var testBaseUrl = window.location.origin + '/w3c-suite/' + testFile.substring(0, testFile.lastIndexOf('/') + 1);
+          xformDoc.documentElement.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:base', testBaseUrl);
+
+          var stylesheetParams = {
+            "source-base-uri": testBaseUrl,
+            "sequence-template-trace": sequenceTraceEnabled ? "true" : "false"
+          };
+
+          SaxonJS.transform(
+            {
+              stylesheetLocation: "/sef/saxon-xforms.sef.json",
+              sourceNode: xformDoc,
+              stylesheetParams: stylesheetParams
+            },
+            "async"
+          ).then(function () {
+            window.__w3cTestLoaded = true;
+          });
+        })
+        .catch(function (err) {
+          document.getElementById("xForm").textContent = "Error loading " + testFile + ": " + err;
+        });
+    });
+  </script>
+<script src="/saxon-forms-crypto.js"></script>
+</head>
+
+<body>
+  <div id="xForm"></div>
+</body>
+
+</html>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xf:xform xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:demo="urn:saxon-xforms:demo">
+    <xf:model id="sample3-model">
+        <xf:instance id="sample3-data">
+            <demo:data>
+                <demo:name>Sample 3</demo:name>
+                <demo:category>stylesheet-driven</demo:category>
+            </demo:data>
+        </xf:instance>
+    </xf:model>
+
+    <xf:input ref="instance('sample3-data')/demo:name">
+        <xf:label>Name:</xf:label>
+    </xf:input>
+
+    <xf:select1 ref="instance('sample3-data')/demo:category" appearance="minimal">
+        <xf:label>Category:</xf:label>
+        <xf:item>
+            <xf:label>stylesheet-driven</xf:label>
+            <xf:value>stylesheet-driven</xf:value>
+        </xf:item>
+        <xf:item>
+            <xf:label>direct-load</xf:label>
+            <xf:value>direct-load</xf:value>
+        </xf:item>
+    </xf:select1>
+
+    <xf:output value="concat('Sample 3: ', instance('sample3-data')/demo:name, ' (', instance('sample3-data')/demo:category, ')')" class="block demo-output"/>
+</xf:xform>

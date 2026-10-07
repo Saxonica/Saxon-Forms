@@ -1,0 +1,51 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_list-string": {
+      "valid_groups": [
+        "list-string-enumeration",
+        "list-string-enumeration-1",
+        "list-string-enumeration-2",
+        "list-string-enumeration-3",
+        "list-string-enumeration-4",
+        "list-string-length",
+        "list-string-length-1",
+        "list-string-length-2",
+        "list-string-length-3",
+        "list-string-length-4",
+        "list-string-maxLength",
+        "list-string-maxLength-1",
+        "list-string-maxLength-2",
+        "list-string-maxLength-3",
+        "list-string-maxLength-4",
+        "list-string-minLength",
+        "list-string-minLength-1",
+        "list-string-minLength-2",
+        "list-string-minLength-3",
+        "list-string-minLength-4",
+        "list-string-pattern",
+        "list-string-pattern-1",
+        "list-string-pattern-2",
+        "list-string-pattern-3",
+        "list-string-pattern-4",
+        "list-string-whiteSpace",
+        "list-string-length-5",
+        "list-string-length-6",
+        "list-string-length-7",
+        "list-string-length-8",
+        "list-string-length-9",
+        "list-string-maxLength-5",
+        "list-string-maxLength-6",
+        "list-string-maxLength-7",
+        "list-string-maxLength-8",
+        "list-string-maxLength-9",
+        "list-string-minLength-5",
+        "list-string-minLength-6",
+        "list-string-minLength-7",
+        "list-string-minLength-8",
+        "list-string-minLength-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

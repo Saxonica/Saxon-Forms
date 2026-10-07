@@ -3,7 +3,7 @@
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     version="3.0">
     
-    <xsl:variable name="saxon-forms-javascript" as="xs:string">
+    <xsl:variable name="saxon-forms-javascript" as="xs:string*">
         var XFormsDoc = null;
         var XForm = null;
         var defaultInstance = null;
@@ -15,17 +15,52 @@
         var bindings = [];
         var actions = {};
         var eventActions = {};
+        var currentEventContextStack = [];
+        var submitSerializeBodyOverride = null;
+        var dispatchedEvents = [];
+        var switches = {}; // map switch ID to array of case IDs
+        var switchSelections = {};
+        var caseSwitches = {}; // map case ID to ID of parent switch
+        var cases = {}; 
         var submissions = {};
+        var submissionsInProgress = {};
         var outputs = {};
         var repeats = {};
         var repeatModelContexts = {};
         var repeatContextNodesets = {};       
+/* PERF-6a: map repeat ID → resolved instance ID for dirty-instance guard */
+        var repeatInstanceIds = {};
+        /* TEST-TRACE: PERF-6a multi-instance deps per repeat; helps tests/supplemental/engine-limitations.spec.ts "#5 mode change refreshes filtered repeat". */
+        var repeatInstanceDeps = {};
+        /* PERF-6b: map repeat ID → resolved nodeset (e.g. "instance('target')/o:control") */
+        var repeatRefs = {};
+        /* PERF-6b: queue of pending structural mutations for splice-based refresh */
+        var pendingMutations = [];
         
         var repeatIndexMap = {};
         var repeatSizeMap = {};
         var elementsUsingIndexFunction = {};
-                
+        var elementsContextUsingIndexFunction = {};
+        
         var deferredUpdateFlags = {};
+        /* PERF-6a: track which instance IDs were mutated so refreshRepeats-JS
+           can skip repeats bound to unaffected instances. */
+        var dirtyInstances = {};
+        /* TEST-TRACE: SAXON-LIMITATIONS #7 — per instance-root bind→node index for relevant/readonly
+           ancestor walks; helps tests/supplemental/mip-perf.spec.ts and trigger-mips / ch06. */
+        var mipBindIndex = {};
+        var hasRelevantBindsFlag = false;
+        var hasReadonlyBindsFlag = false;
+        var globalRelevantBindsFlag = false;
+        var globalReadonlyBindsFlag = false;
+        var instanceRelevantBinds = {};
+        var instanceReadonlyBinds = {};
+        var actionNestingDepth = 0;
+        /* TEST-TRACE: persist validity/required MIP state between revalidate and refresh;
+           helps tests/supplemental/saxon-forms-validation.spec.ts. */
+        var validationMIPs = {};
+        var visitedControls = {};
+        var forceFullValidationFeedback = false;
                 
         var getCurrentDate = function(){
             var today = new Date();
@@ -40,32 +75,72 @@
             return today;
         }
         
+        var reset = function() {
+            models = {}
+            instances = {};
+            modelDefaultInstanceKeyMap = {};
+            bindings = [];
+            actions = {};
+            eventActions = {};
+            currentEventContextStack = [];
+            submitSerializeBodyOverride = null;
+            dispatchedEvents = [];
+            switches = {}; // map switch ID to array of case IDs
+            switchSelections = {};
+            caseSwitches = {}; // map case ID to ID of parent switch
+            cases = {}; 
+            submissions = {};
+            submissionsInProgress = {};
+            outputs = {};
+            repeats = {};
+            repeatModelContexts = {};
+            repeatContextNodesets = {};       
+repeatInstanceIds = {};
+            repeatInstanceDeps = {};
+            repeatRefs = {};
+            pendingMutations = [];
+        
+            repeatIndexMap = {};
+            repeatSizeMap = {};
+            elementsUsingIndexFunction = {};
+            elementsContextUsingIndexFunction = {};
+            dirtyInstances = {};
+            mipBindIndex = {};
+            hasRelevantBindsFlag = false;
+            hasReadonlyBindsFlag = false;
+            globalRelevantBindsFlag = false;
+            globalReadonlyBindsFlag = false;
+            instanceRelevantBinds = {};
+            instanceReadonlyBinds = {};
+            actionNestingDepth = 0;
+            validationMIPs = {};
+            visitedControls = {};
+            forceFullValidationFeedback = false;
+            /* TEST-TRACE: preserve initial snapshots across reset */
+        }
+        
+        /* TEST-TRACE: snapshot initial instance data for xf:reset;
+           helps tests/w3c/ch10.spec.ts "10.a", "10.13.b" */
+        var initialInstances = {};
+        var saveInitialInstance = function(name, value) {
+            initialInstances[name] = value.cloneNode(true);
+        }
+        var getInitialInstance = function(name) {
+            return initialInstances[name] ? initialInstances[name].cloneNode(true) : null;
+        }
+        var restoreInitialInstances = function() {
+            for (var key in initialInstances) {
+                instances[key] = initialInstances[key].cloneNode(true);
+            }
+            /* TEST-TRACE: xf:reset clones invalidate MIP bind node index; helps tests/w3c/ch10.spec.ts */
+            mipBindIndex = {};
+        }
+        
         var setModel = function(name, value) {
             models[name] = value;
         }
         var getModel = function(name) {
             return models[name];
-        }
-        
-        
-        var setModelInstances = function(name, value) {
-            modelInstanceMap[name] = value;
-        } 
-        var setModelInstance = function(modelId, instanceId, value) {
-                    
-            if (modelId in modelInstanceMap) {
-                var modelInstances = modelInstanceMap[modelId];
-                modelInstances[instanceId] = value;
-            }
-            else {
-                instanceMap = {};
-                instanceMap[instanceId] = value;
-                modelInstanceMap[modelId] = instanceMap;
-            }
-        } 
-        
-        var setModelDefaultInstance = function(modelId, value) {
-            modelDefaultInstanceMap[modelId] = value;
         }
         
         var setModelDefaultInstanceKey = function(modelId, instanceId) {
@@ -74,34 +149,156 @@
         var getModelDefaultInstanceKey = function(modelId) {
             return modelDefaultInstanceKeyMap[modelId];
         }
-        
-        var getModelInstances = function(modelId) {
-            return modelInstanceMap[modelId];
-        } 
-        var getModelInstance = function(modelId, instanceId) {
-            var modelInstances = modelInstanceMap[modelId];
-            return modelInstances[instanceId];
-        }
-                
-        var setModelInstanceKey = function(modelId, instanceId) {
-            if (modelId in modelInstanceKeyMap) {
-                var modelInstanceKeys = modelInstanceKeyMap[modelId];
-                modelInstanceKeys.push(instanceId);
-            }
-            else {
-                modelInstanceKeyMap[modelId] = [instanceId];
-            }
-        }
-                
-        var getModelInstanceKeys = function(modelId) {
-            return modelInstanceKeyMap[modelId];
-        }
                 
         var setBinding = function(value) {
             bindings.push(value);
+            /* TEST-TRACE: bind registry change invalidates MIP node index; helps tests/supplemental/mip-perf.spec.ts */
+            mipBindIndex = {};
+            try {
+                var hasRel = false;
+                var hasRo = false;
+                var inst = '';
+                if (value) {
+                    if (typeof value.getAttribute === 'function') {
+                        hasRel = !!value.getAttribute('relevant');
+                        hasRo = !!value.getAttribute('readonly');
+                        inst = String(value.getAttribute('instance-context') || '');
+                    } else if (value.attributes) {
+                        hasRel = !!(value.attributes.relevant || (value.attributes.getNamedItem &amp;&amp; value.attributes.getNamedItem('relevant')));
+                        hasRo = !!(value.attributes.readonly || (value.attributes.getNamedItem &amp;&amp; value.attributes.getNamedItem('readonly')));
+                        var instAttr = value.attributes['instance-context'] || (value.attributes.getNamedItem &amp;&amp; value.attributes.getNamedItem('instance-context'));
+                        inst = instAttr ? String(instAttr.value || instAttr) : '';
+                    }
+                }
+                if (hasRel) {
+                    hasRelevantBindsFlag = true;
+                    if (inst) instanceRelevantBinds[inst] = true;
+                    else globalRelevantBindsFlag = true;
+                }
+                if (hasRo) {
+                    hasReadonlyBindsFlag = true;
+                    if (inst) instanceReadonlyBinds[inst] = true;
+                    else globalReadonlyBindsFlag = true;
+                }
+            } catch(e) {
+                hasRelevantBindsFlag = true;
+                hasReadonlyBindsFlag = true;
+                globalRelevantBindsFlag = true;
+                globalReadonlyBindsFlag = true;
+            }
         } 
         var getBindings = function() {
             return bindings;
+        }
+        var hasRelevantBinds = function() {
+            return hasRelevantBindsFlag === true;
+        }
+        var hasReadonlyBinds = function() {
+            return hasReadonlyBindsFlag === true;
+        }
+        var hasRelevantBindsForInstance = function(instanceId) {
+            if (!hasRelevantBindsFlag) return false;
+            if (globalRelevantBindsFlag) return true;
+            var id = String(instanceId || '');
+            return !id || instanceRelevantBinds[id] === true;
+        }
+        var hasReadonlyBindsForInstance = function(instanceId) {
+            if (!hasReadonlyBindsFlag) return false;
+            if (globalReadonlyBindsFlag) return true;
+            var id = String(instanceId || '');
+            return !id || instanceReadonlyBinds[id] === true;
+        }
+        /* TEST-TRACE: #7 MIP bind index API; first-bind-wins per generate-id(node);
+           helps tests/supplemental/mip-perf.spec.ts, trigger-mips.spec.ts, tests/w3c/ch06.spec.ts */
+        var clearMipBindIndex = function() {
+            mipBindIndex = {};
+            return true;
+        }
+        /* TEST-TRACE: #7 slice A — drop one instance bucket only; helps tests/supplemental/mip-perf.spec.ts detail replace */
+        var clearMipBindIndexForInstance = function(instanceId) {
+            var key = String(instanceId || '');
+            if (key &amp;&amp; (key in mipBindIndex)) {
+                delete mipBindIndex[key];
+            }
+            return true;
+        }
+        var _ensureMipBindIndexBucket = function(bucketKey) {
+            var key = String(bucketKey || '');
+            if (!mipBindIndex[key]) {
+                /* bucket key = instance id; node maps use generate-id within that instance doc */
+                mipBindIndex[key] = { relevant: {}, readonly: {}, relevantVal: {}, readonlyVal: {}, built: false };
+            }
+            return mipBindIndex[key];
+        }
+        var isMipBindIndexBuilt = function(bucketKey) {
+            var bucket = mipBindIndex[String(bucketKey || '')];
+            return !!(bucket &amp;&amp; bucket.built === true);
+        }
+        var markMipBindIndexBuilt = function(bucketKey) {
+            _ensureMipBindIndexBucket(bucketKey).built = true;
+            return true;
+        }
+        /* Store 1-based index into bindings[] (not XDM nodes — safer JS round-trip). */
+        var putMipRelevantBindIndex = function(rootKey, nodeId, bindIndex) {
+            var bucket = _ensureMipBindIndexBucket(rootKey);
+            var id = String(nodeId || '');
+            var idx = Number(bindIndex);
+            if (id &amp;&amp; !(id in bucket.relevant) &amp;&amp; idx &gt;= 1) {
+                bucket.relevant[id] = idx;
+            }
+            return true;
+        }
+        var putMipReadonlyBindIndex = function(rootKey, nodeId, bindIndex) {
+            var bucket = _ensureMipBindIndexBucket(rootKey);
+            var id = String(nodeId || '');
+            var idx = Number(bindIndex);
+            if (id &amp;&amp; !(id in bucket.readonly) &amp;&amp; idx &gt;= 1) {
+                bucket.readonly[id] = idx;
+            }
+            return true;
+        }
+        var getMipRelevantBindIndex = function(rootKey, nodeId) {
+            var bucket = mipBindIndex[String(rootKey || '')];
+            if (!bucket) return 0;
+            var found = bucket.relevant[String(nodeId || '')];
+            return (found === undefined || found === null) ? 0 : Number(found);
+        }
+        var getMipReadonlyBindIndex = function(rootKey, nodeId) {
+            var bucket = mipBindIndex[String(rootKey || '')];
+            if (!bucket) return 0;
+            var found = bucket.readonly[String(nodeId || '')];
+            return (found === undefined || found === null) ? 0 : Number(found);
+        }
+        var putMipRelevantValue = function(rootKey, nodeId, value) {
+            var bucket = _ensureMipBindIndexBucket(rootKey);
+            var id = String(nodeId || '');
+            if (id &amp;&amp; !(id in bucket.relevantVal)) {
+                bucket.relevantVal[id] = (value === true || String(value) === 'true');
+            }
+            return true;
+        }
+        var putMipReadonlyValue = function(rootKey, nodeId, value) {
+            var bucket = _ensureMipBindIndexBucket(rootKey);
+            var id = String(nodeId || '');
+            if (id &amp;&amp; !(id in bucket.readonlyVal)) {
+                bucket.readonlyVal[id] = (value === true || String(value) === 'true');
+            }
+            return true;
+        }
+        /* Returns '' if unknown, 'true'/'false' if cached */
+        var getMipRelevantValue = function(rootKey, nodeId) {
+            var bucket = mipBindIndex[String(rootKey || '')];
+            if (!bucket) return '';
+            var id = String(nodeId || '');
+            if (!(id in bucket.relevantVal)) return '';
+            return bucket.relevantVal[id] ? 'true' : 'false';
+        }
+        var getMipReadonlyValue = function(rootKey, nodeId) {
+            var bucket = mipBindIndex[String(rootKey || '')];
+            if (!bucket) return '';
+            var id = String(nodeId || '');
+            if (!(id in bucket.readonlyVal)) return '';
+            return bucket.readonlyVal[id] ? 'true' : 'false';
         }
 
 
@@ -124,6 +321,8 @@
                 
         var setInstance = function(name, value) {
             instances[name] = value;
+            /* TEST-TRACE: #7 slice A — invalidate only this instance MIP bucket; helps tests/supplemental/mip-perf.spec.ts */
+            clearMipBindIndexForInstance(name);
         } 
                 
         var getInstance = function(name) {
@@ -169,6 +368,70 @@
         var clearDeferredUpdateFlags = function() {
             Object.keys(deferredUpdateFlags).forEach(clearDeferredUpdateFlag); 
         }
+        /* PERF-6a: dirty-instance helpers */
+        var addDirtyInstance = function(id) {
+            dirtyInstances[id] = true;
+        }
+        var isDirtyInstance = function(id) {
+            return dirtyInstances[id] === true;
+        }
+        var hasDirtyInstances = function() {
+            return Object.keys(dirtyInstances).length > 0;
+        }
+        var clearDirtyInstances = function() {
+            dirtyInstances = {};
+        }
+        /* TEST-TRACE: validation MIP registry helpers for refresh-time CSS class projection;
+           helps tests/supplemental/saxon-forms-validation.spec.ts. */
+        var _validationMipKey = function(instanceId, ref) {
+            return String(instanceId || '') + '|' + String(ref || '');
+        }
+        var setValidationMIP = function(instanceId, ref, valid, required) {
+            var key = _validationMipKey(instanceId, ref);
+            validationMIPs[key] = {
+                valid: String(valid) === 'true',
+                required: String(required) === 'true'
+            };
+            return true;
+        }
+        var getValidationMIPValid = function(instanceId, ref) {
+            var key = _validationMipKey(instanceId, ref);
+            if (!(key in validationMIPs)) return '';
+            return validationMIPs[key].valid ? 'true' : 'false';
+        }
+        var getValidationMIPRequired = function(instanceId, ref) {
+            var key = _validationMipKey(instanceId, ref);
+            if (!(key in validationMIPs)) return '';
+            return validationMIPs[key].required ? 'true' : 'false';
+        }
+        var clearValidationMIPs = function() {
+            validationMIPs = {};
+            return true;
+        }
+        var markControlVisited = function(instanceId, ref) {
+            var key = _validationMipKey(instanceId, ref);
+            visitedControls[key] = true;
+            return true;
+        }
+        var isControlVisited = function(instanceId, ref) {
+            var key = _validationMipKey(instanceId, ref);
+            return visitedControls[key] === true;
+        }
+        var clearVisitedControls = function() {
+            visitedControls = {};
+            return true;
+        }
+        var setForceFullValidationFeedback = function(value) {
+            forceFullValidationFeedback = (value === true || String(value) === 'true');
+            return true;
+        }
+        var isForceFullValidationFeedback = function() {
+            return forceFullValidationFeedback === true;
+        }
+        var clearForceFullValidationFeedback = function() {
+            forceFullValidationFeedback = false;
+            return true;
+        }
                 
         var getDeferredUpdateFlag = function(name) {
             return deferredUpdateFlags[name];
@@ -188,17 +451,144 @@
         
         var addEventAction = function(name, value){
             eventActions[name] = value;
-            console.log('[xforms-javascript-library] Adding action for event ' + name);
+            //console.log('[xforms-javascript-library] Adding action for event ' + name);
         }
         
         var getEventAction = function(name){
             return eventActions[name];
         }
+        var recordDispatchedEvent = function(name, context){
+            var eventRecord = {
+                name: String(name || ''),
+                context: {}
+            };
+            if (context) {
+                var extract = function(key) {
+                    var value = null;
+                    if (context &amp;&amp; typeof context.get === 'function') {
+                        value = context.get(key);
+                    } else if (context &amp;&amp; typeof context === 'object') {
+                        value = context[key];
+                    }
+                    if (value !== null &amp;&amp; value !== undefined) {
+                        eventRecord.context[key] = String(value);
+                    }
+                };
+                ['targetid', 'error-type', 'resource-uri', 'response-status-code', 'response-reason-phrase'].forEach(extract);
+            }
+            dispatchedEvents.push(eventRecord);
+            if (dispatchedEvents.length &gt; 200) {
+                dispatchedEvents.shift();
+            }
+            return true;
+        }
+        var getDispatchedEvents = function(){
+            return dispatchedEvents.slice();
+        }
+        var clearDispatchedEvents = function(){
+            dispatchedEvents = [];
+            return true;
+        }
+        var pushCurrentEventContext = function(context){
+            currentEventContextStack.push(context || {});
+            return true;
+        }
+        
+        var popCurrentEventContext = function(){
+            if (currentEventContextStack.length > 0) {
+                currentEventContextStack.pop();
+            }
+            return true;
+        }
+        
+        var getCurrentEventContext = function(){
+            if (currentEventContextStack.length > 0) {
+                return currentEventContextStack[currentEventContextStack.length - 1];
+            }
+            return null;
+        }
+        
+        var getCurrentEventProperty = function(name){
+            var ctx = getCurrentEventContext();
+            if (!ctx) {
+                return null;
+            }
+            if (typeof ctx.get === 'function') {
+                return ctx.get(name);
+            }
+            return ctx[name];
+        }
+        var setCurrentEventProperty = function(name, value){
+            var ctx = getCurrentEventContext();
+            if (!ctx) {
+                return null;
+            }
+            if (typeof ctx.set === 'function') {
+                ctx = ctx.set(name, value);
+                currentEventContextStack[currentEventContextStack.length - 1] = ctx;
+            } else {
+                ctx[name] = value;
+            }
+            return value;
+        }
+        var setSubmitSerializeBodyOverride = function(value){
+            submitSerializeBodyOverride = value;
+            return value;
+        }
+        var getSubmitSerializeBodyOverride = function(){
+            return submitSerializeBodyOverride;
+        }
+        var clearSubmitSerializeBodyOverride = function(){
+            submitSerializeBodyOverride = null;
+            return true;
+        }
+        
                 
         var updateAction = function(actioni, key, value){
             actioni[key] = value;
             return actioni;
         }
+        
+        var addSwitch = function(name, value){
+            switches[name] = value;
+        }
+        
+        var getSwitch = function(name){
+            return switches[name];
+        }
+        
+        var setSwitchSelection = function(name, value){
+            switchSelections[name] = value;
+        }
+        
+        var getSwitchSelection = function(name){
+            return switchSelections[name];
+        }
+        
+        var setCaseSwitch = function(name, value){
+            caseSwitches[name] = value;
+        }
+        
+        var getCaseSwitch = function(name){
+            return caseSwitches[name];
+        }
+        
+        var setCaseStatus = function(name, value){
+            cases[name] = value;
+        }
+        
+        var getCaseStatus = function(name){
+            return cases[name];
+        }
+        
+        var selectCase = function(name){
+            cases[name] = 'true';
+        }
+        var deselectCase = function(name){
+            cases[name] = 'false';
+        }
+        
+        
                 
         var addSubmission = function(name, value){
             submissions[name] = value;
@@ -206,7 +596,16 @@
                 
         var getSubmission = function(name){
             return submissions[name];
-        }     
+        }
+        var setSubmissionInProgress = function(name, value){
+            submissionsInProgress[name] = (value === true);
+        }
+        var clearSubmissionInProgress = function(name){
+            delete submissionsInProgress[name];
+        }
+        var isSubmissionInProgress = function(name){
+            return submissionsInProgress[name] === true;
+        }
                 
         var addOutput = function(name, value){
             outputs[name] = value;
@@ -215,12 +614,48 @@
         var getOutput = function(name){
             return outputs[name];
         }
+        
+        var removeOutput = function(name){
+            if (name in outputs) {
+                delete outputs[name];
+            }
+        }
                 
         var getOutputKeys = function() {
             return Object.keys(outputs);
         }
+        /* TEST-TRACE: check whether output needs refresh based on dirtyInstances;
+           helps tests/supplemental/mip-perf.spec.ts */
+        var isDirtyOutput = function(instanceId, refExpr, valExpr) {
+            if (!hasDirtyInstances()) return true;
+            var inst = String(instanceId || '');
+            if (inst &amp;&amp; dirtyInstances[inst]) return true;
+            var str = String(refExpr || '') + ' ' + String(valExpr || '');
+            if (str.indexOf('instance(') !== -1) {
+                var re = /instance\s*\(\s*['\x22]([^'\x22]+)['\x22]\s*\)/g;
+                var m;
+                while ((m = re.exec(str)) !== null) {
+                    if (dirtyInstances[m[1]]) return true;
+                }
+            }
+            return !inst;
+        }
+        var pushActionContext = function() {
+            actionNestingDepth++;
+            return actionNestingDepth;
+        }
+        var popActionContext = function() {
+            if (actionNestingDepth > 0) actionNestingDepth--;
+            return actionNestingDepth;
+        }
+        var getActionNestingDepth = function() {
+            return actionNestingDepth;
+        }
+        var isTopLevelActionContext = function() {
+            return actionNestingDepth === 0;
+        }
                 
-        // repeats is a map of HTML IDs to (parsed) xf:repeat/@nodeset values
+        // repeats is a map of HTML IDs to xf:repeat elements
         var addRepeat = function(name, value){
             repeats[name] = value;
         }
@@ -239,6 +674,76 @@
         }
         var getRepeatContext = function(name){
             return repeatContextNodesets[name];
+        }
+/* PERF-6a: store/retrieve the resolved instance ID for each repeat */
+        var setRepeatInstanceId = function(name, value) {
+            repeatInstanceIds[name] = value;
+        }
+        var getRepeatInstanceId = function(name) {
+            return repeatInstanceIds[name] || "";
+        }
+        /* TEST-TRACE: extract instance('id') tokens from repeat nodeset for multi-dep dirty checks;
+           helps tests/supplemental/engine-limitations.spec.ts "#5 mode change refreshes filtered repeat". */
+        var setRepeatInstanceDeps = function(name, nodesetExpr) {
+            var deps = [];
+            var seen = {};
+            var primary = repeatInstanceIds[name] || "";
+            if (primary) {
+                deps.push(primary);
+                seen[primary] = true;
+            }
+            var src = String(nodesetExpr || "");
+var re = /instance\s*\(\s*['\x22]([^'\x22]+)['\x22]\s*\)/g;
+            var m;
+            while ((m = re.exec(src)) !== null) {
+                var id = m[1];
+if (id &amp;&amp; !seen[id]) {
+                    deps.push(id);
+                    seen[id] = true;
+                }
+            }
+            repeatInstanceDeps[name] = deps;
+        }
+        var getRepeatInstanceDeps = function(name) {
+            if (repeatInstanceDeps[name] &amp;&amp; repeatInstanceDeps[name].length) {
+                return repeatInstanceDeps[name];
+            }
+            var primary = getRepeatInstanceId(name);
+            return primary ? [primary] : [];
+        }
+var isDirtyRepeat = function(name) {
+            var deps = getRepeatInstanceDeps(name);
+            for (var i = 0; i &lt; deps.length; i++) {
+                if (isDirtyInstance(deps[i])) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        /* PERF-6b: store/retrieve the repeat's own resolved nodeset */
+        var setRepeatRef = function(name, value) {
+            repeatRefs[name] = value;
+        }
+        var getRepeatRef = function(name) {
+            return repeatRefs[name] || "";
+        }
+        /* PERF-6b: pending structural mutation tracking */
+        var addPendingMutation = function(type, instanceId, newPosition) {
+            pendingMutations.push({type: type, instanceId: instanceId, position: newPosition});
+        }
+        var getPendingAppendForInstance = function(instanceId) {
+            for (var i = 0; i &lt; pendingMutations.length; i++) {
+                if (pendingMutations[i].instanceId === instanceId &amp;&amp; pendingMutations[i].type === "append") {
+                    return pendingMutations[i].position;
+                }
+            }
+            return 0;
+        }
+        var hasPendingMutations = function() {
+            return pendingMutations.length > 0;
+        }
+        var clearPendingMutations = function() {
+            pendingMutations = [];
         }
         
         var getRepeatKeys = function() {
@@ -261,6 +766,12 @@
             else {
                 return 0;
             }
+        }
+        
+        /* TEST-TRACE: check if a repeat ID has been registered;
+           helps tests/w3c/ch07.spec.ts "7.7.5.b" */
+        var isRepeatRegistered = function(name) {
+            return typeof(repeatIndexMap[name]) != 'undefined';
         } 
                 
         var setRepeatSize = function(name, value) {
@@ -287,7 +798,15 @@
         var getElementsUsingIndexFunctionKeys = function() {
             return Object.keys(elementsUsingIndexFunction);
         }
-                
+
+        var setElementContextUsingIndexFunction = function(name, value) {
+            elementsContextUsingIndexFunction[name] = value;
+        } 
+
+        var getElementContextUsingIndexFunction = function(name) {
+            return elementsContextUsingIndexFunction[name];
+        }
+
                 
         var startTime = function(name) {
             console.time(name);
@@ -316,11 +835,165 @@
              }
          }
                 
+         /* TEST-TRACE: enhanced setFocus with suffixed-ID fallback and group-to-child focus;
+            helps tests/w3c/ch09.spec.ts "9.1.1.c", tests/w3c/ch10.spec.ts "10.7.a" */
          var setFocus = function(id) {
             var item = document.getElementById(id);
-            item.focus();
-            // alert('setFocus on ' + id);
+            /* fallback: rendered IDs have position suffix (e.g. "shipping-0") */
+            if (!item) {
+                item = document.querySelector('[id^="' + id + '-"]');
+            }
+            if (!item) return;
+            /* if target is a group/div, focus the first focusable child */
+            var focusable = item;
+            if (item.tagName !== 'INPUT' &amp;&amp; item.tagName !== 'TEXTAREA' &amp;&amp; item.tagName !== 'SELECT') {
+                var child = item.querySelector('input, textarea, select, [tabindex]');
+                if (child) focusable = child;
+            }
+            focusable.focus();
          }
+         
+         var isActiveElement = function(id) {
+            var active = document.activeElement;
+            return !!(active &amp;&amp; active.id === id);
+         }
+         
+         var setValue = function(id,val) {
+             var item = document.getElementById(id);
+             item.value = val;
+         }
+         
+         var setCheckboxValue = function(id,val) {
+            var item = document.getElementById(id);
+            if (val == 'true') {
+                item.checked = true;
+            }
+            else {
+                item.checked = false;
+            }
+         }
+         
+         var setSrc = function(id,val) {
+            var item = document.getElementById(id);
+            item.src = val;
+         }
+         
+         var debugAlert = function(message) {
+            alert(message);
+         }
+
+         /**
+          * Read a File object as XML, parse it, and replace the named
+          * XForms instance with the parsed document element.
+          * Triggers deferred updates (rebuild, recalculate, revalidate, refresh).
+          *
+          * Called from XSLT via: ixsl:call(ixsl:window(), 'readFileAsXML', [$file, $instanceId])
+          */
+         var readFileAsXML = function(file, instanceId) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(e.target.result, 'application/xml');
+                    var parseError = doc.querySelector('parsererror');
+                    if (parseError) {
+                        alert('Invalid XML file: ' + parseError.textContent);
+                        return;
+                    }
+                    setInstance(instanceId, doc.documentElement);
+                    setDeferredUpdateFlags(['rebuild','recalculate','revalidate','refresh']);
+                    // Trigger refresh by clicking the hidden refresh trigger
+                    // (bridges async JS back into XSLT processing pipeline)
+                    var refreshBtn = document.querySelector('button[data-action*="upload-refresh-trigger"]');
+                    if (refreshBtn) { refreshBtn.click(); }
+                } catch(err) {
+                    alert('Error processing file: ' + err.message);
+                }
+            };
+            reader.onerror = function() { alert('File read error'); };
+            reader.readAsText(file);
+         }
+
+         /**
+          * Open a file picker, read an XML file, parse it, and replace
+          * the named XForms instance. Returns a Promise that resolves
+          * to the root element name of the uploaded document (or rejects
+          * on cancel/error).
+          *
+          * Called from XSLT via: ixsl:call(ixsl:window(), 'uploadAndSetInstance', [instanceId])
+          */
+         var uploadAndSetInstance = function(instanceId) {
+            return new Promise(function(resolve, reject) {
+                var input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.xml';
+                input.onchange = function() {
+                    if (!input.files || !input.files[0]) {
+                        reject('No file selected');
+                        return;
+                    }
+                    var file = input.files[0];
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            var parser = new DOMParser();
+                            var doc = parser.parseFromString(e.target.result, 'application/xml');
+                            var parseError = doc.querySelector('parsererror');
+                            if (parseError) {
+                                reject('XML parse error: ' + parseError.textContent);
+                                return;
+                            }
+                            // Store as instance via Saxon-Forms JS API
+                            setInstance(instanceId, doc.documentElement);
+                            // Set deferred update flags so Saxon-Forms refreshes
+                            setDeferredUpdateFlags(['rebuild','recalculate','revalidate','refresh']);
+                            resolve(doc.documentElement.localName);
+                        } catch(err) {
+                            reject('Error processing file: ' + err.message);
+                        }
+                    };
+                    reader.onerror = function() { reject('File read error'); };
+                    reader.readAsText(file);
+                };
+                input.click();
+            });
+         }
+         
+        /* TEST-TRACE: crypto bridge for digest()/hmac(); uses @noble/hashes if loaded;
+           returns empty string when library is unavailable;
+           helps tests/w3c/ch07.spec.ts "7.8.3.*", "7.8.4.*" */
+        var _nobleAlgMap = {
+            'MD5': 'md5', 'SHA-1': 'sha1', 'SHA-256': 'sha256',
+            'SHA-384': 'sha384', 'SHA-512': 'sha512'
+        };
+        var _toBytes = function(s) { return new TextEncoder().encode(s); };
+        
+        var computeDigest = function(data, algorithm, encoding) {
+            if (typeof nobleHashes === 'undefined') return '';
+            var algKey = _nobleAlgMap[algorithm];
+            if (!algKey) return '';
+            var hashFn = nobleHashes[algKey];
+            if (!hashFn) return '';
+            var hashBytes = hashFn(_toBytes(data));
+            if (!encoding || encoding === 'base64') {
+                return btoa(String.fromCharCode.apply(null, hashBytes));
+            }
+            return nobleHashes.bytesToHex(hashBytes);
+        };
+        
+        var computeHmac = function(key, data, algorithm, encoding) {
+            if (typeof nobleHashes === 'undefined' || !nobleHashes.hmac) return '';
+            var algKey = _nobleAlgMap[algorithm];
+            if (!algKey) return '';
+            var hashFn = nobleHashes[algKey];
+            if (!hashFn) return '';
+            var macBytes = nobleHashes.hmac(hashFn, _toBytes(key), _toBytes(data));
+            if (!encoding || encoding === 'base64') {
+                return btoa(String.fromCharCode.apply(null, macBytes));
+            }
+            return nobleHashes.bytesToHex(macBytes);
+        };
+        <xsl:value-of select="$saxon-forms-web-components-javascript"/>
          
     </xsl:variable>
 </xsl:stylesheet>

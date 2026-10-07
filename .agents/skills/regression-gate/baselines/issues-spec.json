@@ -1,0 +1,14 @@
+{
+  "suite_id": "issues-spec",
+  "test_path": "tests/supplemental/issues.spec.ts",
+  "config_path": "playwright.config.ts",
+  "last_updated": "2026-08-25T14:54:21.924Z",
+  "stats": {
+    "total": 20,
+    "passed": 20,
+    "failed": 0,
+    "flaky": 0,
+    "skipped": 0
+  },
+  "allowed_failures": []
+}

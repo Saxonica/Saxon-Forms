@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xmlns="http://docbook.org/ns/docbook" id="chapter-data-types-and-mips" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <title>Data Types and Model Item Properties</title>
+    <para>This chapter documents data typing support (including XSD-derived constraints) and the mapping between XForms model item properties and runtime state propagation into rendered controls.</para>
+
+    <section id="chapter-data-types-support">
+        <title>Data types and XSD support</title>
+        <para>SaxonForms provides partial XSD type validation through the
+                <literal>xsd-helpers.xsl</literal> package. Type validation occurs during the
+            revalidate phase via <literal>check-instance-xsi-types()</literal> in
+                <literal>src/saxon-xforms.xsl</literal>.</para>
+
+        <section id="chapter-data-types-canonical">
+            <title>Type normalization</title>
+            <para>The <literal>xsdh:canonical-type()</literal> function in <literal>src/xsd-helpers.xsl</literal> normalizes type QNames to a canonical form. It handles the <literal>xs:</literal> and <literal>xsd:</literal> prefixes and maps type names to their XSD 1.1 canonical equivalents. This normalization ensures consistent type comparison regardless of prefix usage in the XForms source.</para>
+        </section>
+
+        <section id="chapter-data-types-validation">
+            <title>Type validation</title>
+            <para>The <literal>xsdh:is-type-valid()</literal> function in <literal>src/xsd-helpers.xsl</literal> validates a string value against an XSD type name. It supports the common XSD simple types: <literal>xs:string</literal>, <literal>xs:integer</literal>, <literal>xs:decimal</literal>, <literal>xs:double</literal>, <literal>xs:float</literal>, <literal>xs:boolean</literal>, <literal>xs:date</literal>, <literal>xs:dateTime</literal>, <literal>xs:time</literal>, <literal>xs:anyURI</literal>, and others. Validation uses <literal>castable as</literal> expressions where possible.</para>
+            <para>Limitation: The <literal>type</literal> MIP on <literal>xforms:bind</literal> is parsed but not fully enforced — the bind <literal>@type</literal> attribute is recognized but instance data is not rejected based on type mismatch during the revalidate phase. This affects 6 W3C tests related to schema type validation.</para>
+        </section>
+
+        <section id="chapter-data-types-coercion">
+            <title>Type coercion in XPath evaluation</title>
+            <para>XPath 3.1 is stricter about type coercion than XForms expects. SaxonForms wraps
+                calculate and relevant expressions in try/catch blocks to handle empty-string
+                arithmetic crashes (e.g., <literal>'' + 1</literal> throws in XPath 3.1 but should
+                produce NaN in XForms). </para>
+            <para>Similarly, the <literal>xforms:min()</literal> and <literal>xforms:max()</literal>
+                wrappers in <literal>src/xforms-function-library.xsl</literal> return NaN instead of
+                throwing XPath 3.1 type errors when applied to non-numeric sequences, matching
+                XForms semantics.</para>
+        </section>
+    </section>
+
+    <section id="chapter-mips-mapping">
+        <title>Model item properties to runtime/DOM mapping</title>
+        <para>MIPs are defined on <literal>xforms:bind</literal> elements within <literal>xforms:model</literal>. During the rebuild phase, binds are processed by <literal>add-context</literal> mode in <literal>src/saxon-xforms.xsl</literal> to resolve their <literal>@nodeset</literal> to absolute instance paths. During recalculate, <literal>xforms-recalculate-binding</literal> evaluates each MIP expression.</para>
+
+        <section id="chapter-mips-readonly">
+            <title>readonly</title>
+            <para>The <literal>@readonly</literal> MIP expression is evaluated as a boolean. When
+                    <literal>true()</literal>, SaxonForms sets the HTML
+                    <literal>disabled</literal>/<literal>readonly</literal> attribute on the
+                corresponding control. Readonly propagates by inheritance: if a parent bind is
+                readonly, child binds inherit readonly status.</para>
+        </section>
+
+        <section id="chapter-mips-relevant">
+            <title>relevant</title>
+            <para>The <literal>@relevant</literal> MIP expression is evaluated as a boolean. When <literal>false()</literal>, the bound control is hidden from the DOM. The <literal>refreshRelevantFields-JS</literal> and <literal>getRelevantStatus</literal> templates in <literal>src/saxon-xforms.xsl</literal> handle the show/hide logic during the refresh phase. Controls within an irrelevant group or case are also hidden.</para>
+        </section>
+
+        <section id="chapter-mips-required">
+            <title>required</title>
+            <para>The <literal>@required</literal> MIP expression is evaluated as a boolean. When <literal>true()</literal>, the control is marked with a CSS class (via <literal>getHtmlClass</literal> in <literal>src/saxon-xforms.xsl</literal>) and empty values cause the node to be invalid. Validation is performed by <literal>check-required-fields()</literal> and <literal>check-required-bindings()</literal>. During revalidate, required state is also persisted in the validation MIP registry and then projected in refresh as <literal>xforms-required</literal>/<literal>xforms-optional</literal> class tokens.</para>
+        </section>
+
+        <section id="chapter-mips-constraint">
+            <title>constraint</title>
+            <para>The <literal>@constraint</literal> MIP is an XPath boolean expression evaluated
+                against the bound node. When the constraint evaluates to <literal>false()</literal>,
+                the node is invalid and <literal>xforms-invalid</literal> is dispatched. Validation
+                is performed by <literal>check-constraints-on-fields()</literal> and
+                    <literal>check-constraints-on-bindings()</literal> in
+                    <literal>src/saxon-xforms.xsl</literal>. Constraint validation events
+                    (<literal>xforms-valid</literal>/<literal>xforms-invalid</literal>) now dispatch
+                after setvalue changes constraint state.  Revalidate persists resulting validity in
+                the validation MIP registry, and refresh projects this as
+                    <literal>xforms-valid</literal>/<literal>xforms-invalid</literal> class
+                tokens.</para>
+        </section>
+        <section id="chapter-mips-validation-registry">
+            <title>Revalidate-to-refresh MIP state projection</title>
+            <para>At the start of each <literal>xforms-revalidate</literal> cycle, the JavaScript-side validation MIP registry is cleared and rebuilt for controls carrying <literal>@data-ref</literal> and <literal>@instance-context</literal>. Entries are keyed by instance ID plus reference path and store both validity and required flags.</para>
+            <para>In <literal>refreshOutputs-JS</literal>, these registry values are read and merged with existing additional class values before class computation. This ensures validation/required class state survives explicit <literal>xf:revalidate</literal> followed by <literal>xf:refresh</literal>, and class updates are applied both to the control element and to its wrapper parent for <literal>input</literal>/<literal>select</literal>/<literal>textarea</literal>.</para>
+        </section>
+
+        <section id="chapter-mips-calculate">
+            <title>calculate</title>
+            <para>The <literal>@calculate</literal> MIP is an XPath expression whose result replaces
+                the bound node's value on each recalculate cycle. Evaluation is handled by
+                    <literal>xforms-recalculate-binding</literal> using
+                    <literal>evaluate-xpath-with-context-node()</literal> in
+                    <literal>src/saxon-xforms.xsl</literal>. Calculate expressions containing
+                    <literal>position()</literal> or <literal>last()</literal> have actual nodeset
+                position/size pre-substituted before evaluation.</para>
+        </section>
+
+        <section id="chapter-mips-binding-resolution">
+            <title>Binding resolution</title>
+            <para>When a control references a bind (via <literal>@bind</literal>) or a nodeset (via <literal>@ref</literal>/<literal>@nodeset</literal>), the <literal>get-properties</literal> mode template in <literal>src/saxon-xforms.xsl</literal> resolves the binding to a concrete instance node and matching bind element. The resolution process:</para>
+            <orderedlist>
+                <listitem><para>If <literal>@bind</literal> is present, look up the bind element by ID using <literal>$binding-referenced-by-id</literal>.</para></listitem>
+                <listitem><para>Resolve the model context via <literal>$context-model</literal> — either from the bind's parent model or the default model.</para></listitem>
+                <listitem><para>Resolve the instance context via <literal>$instance-context</literal> — extracted from the nodeset expression by <literal>xforms:getInstanceId()</literal>.</para></listitem>
+                <listitem><para>If no explicit bind, match by nodeset: evaluate both the control's <literal>@ref</literal> and each bind's <literal>@nodeset</literal> against the instance, and compare resulting nodes via <literal>$binding-matching-nodeset</literal>.</para></listitem>
+            </orderedlist>
+            <para>During required/constraint/type validation checks, control-bound references are resolved with instance awareness: when a control carries <literal>@instance-context</literal>, SaxonForms evaluates <literal>@data-ref</literal> through <literal>xforms:evaluate-xpath-with-instance-id()</literal>; otherwise it falls back to context-node evaluation against the active instance root.</para>
+        </section>
+    </section>
+
+    <section id="chapter-data-types-mip-diagram">
+        <title>Data types and MIP propagation diagram</title>
+        <para>The following sequence diagram illustrates the flow from bind definition through rebuild, recalculate, revalidate, and refresh, showing how MIP values propagate to DOM controls.</para>
+        <mediaobject>
+            <imageobject>
+                <imagedata fileref="../diagrams/data-types-mip-flow.svg" format="SVG" width="100%" scalefit="1"/>
+            </imageobject>
+        </mediaobject>
+    </section>
+</chapter>

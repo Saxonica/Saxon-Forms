@@ -1,0 +1,18 @@
+{
+  "suite_id": "w3c-ch11",
+  "test_path": "tests/xforms/w3c/ch11.spec.ts",
+  "config_path": "playwright.config.ts",
+  "last_updated": "2026-08-25T14:59:57.214Z",
+  "stats": {
+    "total": 84,
+    "passed": 81,
+    "failed": 3,
+    "flaky": 0,
+    "skipped": 0
+  },
+  "allowed_failures": [
+    "W3C Ch11 [behavioral promoted] › 11.1.h — validate true errors; validate false submits",
+    "W3C Ch11 [behavioral promoted] › 11.1.p — 11.1.p standalone attribute of submission element",
+    "W3C Ch11 [behavioral promoted] › 11.1.v — 11.1.v includenamespaceprefixes attribute of submission element"
+  ]
+}

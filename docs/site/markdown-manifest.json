@@ -1,0 +1,24 @@
+{
+  "markdown_documents": [
+    {
+      "source": "README.md",
+      "title": "README"
+    },
+    {
+      "source": "CONTRIBUTING.md",
+      "title": "Contributing guide"
+    },
+    {
+      "source": "SETUP.md",
+      "title": "Setup guide"
+    },
+    {
+      "source": "tests/xforms/w3c/STATUS.md",
+      "title": "W3C coverage status"
+    }
+  ],
+  "docbook": {
+    "title": "SaxonForms Implementation Guide",
+    "html_output": "builds/docs-docbook/saxonforms-implementation.html"
+  }
+}

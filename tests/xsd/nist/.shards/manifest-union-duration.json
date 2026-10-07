@@ -1,0 +1,30 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_union-duration": {
+      "valid_groups": [
+        "union-duration-decimal-enumeration",
+        "union-duration-decimal-enumeration-1",
+        "union-duration-decimal-enumeration-2",
+        "union-duration-decimal-enumeration-3",
+        "union-duration-decimal-enumeration-4",
+        "union-duration-decimal-pattern",
+        "union-duration-decimal-pattern-1",
+        "union-duration-decimal-pattern-2",
+        "union-duration-decimal-pattern-3",
+        "union-duration-decimal-pattern-4",
+        "union-duration-decimal-enumeration-5",
+        "union-duration-decimal-enumeration-6",
+        "union-duration-decimal-enumeration-7",
+        "union-duration-decimal-enumeration-8",
+        "union-duration-decimal-enumeration-9",
+        "union-duration-decimal-pattern-5",
+        "union-duration-decimal-pattern-6",
+        "union-duration-decimal-pattern-7",
+        "union-duration-decimal-pattern-8",
+        "union-duration-decimal-pattern-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

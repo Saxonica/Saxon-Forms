@@ -1,0 +1,14 @@
+{
+  "suite_id": "trigger-mips",
+  "test_path": "tests/supplemental/trigger-mips.spec.ts",
+  "config_path": "playwright.config.ts",
+  "last_updated": "2026-08-25T14:54:57.413Z",
+  "stats": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "flaky": 0,
+    "skipped": 0
+  },
+  "allowed_failures": []
+}

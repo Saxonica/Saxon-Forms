@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Fixture for xf:trigger relevant/readonly MIP behavior.
+-->
+<xf:xform
+    xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:ev="http://www.w3.org/2001/xml-events">
+
+  <xf:model id="m-trigger-mips">
+    <xf:instance id="ui">
+      <ui xmlns="">
+        <canShow>false</canShow>
+        <canAct>false</canAct>
+        <canActMin>false</canActMin>
+        <plainClicks>0</plainClicks>
+        <roClicks>0</roClicks>
+      </ui>
+    </xf:instance>
+
+    <!-- One bind per nodeset: engine matching expects zero-or-one bind -->
+    <xf:bind nodeset="instance('ui')/canShow" id="b-can-show" relevant="boolean-from-string(.)"/>
+    <xf:bind nodeset="instance('ui')/canAct" id="b-can-act" readonly="not(boolean-from-string(.))"/>
+    <xf:bind nodeset="instance('ui')/canActMin" id="b-can-act-min" readonly="not(boolean-from-string(.))"/>
+  </xf:model>
+
+  <div id="trigger-mips-root">
+    <div id="status-section">
+      <span id="plain-clicks-output" class="plain-clicks">
+        <xf:output ref="instance('ui')/plainClicks"/>
+      </span>
+      <span id="ro-clicks-output" class="ro-clicks">
+        <xf:output ref="instance('ui')/roClicks"/>
+      </span>
+      <span id="can-show-output" class="can-show">
+        <xf:output ref="instance('ui')/canShow"/>
+      </span>
+      <span id="can-act-output" class="can-act">
+        <xf:output ref="instance('ui')/canAct"/>
+      </span>
+      <span id="can-act-min-output" class="can-act-min">
+        <xf:output ref="instance('ui')/canActMin"/>
+      </span>
+    </div>
+
+    <div id="toolbar" class="toolbar">
+      <!-- relevant=false initially → hidden button; siblings must stay visible -->
+      <xf:trigger id="show-trigger" ref="instance('ui')/canShow" class="show-trigger">
+        <xf:label>Show Me</xf:label>
+        <xf:setvalue ev:event="DOMActivate" ref="instance('ui')/plainClicks" value="number(instance('ui')/plainClicks) + 1"/>
+      </xf:trigger>
+
+      <!-- readonly when canAct is false -->
+      <xf:trigger id="ro-button" ref="instance('ui')/canAct" class="ro-button">
+        <xf:label>Readonly Button</xf:label>
+        <xf:setvalue ev:event="DOMActivate" ref="instance('ui')/roClicks" value="number(instance('ui')/roClicks) + 1"/>
+      </xf:trigger>
+
+      <!-- appearance=minimal anchor variant -->
+      <xf:trigger id="ro-link" ref="instance('ui')/canActMin" appearance="minimal" class="ro-link">
+        <xf:label>Readonly Link</xf:label>
+        <xf:setvalue ev:event="DOMActivate" ref="instance('ui')/roClicks" value="number(instance('ui')/roClicks) + 1"/>
+      </xf:trigger>
+
+      <!-- plain unbound trigger — no MIP attrs expected -->
+      <xf:trigger id="plain-trigger" class="plain-trigger">
+        <xf:label>Plain</xf:label>
+        <xf:setvalue ev:event="DOMActivate" ref="instance('ui')/plainClicks" value="number(instance('ui')/plainClicks) + 1"/>
+      </xf:trigger>
+    </div>
+
+    <div id="drivers" class="drivers">
+      <xf:trigger id="enable-show" class="enable-show">
+        <xf:label>Enable Show</xf:label>
+        <xf:setvalue ev:event="DOMActivate" ref="instance('ui')/canShow">true</xf:setvalue>
+      </xf:trigger>
+      <xf:trigger id="disable-show" class="disable-show">
+        <xf:label>Disable Show</xf:label>
+        <xf:setvalue ev:event="DOMActivate" ref="instance('ui')/canShow">false</xf:setvalue>
+      </xf:trigger>
+      <xf:trigger id="enable-act" class="enable-act">
+        <xf:label>Enable Act</xf:label>
+        <xf:setvalue ev:event="DOMActivate" ref="instance('ui')/canAct">true</xf:setvalue>
+      </xf:trigger>
+      <xf:trigger id="disable-act" class="disable-act">
+        <xf:label>Disable Act</xf:label>
+        <xf:setvalue ev:event="DOMActivate" ref="instance('ui')/canAct">false</xf:setvalue>
+      </xf:trigger>
+      <xf:trigger id="enable-act-min" class="enable-act-min">
+        <xf:label>Enable Act Min</xf:label>
+        <xf:setvalue ev:event="DOMActivate" ref="instance('ui')/canActMin">true</xf:setvalue>
+      </xf:trigger>
+      <xf:trigger id="disable-act-min" class="disable-act-min">
+        <xf:label>Disable Act Min</xf:label>
+        <xf:setvalue ev:event="DOMActivate" ref="instance('ui')/canActMin">false</xf:setvalue>
+      </xf:trigger>
+    </div>
+  </div>
+
+</xf:xform>

@@ -1,0 +1,14 @@
+{
+  "suite_id": "w3c-ch02",
+  "test_path": "tests/xforms/w3c/ch02.spec.ts",
+  "config_path": "playwright.config.ts",
+  "last_updated": "2026-08-25T14:55:50.357Z",
+  "stats": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "flaky": 0,
+    "skipped": 0
+  },
+  "allowed_failures": []
+}

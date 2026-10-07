@@ -1,0 +1,31 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_atomic-float": {
+      "valid_groups": [
+        "atomic-float-enumeration",
+        "atomic-float-enumeration-1",
+        "atomic-float-enumeration-2",
+        "atomic-float-enumeration-3",
+        "atomic-float-enumeration-4",
+        "atomic-float-pattern",
+        "atomic-float-pattern-1",
+        "atomic-float-pattern-2",
+        "atomic-float-pattern-3",
+        "atomic-float-pattern-4",
+        "atomic-float-whiteSpace",
+        "atomic-float-enumeration-5",
+        "atomic-float-enumeration-6",
+        "atomic-float-enumeration-7",
+        "atomic-float-enumeration-8",
+        "atomic-float-enumeration-9",
+        "atomic-float-pattern-5",
+        "atomic-float-pattern-6",
+        "atomic-float-pattern-7",
+        "atomic-float-pattern-8",
+        "atomic-float-pattern-9"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

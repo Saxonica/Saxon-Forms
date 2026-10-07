@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  -*- rnc -*-
+  Namespaced XForms 1.1 schema in RELAX NG
+  
+     Copyright (C) 2009 W3C (R); (MIT, ERCIM, Keio), All Rights Reserved.
+  
+  
+     Permission to use, copy, modify and distribute this RELAX NG schema
+     for XForms 1.1 and its accompanying documentation for any purpose and
+     without fee is hereby granted in perpetuity, provided that the above
+     copyright notice and this paragraph appear in all copies. The copyright
+     holders make no representation about the suitability of this RELAX NG
+     schema for any purpose.
+  
+     It is provided "as is" without expressed or implied warranty.
+     For details, please refer to the W3C software license at:
+  
+  http://www.w3.org/Consortium/Legal/copyright-software
+-->
+<grammar ns="http://www.w3.org/2002/xforms" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <include href="xforms-nons-11.rng">
+    <define name="xforms.anyForeignElement">
+      <element>
+        <anyName>
+          <except>
+            <nsName/>
+          </except>
+        </anyName>
+        <zeroOrMore>
+          <choice>
+            <attribute>
+              <anyName/>
+            </attribute>
+            <text/>
+            <ref name="xforms.anyForeignElement"/>
+          </choice>
+        </zeroOrMore>
+      </element>
+    </define>
+  </include>
+  <!-- repeat attributes in xf namespace -->
+  <define name="xforms.repeat-nodeset.attr">
+    <attribute name="xf:repeat-nodeset">
+      <ref name="XPathExpression"/>
+    </attribute>
+  </define>
+  <define name="xforms.repeat-bind.attr">
+    <attribute name="xf:repeat-bind">
+      <data type="IDREF"/>
+    </attribute>
+  </define>
+  <define name="xforms.repeat-model.attr">
+    <attribute name="xf:repeat-mode">
+      <data type="IDREF"/>
+    </attribute>
+  </define>
+  <define name="xforms.repeat-startindex.attr">
+    <attribute name="xf:repeat-startindex">
+      <data type="positiveInteger"/>
+    </attribute>
+  </define>
+  <define name="xforms.repeat-number.attr">
+    <attribute name="xf:repeat-number">
+      <data type="nonNegativeInteger"/>
+    </attribute>
+  </define>
+  <define name="xforms.repeat-various.attrs">
+    <optional>
+      <ref name="xforms.repeat-nodeset.attr"/>
+    </optional>
+    <optional>
+      <ref name="xforms.repeat-bind.attr"/>
+    </optional>
+    <optional>
+      <ref name="xforms.repeat-model.attr"/>
+    </optional>
+    <optional>
+      <ref name="xforms.repeat-startindex.attr"/>
+    </optional>
+    <optional>
+      <ref name="xforms.repeat-number.attr"/>
+    </optional>
+  </define>
+  <!-- xforms elements -->
+  <define name="xforms.group.attrib" combine="interleave">
+    <ref name="xforms.repeat-various.attrs"/>
+  </define>
+  <!-- Validation entry points for host documents -->
+  <start>
+    <ref name="xforms.document"/>
+  </start>
+  <define name="xforms.document">
+    <choice>
+      <ref name="xforms.standalone.xform"/>
+      <ref name="xforms.xhtml.document"/>
+    </choice>
+  </define>
+  <define name="xforms.standalone.xform">
+    <element name="xf:xform">
+      <ref name="xforms.host.mixed"/>
+    </element>
+  </define>
+  <define name="xforms.xhtml.document">
+    <element name="h:html">
+      <ref name="xforms.host.mixed"/>
+    </element>
+  </define>
+  <define name="xforms.host.mixed">
+    <zeroOrMore>
+      <choice>
+        <ref name="xforms.anyXFormsElement"/>
+        <ref name="xforms.anyHostElement"/>
+        <text/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <define name="xforms.anyHostElement">
+    <element>
+      <anyName>
+        <except>
+          <nsName ns="http://www.w3.org/2002/xforms"/>
+        </except>
+      </anyName>
+      <zeroOrMore>
+        <attribute>
+          <anyName/>
+        </attribute>
+      </zeroOrMore>
+      <ref name="xforms.host.mixed"/>
+    </element>
+  </define>
+  <define name="xforms.anyXFormsElement">
+    <choice>
+      <ref name="xforms.model"/>
+      <ref name="xforms.instance"/>
+      <ref name="xforms.submission"/>
+      <ref name="xforms.bind"/>
+      <ref name="xforms.Core.Form.Controls"/>
+      <ref name="xforms.Container.Form.Controls"/>
+      <ref name="xforms.label"/>
+      <ref name="xforms.help"/>
+      <ref name="xforms.hint"/>
+      <ref name="xforms.alert"/>
+      <ref name="xforms.choices"/>
+      <ref name="xforms.item"/>
+      <ref name="xforms.itemset"/>
+      <ref name="xforms.value"/>
+      <ref name="xforms.copy"/>
+      <ref name="xforms.filename"/>
+      <ref name="xforms.upload.mediatype"/>
+      <ref name="xforms.output.mediatype"/>
+      <ref name="xforms.output"/>
+      <ref name="xforms.input"/>
+      <ref name="xforms.textarea"/>
+      <ref name="xforms.secret"/>
+      <ref name="xforms.upload"/>
+      <ref name="xforms.select1"/>
+      <ref name="xforms.select"/>
+      <ref name="xforms.range"/>
+      <ref name="xforms.trigger"/>
+      <ref name="xforms.submit"/>
+      <ref name="xforms.action"/>
+      <ref name="xforms.dispatch"/>
+      <ref name="xforms.rebuild"/>
+      <ref name="xforms.revalidate"/>
+      <ref name="xforms.recalculate"/>
+      <ref name="xforms.refresh"/>
+      <ref name="xforms.setfocus"/>
+      <ref name="xforms.load"/>
+      <ref name="xforms.setvalue"/>
+      <ref name="xforms.send"/>
+      <ref name="xforms.reset"/>
+      <ref name="xforms.insert"/>
+      <ref name="xforms.delete"/>
+      <ref name="xforms.setindex"/>
+      <ref name="xforms.toggle"/>
+      <ref name="xforms.message"/>
+      <ref name="xforms.repeat"/>
+      <ref name="xforms.group"/>
+      <ref name="xforms.switch"/>
+      <ref name="xforms.switch.case"/>
+      <ref name="xforms.extension"/>
+    </choice>
+  </define>
+</grammar>
+<!--
+  Changes for first update after XForms 1.1 Recommendation 2009-12-08
+  + Changed namespace prefix from ns1 to xf
+  + Added redefinition of xforms.anyForeignElement to include xf namespace
+  + added repeat attributes for host languages to integrate
+  + added repeat attributes on xf:group
+-->

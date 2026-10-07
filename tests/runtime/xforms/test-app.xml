@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Generic Saxon-Forms test XForm.
+  Exercises: namespace prefix propagation, xf:script, xf:upload,
+  xf:load, xf:trigger/DOMActivate, xf:repeat, xf:output, xf:bind.
+  Uses a custom namespace (urn:test:items) to verify Fix 1.
+-->
+<xf:xform
+    xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:t="urn:test:items">
+
+  <xf:model id="m-test">
+
+    <!-- Preloaded instance with namespaced data -->
+    <xf:instance id="items" src="/data/items.xml"/>
+
+    <!-- Upload target instance (starts empty) -->
+    <xf:instance id="upload-target">
+      <root xmlns=""/>
+    </xf:instance>
+
+    <!-- UI state -->
+    <xf:instance id="ui-state">
+      <ui xmlns="">
+        <item-count/>
+      </ui>
+    </xf:instance>
+
+    <xf:bind nodeset="instance('ui-state')/item-count"
+             calculate="count(instance('items')/t:item)"/>
+
+  </xf:model>
+
+  <div id="test-app-root">
+
+    <!-- Fix 1: Namespace-prefixed XPath in repeat + output -->
+    <div id="ns-test-section">
+      <h2>Namespace Test</h2>
+      <span id="item-count-output">
+        <xf:output ref="instance('ui-state')/item-count"/>
+      </span>
+      <xf:repeat id="items-repeat" nodeset="instance('items')/t:item">
+        <div class="test-item">
+          <span class="item-id"><xf:output ref="@id"/></span>
+          <span class="item-name"><xf:output ref="t:name"/></span>
+          <span class="item-value"><xf:output ref="t:value"/></span>
+        </div>
+      </xf:repeat>
+    </div>
+
+    <!-- Fix 3: xf:script action -->
+    <div id="script-test-section">
+      <h2>Script Test</h2>
+      <xf:trigger id="script-trigger">
+        <xf:label>Run Script</xf:label>
+        <xf:script ev:event="DOMActivate">window.__sfScriptResult = 'ok';</xf:script>
+      </xf:trigger>
+    </div>
+
+    <!-- Fix 2: xf:upload -->
+    <div id="upload-test-section">
+      <h2>Upload Test</h2>
+      <xf:upload id="test-upload" ref="instance('upload-target')" accept=".xml">
+        <xf:label>Upload XML</xf:label>
+      </xf:upload>
+
+      <!-- Hidden refresh trigger for async upload bridge -->
+      <xf:trigger id="upload-refresh-trigger" style="display:none">
+        <xf:label/>
+        <xf:action ev:event="DOMActivate">
+          <xf:rebuild/>
+          <xf:recalculate/>
+          <xf:refresh/>
+        </xf:action>
+      </xf:trigger>
+
+      <div id="upload-result">
+        <xf:output ref="instance('upload-target')" class="upload-content"/>
+      </div>
+    </div>
+
+    <!-- Fix 4: xf:load -->
+    <div id="load-test-section">
+      <h2>Load Test</h2>
+      <xf:trigger id="load-js-trigger">
+        <xf:label>Load JS</xf:label>
+        <xf:load ev:event="DOMActivate" resource="javascript:window.__sfLoadResult='loaded'"/>
+      </xf:trigger>
+    </div>
+
+  </div>
+
+</xf:xform>

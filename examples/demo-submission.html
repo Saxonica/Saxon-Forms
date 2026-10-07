@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Submission lifecycle | XForms demo</title>
+  <link rel="stylesheet" href="css/style.css" type="text/css" />
+  <script src="../Saxon-JS/SaxonJS3.rt.js"></script>
+  <script>
+    window.onload = function () {
+      SaxonJS.transform({
+        "stylesheetLocation": "../sef/saxon-xforms.sef.json",
+        "sourceLocation": "xml/demo-submission.xml"
+      }, "async");
+    }
+  </script>
+</head>
+<body>
+  <h1 id="title">XForms demo: submission done/error lifecycle</h1>
+  <div class="demo-description">
+    <p>This page demonstrates <code>xforms-submit-done</code> and <code>xforms-submit-error</code> handlers updating visible instance state.</p>
+  </div>
+  <div id="xForm"></div>
+</body>
+</html>

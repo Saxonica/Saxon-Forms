@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="Definitions_DevLifecycle"
+             targetNamespace="http://saxon-forms-fork.example.com/bpmn/development-lifecycle"
+             exporter="Saxon-Forms BPMN Modeler"
+             exporterVersion="1.0">
+
+  <process id="Process_DevelopmentLifecycle" name="Development Lifecycle" isExecutable="false">
+    <documentation>Top-level orchestration of the Saxon-Forms-fork development workflow.
+Routes incoming changes through the appropriate specialization process, then
+converges all paths into the Git Commit discipline.</documentation>
+
+    <!-- ===== Flow Nodes ===== -->
+
+    <startEvent id="StartEvent_1" name="Change Initiated">
+      <outgoing>Flow_ToChangeType</outgoing>
+    </startEvent>
+
+    <exclusiveGateway id="Gateway_ChangeType" name="Change Type?" default="Flow_General">
+      <incoming>Flow_ToChangeType</incoming>
+      <outgoing>Flow_TestFix</outgoing>
+      <outgoing>Flow_XsltXpath</outgoing>
+      <outgoing>Flow_General</outgoing>
+    </exclusiveGateway>
+
+    <callActivity id="CallActivity_TestSuiteDev" name="Execute Test Suite Development"
+                  calledElement="Process_TestSuiteDevelopment">
+      <incoming>Flow_TestFix</incoming>
+      <outgoing>Flow_TestFixToMerge</outgoing>
+    </callActivity>
+
+    <callActivity id="CallActivity_XsltXpath" name="Execute XSLT/XPath Review"
+                  calledElement="Process_XsltXpathChange">
+      <incoming>Flow_XsltXpath</incoming>
+      <outgoing>Flow_XsltToMerge</outgoing>
+    </callActivity>
+
+    <task id="Task_GeneralChange" name="Implement General Change">
+      <incoming>Flow_General</incoming>
+      <outgoing>Flow_GeneralToMerge</outgoing>
+    </task>
+
+    <exclusiveGateway id="Gateway_Merge" name="">
+      <incoming>Flow_TestFixToMerge</incoming>
+      <incoming>Flow_XsltToMerge</incoming>
+      <incoming>Flow_GeneralToMerge</incoming>
+      <outgoing>Flow_ToGitCommit</outgoing>
+    </exclusiveGateway>
+
+    <callActivity id="CallActivity_GitCommit" name="Execute Git Commit"
+                  calledElement="Process_GitCommit">
+      <incoming>Flow_ToGitCommit</incoming>
+      <outgoing>Flow_ToEnd</outgoing>
+    </callActivity>
+
+    <endEvent id="EndEvent_Committed" name="Change Committed">
+      <incoming>Flow_ToEnd</incoming>
+    </endEvent>
+
+    <!-- ===== Sequence Flows ===== -->
+
+    <sequenceFlow id="Flow_ToChangeType" sourceRef="StartEvent_1"
+                  targetRef="Gateway_ChangeType" />
+
+    <sequenceFlow id="Flow_TestFix" name="Test Fix"
+                  sourceRef="Gateway_ChangeType" targetRef="CallActivity_TestSuiteDev" />
+
+    <sequenceFlow id="Flow_XsltXpath" name="XSLT / XPath"
+                  sourceRef="Gateway_ChangeType" targetRef="CallActivity_XsltXpath" />
+
+    <sequenceFlow id="Flow_General" name="General"
+                  sourceRef="Gateway_ChangeType" targetRef="Task_GeneralChange" />
+
+    <sequenceFlow id="Flow_TestFixToMerge"
+                  sourceRef="CallActivity_TestSuiteDev" targetRef="Gateway_Merge" />
+
+    <sequenceFlow id="Flow_XsltToMerge"
+                  sourceRef="CallActivity_XsltXpath" targetRef="Gateway_Merge" />
+
+    <sequenceFlow id="Flow_GeneralToMerge"
+                  sourceRef="Task_GeneralChange" targetRef="Gateway_Merge" />
+
+    <sequenceFlow id="Flow_ToGitCommit"
+                  sourceRef="Gateway_Merge" targetRef="CallActivity_GitCommit" />
+
+    <sequenceFlow id="Flow_ToEnd"
+                  sourceRef="CallActivity_GitCommit" targetRef="EndEvent_Committed" />
+  </process>
+
+  <!-- ===== Diagram Interchange ===== -->
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_DevLifecycle" name="Development Lifecycle">
+    <bpmndi:BPMNPlane id="BPMNPlane_DevLifecycle" bpmnElement="Process_DevelopmentLifecycle">
+
+      <!-- Start -->
+      <bpmndi:BPMNShape id="Shape_StartEvent_1" bpmnElement="StartEvent_1">
+        <dc:Bounds x="170" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- Split Gateway -->
+      <bpmndi:BPMNShape id="Shape_Gateway_ChangeType" bpmnElement="Gateway_ChangeType"
+                        isMarkerVisible="true">
+        <dc:Bounds x="275" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <!-- Three specialization branches -->
+      <bpmndi:BPMNShape id="Shape_CallActivity_TestSuiteDev"
+                        bpmnElement="CallActivity_TestSuiteDev">
+        <dc:Bounds x="420" y="100" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_CallActivity_XsltXpath"
+                        bpmnElement="CallActivity_XsltXpath">
+        <dc:Bounds x="420" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_GeneralChange" bpmnElement="Task_GeneralChange">
+        <dc:Bounds x="420" y="360" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Merge Gateway -->
+      <bpmndi:BPMNShape id="Shape_Gateway_Merge" bpmnElement="Gateway_Merge"
+                        isMarkerVisible="true">
+        <dc:Bounds x="595" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+
+      <!-- Git Commit -->
+      <bpmndi:BPMNShape id="Shape_CallActivity_GitCommit"
+                        bpmnElement="CallActivity_GitCommit">
+        <dc:Bounds x="720" y="230" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- End -->
+      <bpmndi:BPMNShape id="Shape_EndEvent_Committed" bpmnElement="EndEvent_Committed">
+        <dc:Bounds x="892" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <!-- ===== Edges ===== -->
+
+      <bpmndi:BPMNEdge id="Edge_Flow_ToChangeType" bpmnElement="Flow_ToChangeType">
+        <di:waypoint x="206" y="270" />
+        <di:waypoint x="275" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TestFix" bpmnElement="Flow_TestFix">
+        <di:waypoint x="300" y="245" />
+        <di:waypoint x="300" y="140" />
+        <di:waypoint x="420" y="140" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_XsltXpath" bpmnElement="Flow_XsltXpath">
+        <di:waypoint x="325" y="270" />
+        <di:waypoint x="420" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_General" bpmnElement="Flow_General">
+        <di:waypoint x="300" y="295" />
+        <di:waypoint x="300" y="400" />
+        <di:waypoint x="420" y="400" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_TestFixToMerge" bpmnElement="Flow_TestFixToMerge">
+        <di:waypoint x="520" y="140" />
+        <di:waypoint x="620" y="140" />
+        <di:waypoint x="620" y="245" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_XsltToMerge" bpmnElement="Flow_XsltToMerge">
+        <di:waypoint x="520" y="270" />
+        <di:waypoint x="595" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_GeneralToMerge" bpmnElement="Flow_GeneralToMerge">
+        <di:waypoint x="520" y="400" />
+        <di:waypoint x="620" y="400" />
+        <di:waypoint x="620" y="295" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_ToGitCommit" bpmnElement="Flow_ToGitCommit">
+        <di:waypoint x="645" y="270" />
+        <di:waypoint x="720" y="270" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_ToEnd" bpmnElement="Flow_ToEnd">
+        <di:waypoint x="820" y="270" />
+        <di:waypoint x="892" y="270" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</definitions>

@@ -1,0 +1,48 @@
+@startuml
+title Processing model sequence (construct -> ready -> interaction cycle)
+autonumber
+
+actor "End User" as USER
+participant "DOM" as DOM
+participant "Event Bridge\nixsl:on* mode templates" as BRIDGE
+participant "Action Dispatcher\napplyActions / outermost-action-handler" as ACTIONS
+participant "SaxonJS/XSLT Runtime\nsaxon-xforms.xsl" as RUNTIME
+database "Model State\n(instances, binds, MIPs)" as MODEL
+collections "Validation MIP Registry\n(instanceId|ref -> valid,required)" as VMIP
+
+== Model Construction ==
+RUNTIME -> RUNTIME : xformsjs-main\nparse xform, resolve models
+RUNTIME -> MODEL : xforms-model-construct\ninitialize instances + binds
+RUNTIME -> MODEL : xforms-rebuild\n(add-context over binds)
+RUNTIME -> MODEL : xforms-recalculate\nevaluate calculate/relevant/readonly
+RUNTIME -> ACTIONS : dispatch xforms-model-construct
+RUNTIME -> ACTIONS : dispatch xforms-model-construct-done
+ACTIONS -> DOM : render initial controls\n(xforms:* match templates)
+RUNTIME -> ACTIONS : dispatch xforms-ready
+
+== User Interaction Cycle ==
+USER -> DOM : change control value
+DOM -> BRIDGE : native onchange event
+BRIDGE -> ACTIONS : xforms-value-changed
+ACTIONS -> RUNTIME : invoke deferred update cycle
+RUNTIME -> MODEL : xforms-recalculate\nrecalculate-binding
+RUNTIME -> MODEL : xforms-revalidate\ncheck-required-fields\ncheck-constraints-on-fields
+RUNTIME -> VMIP : clearValidationMIPs()
+RUNTIME -> VMIP : setValidationMIP(instanceId, ref,\nvalid, required) for each control
+MODEL --> RUNTIME : updated values + MIP flags
+VMIP --> RUNTIME : getValidationMIPValid/Required
+RUNTIME -> DOM : xforms-refresh\nrefreshOutputs-JS\nrefreshRepeats-JS\nrefreshRelevantFields-JS
+ACTIONS -> DOM : emit xforms-valid / xforms-invalid as needed
+== Explicit Action Path ==
+USER -> DOM : activate trigger with xf:revalidate
+DOM -> BRIDGE : native click / DOMActivate
+BRIDGE -> ACTIONS : applyActions('revalidate')
+ACTIONS -> RUNTIME : action-revalidate
+RUNTIME -> MODEL : xforms-revalidate
+RUNTIME -> VMIP : rebuild validation registry
+USER -> DOM : activate trigger with xf:refresh
+DOM -> BRIDGE : native click / DOMActivate
+BRIDGE -> ACTIONS : applyActions('refresh')
+ACTIONS -> RUNTIME : action-refresh
+RUNTIME -> DOM : xforms-refresh\nproject xforms-valid/invalid\n+ xforms-required/optional
+@enduml

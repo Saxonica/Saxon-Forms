@@ -1,0 +1,36 @@
+{
+  "source_test_set": "public-test/xsdtests/nistMeta/NISTXMLSchemaDatatypes.testSet",
+  "facets": {
+    "family_list-base64Binary": {
+      "valid_groups": [
+        "list-base64Binary-enumeration",
+        "list-base64Binary-enumeration-1",
+        "list-base64Binary-enumeration-2",
+        "list-base64Binary-enumeration-3",
+        "list-base64Binary-enumeration-4",
+        "list-base64Binary-length",
+        "list-base64Binary-length-1",
+        "list-base64Binary-length-2",
+        "list-base64Binary-length-3",
+        "list-base64Binary-length-4",
+        "list-base64Binary-maxLength",
+        "list-base64Binary-maxLength-1",
+        "list-base64Binary-maxLength-2",
+        "list-base64Binary-maxLength-3",
+        "list-base64Binary-maxLength-4",
+        "list-base64Binary-minLength",
+        "list-base64Binary-minLength-1",
+        "list-base64Binary-minLength-2",
+        "list-base64Binary-minLength-3",
+        "list-base64Binary-minLength-4",
+        "list-base64Binary-pattern",
+        "list-base64Binary-pattern-1",
+        "list-base64Binary-pattern-2",
+        "list-base64Binary-pattern-3",
+        "list-base64Binary-pattern-4",
+        "list-base64Binary-whiteSpace"
+      ],
+      "invalid_groups": []
+    }
+  }
+}

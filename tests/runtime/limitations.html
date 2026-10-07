@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Saxon-Forms Engine Limitations</title>
+    <script src="/lib/SaxonJS3.rt.js"></script>
+    <script>
+      window.addEventListener("DOMContentLoaded", function () {
+        // Load XForm from nested path so document base != page base (#2).
+        SaxonJS.transform(
+          {
+            stylesheetLocation: "/sef/saxon-xforms.sef.json",
+            sourceLocation: "/xforms/nested/test-engine-limitations.xml",
+          },
+          "async"
+        );
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Engine Limitations Test</h1>
+    <div id="xForm"></div>
+  </body>
+</html>
